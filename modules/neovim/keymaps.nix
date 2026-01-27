@@ -1,0 +1,177 @@
+{ config, pkgs, lib, ... }:
+{
+  programs.nixvim.keymaps = [
+    # Main
+    {
+      mode = [ "n" "v" ];
+      key = "<leader><leader>";
+      action = "<C-^>";
+      options = {
+        desc = "Toggle to previous buffer";
+        silent = true;
+      };
+    }
+
+    {
+      mode = [ "v" ];
+      key = "<leader>y";
+      action = "\"+y";
+      options = {
+        desc = "Copy to clipboard";
+        silent = true;
+      };
+    }
+
+    # Rebind Tab to Esc in Normal, Insert, and Visual modes
+    {
+      mode = [ "i" ]; # Added 'v' for Visual mode
+      key = "jk";
+      action = "<Esc>";
+    }
+    # telescope
+    {
+      action = "<cmd>Telescope find_files<CR>";
+      key = "<leader>ff";
+    }
+    {
+      action = "<cmd>Telescope live_grep<CR>";
+      key = "<leader>fg";
+    }
+    {
+      action = "<cmd>Telescope buffers<CR>";
+      key = "<leader>fb";
+    }
+    {
+      action = "<cmd>Telescope help_tags<CR>";
+      key = "<leader>fh";
+    }
+
+    #-- Copy :messages to system clipboard
+    {
+      mode = [ "n" "v" ];
+      key = "<leader>lc";
+      action = "<cmd>redir @+<CR><cmd>silent messages<CR><cmd>redir END<CR>";
+      options = {
+        desc = "Copy Neovim messages to clipboard";
+        silent = true;
+      };
+    }
+    # codecompanion
+    {
+      mode = [ "n" "v" ];
+      key = "<leader>aa";
+      action = "<cmd>CodeCompanionActions<CR>";
+      options = {
+        desc = "CodeCompanion actions";
+        silent = true;
+      };
+    }
+
+    {
+      mode = [ "n" "v" ];
+      key = "<leader>ac";
+      action = "<cmd>CodeCompanionChat<CR>";
+      options = {
+        desc = "CodeCompanion chat";
+        silent = true;
+      };
+    }
+
+    # Molten
+    {
+      mode = [ "n" "v" "i" ];
+      key = "<leader>ml";
+      action = "<cmd>MoltenEvaluateLine<CR>";
+      options = {
+        desc = "Execute current line";
+        silent = true;
+      };
+    }
+
+    {
+      mode = [ "n" "v" ];
+      key = "<leader>mc";
+      action = "<cmd>lua local cur=vim.fn.line('.') local s=vim.fn.search('^```', 'bn') local e=vim.fn.search('^```', 'n') vim.api.nvim_buf_set_mark(0, '<', s+1, 0, {}) vim.api.nvim_buf_set_mark(0, '>', e-1, 1000, {}) vim.cmd('MoltenEvaluateVisual')<CR>";
+      options = {
+        desc = "Execute current chunk";
+        silent = true;
+      };
+    }
+
+    {
+      mode = [ "n" "v" "i" ];
+      key = "<leader>ma";
+      action = "<cmd>MoltenReevaluateAll<CR>";
+      options = {
+        desc = "Execute all";
+        silent = true;
+      };
+    }
+
+    {
+      mode = [ "n" "v" "i" ];
+      key = "<leader>mn";
+      action = "<cmd>MoltenNext<CR>";
+      options = {
+        desc = "Go next chunk";
+        silent = true;
+      };
+    }
+
+    {
+      mode = [ "n" "v" "i" ];
+      key = "<leader>mp";
+      action = "<cmd>MoltenPrev<CR>";
+      options = {
+        desc = "Go previous chunk";
+        silent = true;
+      };
+    }
+
+    {
+      mode = [ "n" "v" ];
+      key = "<leader>mh";
+      action = "<cmd>MoltenHideOutput<CR>";
+      options = {
+        desc = "Hide output window";
+        silent = true;
+      };
+    }
+
+    {
+      mode = [ "n" "v" ];
+      key = "<leader>ms";
+      action = "<cmd>MoltenShowOutput<CR>";
+      options = {
+        desc = "Show output window";
+        silent = true;
+      };
+    }
+
+    # Obsidian
+    {
+      mode = [ "n" ];
+      key = "<leader>on";
+      action = "<cmd>ObsidianNew<CR>";
+      options = {
+        desc = "Create new Obsidian note";
+        silent = true;
+      };
+    }
+
+    {
+      mode = [ "n" ];
+      key = "<leader>od";
+      action.__raw = ''
+        function()
+          -- TEMP path
+          ${builtins.readFile ../../scripts/obsidian_daily_notes.lua}
+        end
+      '';
+      options = {
+        desc = "Open Obsidian daily notes";
+        silent = true;
+      };
+    }
+  ];
+}
