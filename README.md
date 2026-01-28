@@ -95,45 +95,6 @@ Leader = `Space`
 | `<leader>on` | New note |
 | `<leader>od` | Generate daily note |
 
-## Secrets
-
-API keys live in `~/.secrets/env` (sourced by bash). Never in the repo. Never.
-
-```
-~/.secrets/
-└── env          # chmod 600, exports OPENAI_API_KEY & CLAUDE_CODE_OAUTH_TOKEN
-```
-
-## Bioinformatics Tools
-
-Because someone has to align those reads:
-
-| Tool | Purpose |
-|------|---------|
-| samtools | BAM/SAM wrangling |
-| bcftools | VCF/BCF operations |
-| bedtools | Genomic intervals |
-| multiqc | QC report aggregation |
-| igv | Genome browser |
-| Python 3.12 | pandas, numpy, matplotlib, jupyter... |
-
-## Daily Notes Workflow
-
-The `obsidian_daily_notes.lua` script (`<leader>od`) does something unreasonably sophisticated:
-
-```
-Yesterday's Note                    Today's Note
-┌─────────────────┐     ┌─────────────────┐
-│ [x] Done task   │     │                 │
-│ [ ] Undone task │────>│ [ ] Undone task  │  (carried over + day counter)
-│ [ ] Work [[proj]]│────>│ [ ] Work [[proj]]│  (synced with project file)
-│ New info...     │────>│ New info...      │
-└─────────────────┘     └─────────────────┘
-                              │
-                              v
-                        projects/proj.md  (bidirectional sync)
-```
-
 ---
 
 *Powered by Nix, fueled by coffee, maintained by mass `home-manager switch` runs.*
