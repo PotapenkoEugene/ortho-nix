@@ -98,7 +98,10 @@
       samtools
       bcftools
       bedtools
+      fastqc
+      bowtie2
       igv
+      macs2
       fuse # for installing mendeley from appimage file
       # Compile
       cmake
@@ -121,7 +124,5 @@
       #	    dplyr
       #	  ];
       #	})
-
-      # AI
     ];
 }

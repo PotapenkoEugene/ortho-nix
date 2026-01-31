@@ -67,6 +67,7 @@ home-manager switch
 | Notes | Obsidian | daily notes with auto task sync magic |
 | Music | mpd + rmpc | lo-fi beats to bioinformatics to |
 | Files | Oil.nvim + Dolphin | one for terminal, one for normie moments |
+| Speech-to-text | whisper.cpp (tiny model) | because typing is so 2023 |
 
 ## Neovim Keymaps Cheatsheet
 
@@ -94,6 +95,30 @@ Leader = `Space`
 | **Obsidian** | |
 | `<leader>on` | New note |
 | `<leader>od` | Generate daily note |
+
+## Hotkeys (Because Mouse is Lava)
+
+| Key | What happens | Why you'll love it |
+|-----|-------------|-------------------|
+| `F8` | Toggle whisper-stream 🎤 | Talk to your computer like a sci-fi movie character. First press = start recording, second press = stop & save to `~/Orthidian/transcripts/`. Perfect for meetings when you're too lazy to type (or pretending to pay attention). |
+| `Ctrl+F5` | Brightness → 0 | Instant stealth mode. Your screen becomes a black hole. |
+| `Alt+T` | Launch Kitty | Terminal faster than you can say "sudo" |
+| `Alt+D` | Launch Dolphin | File manager goes *click click* |
+
+### Whisper Commands (For When F8 Isn't Enough)
+
+```bash
+# The "did I just say that?" test
+~/test-whisper-mic.sh          # Record 5 seconds, transcribe immediately
+
+# Transcribe that embarrassing voice memo
+whisper -f /path/to/audio.wav
+
+# Check what nonsense you've been dictating
+ls ~/Orthidian/transcripts/
+```
+
+**Fun fact:** After fighting with whisper for 6 hours and spawning 400+ processes that almost nuked the system, we discovered the magic `-f` flag that just... writes to a file. Sometimes the best solutions are the simplest ones. 🤦
 
 ---
 

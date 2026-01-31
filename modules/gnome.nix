@@ -32,21 +32,17 @@
         command = "sh -c 'setsid dolphin &>/dev/null &'";
         binding = "<Alt>d";
       };
-      #		     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
-      #        		          name = "Connect to VPN AWS";
-      #        		          command = "openvpn3 session-start --config evgenip";  #it's better to make it tmux short cut with popup of logging
-      #        		          binding = "<Alt>n";
-      #        		        };
-      #		     "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
-      #        		          name = "Disconnect to VPN AWS";
-      #        		          command = "openvpn3 session-manage --disconnect --config evgenip"; # also in tmux shortcuts
-      #        		          binding = "<Alt><Shift>n";
-      #        		        };
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3" = {
+        name = "Whisper Stream Toggle";
+        command = "/home/ortho/.config/home-manager/scripts/whisper-stream-toggle.sh";
+        binding = "F8";
+      };
       "org/gnome/settings-daemon/plugins/media-keys" = {
         custom-keybindings = [
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
         ];
       };
       "org/gnome/shell" = {

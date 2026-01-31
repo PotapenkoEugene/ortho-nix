@@ -3,6 +3,7 @@
   home.sessionPath = [
     "/home/ortho/Tools/Bioscripts"
     "$HOME/.npm-global/bin"
+    "$HOME/.config/home-manager/scripts"
   ];
 
   programs.bash = {
@@ -14,6 +15,9 @@
       #rstudio = "rstudio --no-sandbox"; # for installation  via nix (not worked properly)
       #	    clip="xclip -selection clipboard";
       fzfp = "fzf --preview='cat {}'";
+
+      # Whisper speech-to-text (using compiled version from ~/Tools)
+      whisper = "~/Tools/whisper.cpp/build/bin/whisper-cli -m ~/whisper-models/ggml-tiny.en.bin";
 
       vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
       vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";

@@ -41,9 +41,9 @@
 
         # Specify your home configuration modules here, for example,
         # the path to your home.nix.
-        modules = [ 
+        modules = [
 		nixvim.homeManagerModules.nixvim
-		./home.nix 
+		./home.nix
 		];
 
         # Optionally use extraSpecialArgs
