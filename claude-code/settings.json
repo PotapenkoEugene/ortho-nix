@@ -1,0 +1,69 @@
+{
+  "$schema": "https://platform.claude.com/docs/schemas/claude-code/settings.json",
+  "showTurnDuration": true,
+  "attribution": {
+    "commit": "Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'Claude Code' 'Claude needs your attention' -t 5000 -u normal"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash(home-manager switch)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'Home Manager' 'Configuration applied successfully! 🎉' -t 5000 -u normal"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(home-manager build)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'Home Manager' 'Build completed successfully ✓' -t 3000 -u low"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash(home-manager *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'Home Manager' 'Build/switch failed! Check errors.' -t 5000 -u critical"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(alejandra *)",
+      "Bash(home-manager build)",
+      "Bash(git status)",
+      "Bash(git diff)",
+      "Bash(ls *)",
+      "Read(*.nix)",
+      "Read(*.lua)",
+      "Read(*.sh)",
+      "Read(~/Orthidian/transcripts/*)"
+    ],
+    "ask": [
+      "Bash(home-manager switch)",
+      "Bash(git push *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
