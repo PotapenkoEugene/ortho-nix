@@ -13,6 +13,12 @@
       source = ../claude-code/settings.json;
     };
 
+    # Status line script
+    ".claude/statusline.sh" = {
+      source = ../claude-code/statusline.sh;
+      executable = true;
+    };
+
     # Skills - Custom slash commands
     ".claude/skills/hm-switch/SKILL.md" = {
       source = ../claude-code/skills/hm-switch/SKILL.md;

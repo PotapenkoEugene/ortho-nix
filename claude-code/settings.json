@@ -4,6 +4,10 @@
   "attribution": {
     "commit": "Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
   },
+  "statusLine": {
+    "type": "command",
+    "command": "/home/ortho/.config/home-manager/claude-code/statusline.sh"
+  },
   "hooks": {
     "Notification": [
       {
