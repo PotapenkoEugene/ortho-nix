@@ -1,12 +1,17 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   programs.gnome-shell = {
     enable = true;
-    extensions = [ # !!! required restart system - not only log out/in
-      { package = pkgs.gnomeExtensions.tiling-shell; }
+    extensions = [
+      # !!! required restart system - not only log out/in
+      {package = pkgs.gnomeExtensions.tiling-shell;}
       #	    { package = pkgs.gnomeExtensions.caffeine; }
-      { package = pkgs.gnomeExtensions.clipboard-indicator; }
-      { package = pkgs.gnomeExtensions.system-monitor; }
+      {package = pkgs.gnomeExtensions.clipboard-indicator;}
+      {package = pkgs.gnomeExtensions.system-monitor;}
     ];
   };
 
@@ -15,7 +20,7 @@
     settings = {
       "org/gnome/desktop/wm/keybindings" = {
         # Next input source
-        "switch-input-source" = [ "<Alt>Shift_L" ];
+        "switch-input-source" = ["<Alt>Shift_L"];
       };
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
         name = "Brightness to Zero";
@@ -47,7 +52,8 @@
       };
       "org/gnome/shell" = {
         disable-user-extensions = false;
-        disable-extension-version-validation = true; disabled-extensions = [
+        disable-extension-version-validation = true;
+        disabled-extensions = [
           "ubuntu-dock@ubuntu.com"
           "tiling-assistant@ubuntu.com"
         ];
@@ -74,7 +80,7 @@
         screen-blank = "never";
         show-indicator = "only-active";
         show-notifications = false;
-        toggle-shortcut = [ "<Super>c" ];
+        toggle-shortcut = ["<Super>c"];
       };
       "org/gnome/shell/extensions/clipboard-indicator" = {
         cache-size = 10;
@@ -84,9 +90,9 @@
         strip-text = true;
         topbar-preview-size = 8;
 
-        clear-history = [ ];
-        private-mode-binding = [ ];
-        toggle-menu = [ "<Super><Control>v" ];
+        clear-history = [];
+        private-mode-binding = [];
+        toggle-menu = ["<Super><Control>v"];
       };
       "org/gnome/shell/extensions/unite" = {
         extend-left-box = false;

@@ -1,5 +1,9 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   programs.tmux = {
     enable = true;
 
@@ -173,8 +177,8 @@
           src = pkgs.fetchFromGitHub {
             owner = "omerxx";
             repo = "tmux-sessionx";
-            rev = "main";  # or a specific commit
-            sha256 = "sha256-SRKI4mliMSMp/Yd+oSn48ArbbRA+szaj70BQeTd8NhM=";  # Add SHA256 hash here
+            rev = "main"; # or a specific commit
+            sha256 = "sha256-SRKI4mliMSMp/Yd+oSn48ArbbRA+szaj70BQeTd8NhM="; # Add SHA256 hash here
           };
         };
         extraConfig = ''
@@ -199,8 +203,8 @@
           src = pkgs.fetchFromGitHub {
             owner = "omerxx";
             repo = "tmux-floax";
-            rev = "main";  # or a specific commit
-            sha256 = "sha256-DOwn7XEg/L95YieUAyZU0FJ49vm2xKGUclm8WCKDizU=";  # Add SHA256 hash here
+            rev = "main"; # or a specific commit
+            sha256 = "sha256-DOwn7XEg/L95YieUAyZU0FJ49vm2xKGUclm8WCKDizU="; # Add SHA256 hash here
           };
         };
         extraConfig = ''

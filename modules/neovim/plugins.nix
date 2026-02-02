@@ -1,5 +1,9 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   programs.nixvim.plugins = {
     lualine.enable = true;
     luasnip.enable = true;
@@ -35,7 +39,7 @@
           settings = {
             nil = {
               formatting = {
-                command = [ "nixpkgs-fmt" ];
+                command = ["nixpkgs-fmt"];
               };
             };
           };
@@ -53,10 +57,10 @@
       settings = {
         sources = [
           #{ name = "nvim_lsp"; }
-          { name = "buffer"; }
-          { name = "path"; }
-          { name = "luasnip"; }
-          { name = "codecompanion"; }
+          {name = "buffer";}
+          {name = "path";}
+          {name = "luasnip";}
+          {name = "codecompanion";}
         ];
         mapping = {
           "<CR>" = "cmp.mapping.confirm({ select = true })";
@@ -103,7 +107,7 @@
         virt_text_output = false;
         virt_lines_off_by_1 = true;
 
-        ft = [ "python" "norg" "markdown" "quarto" ]; # not sure it's needed
+        ft = ["python" "norg" "markdown" "quarto"]; # not sure it's needed
       };
     };
 

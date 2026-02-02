@@ -1,5 +1,9 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   programs.nixvim = {
     colorschemes.tokyonight.enable = true;
     highlight.ExtraWhitespace.bg = "red";

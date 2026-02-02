@@ -1,5 +1,5 @@
 {
-  "$schema": "https://platform.claude.com/docs/schemas/claude-code/settings.json",
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "showTurnDuration": true,
   "attribution": {
     "commit": "Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"

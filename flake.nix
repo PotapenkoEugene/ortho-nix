@@ -20,34 +20,37 @@
     nixvim = {
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
-	};
     };
+  };
 
-  outputs =
-    { nixpkgs, home-manager, nixvim, nixgl, ... }:
-    let
-      system = "x86_64-linux";
-	# pkgs = nixpkgs.legacyPackages.${system};
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [
-          nixgl.overlay
-		    ];
-			    };
-    in
-    {
-      homeConfigurations."ortho" = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-
-        # Specify your home configuration modules here, for example,
-        # the path to your home.nix.
-        modules = [
-		nixvim.homeManagerModules.nixvim
-		./home.nix
-		];
-
-        # Optionally use extraSpecialArgs
-        # to pass through arguments to home.nix
-      };
+  outputs = {
+    nixpkgs,
+    home-manager,
+    nixvim,
+    nixgl,
+    ...
+  }: let
+    system = "x86_64-linux";
+    # pkgs = nixpkgs.legacyPackages.${system};
+    pkgs = import nixpkgs {
+      inherit system;
+      overlays = [
+        nixgl.overlay
+      ];
     };
+  in {
+    homeConfigurations."ortho" = home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+
+      # Specify your home configuration modules here, for example,
+      # the path to your home.nix.
+      modules = [
+        nixvim.homeManagerModules.nixvim
+        ./home.nix
+      ];
+
+      # Optionally use extraSpecialArgs
+      # to pass through arguments to home.nix
+    };
+  };
 }

@@ -1,9 +1,13 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   programs.nixvim.keymaps = [
     # Main
     {
-      mode = [ "n" "v" ];
+      mode = ["n" "v"];
       key = "<leader><leader>";
       action = "<C-^>";
       options = {
@@ -13,7 +17,7 @@
     }
 
     {
-      mode = [ "v" ];
+      mode = ["v"];
       key = "<leader>y";
       action = "\"+y";
       options = {
@@ -24,7 +28,7 @@
 
     # Rebind Tab to Esc in Normal, Insert, and Visual modes
     {
-      mode = [ "i" ]; # Added 'v' for Visual mode
+      mode = ["i"]; # Added 'v' for Visual mode
       key = "jk";
       action = "<Esc>";
     }
@@ -48,7 +52,7 @@
 
     #-- Copy :messages to system clipboard
     {
-      mode = [ "n" "v" ];
+      mode = ["n" "v"];
       key = "<leader>lc";
       action = "<cmd>redir @+<CR><cmd>silent messages<CR><cmd>redir END<CR>";
       options = {
@@ -58,7 +62,7 @@
     }
     # codecompanion
     {
-      mode = [ "n" "v" ];
+      mode = ["n" "v"];
       key = "<leader>aa";
       action = "<cmd>CodeCompanionActions<CR>";
       options = {
@@ -68,7 +72,7 @@
     }
 
     {
-      mode = [ "n" "v" ];
+      mode = ["n" "v"];
       key = "<leader>ac";
       action = "<cmd>CodeCompanionChat<CR>";
       options = {
@@ -79,7 +83,7 @@
 
     # Molten
     {
-      mode = [ "n" "v" "i" ];
+      mode = ["n" "v" "i"];
       key = "<leader>ml";
       action = "<cmd>MoltenEvaluateLine<CR>";
       options = {
@@ -89,7 +93,7 @@
     }
 
     {
-      mode = [ "n" "v" ];
+      mode = ["n" "v"];
       key = "<leader>mc";
       action = "<cmd>lua local cur=vim.fn.line('.') local s=vim.fn.search('^```', 'bn') local e=vim.fn.search('^```', 'n') vim.api.nvim_buf_set_mark(0, '<', s+1, 0, {}) vim.api.nvim_buf_set_mark(0, '>', e-1, 1000, {}) vim.cmd('MoltenEvaluateVisual')<CR>";
       options = {
@@ -99,7 +103,7 @@
     }
 
     {
-      mode = [ "n" "v" "i" ];
+      mode = ["n" "v" "i"];
       key = "<leader>ma";
       action = "<cmd>MoltenReevaluateAll<CR>";
       options = {
@@ -109,7 +113,7 @@
     }
 
     {
-      mode = [ "n" "v" "i" ];
+      mode = ["n" "v" "i"];
       key = "<leader>mn";
       action = "<cmd>MoltenNext<CR>";
       options = {
@@ -119,7 +123,7 @@
     }
 
     {
-      mode = [ "n" "v" "i" ];
+      mode = ["n" "v" "i"];
       key = "<leader>mp";
       action = "<cmd>MoltenPrev<CR>";
       options = {
@@ -129,7 +133,7 @@
     }
 
     {
-      mode = [ "n" "v" ];
+      mode = ["n" "v"];
       key = "<leader>mh";
       action = "<cmd>MoltenHideOutput<CR>";
       options = {
@@ -139,7 +143,7 @@
     }
 
     {
-      mode = [ "n" "v" ];
+      mode = ["n" "v"];
       key = "<leader>ms";
       action = "<cmd>MoltenShowOutput<CR>";
       options = {
@@ -150,7 +154,7 @@
 
     # Obsidian
     {
-      mode = [ "n" ];
+      mode = ["n"];
       key = "<leader>on";
       action = "<cmd>ObsidianNew<CR>";
       options = {
@@ -160,7 +164,7 @@
     }
 
     {
-      mode = [ "n" ];
+      mode = ["n"];
       key = "<leader>od";
       action.__raw = ''
         function()

@@ -1,5 +1,9 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   home.sessionPath = [
     "/home/ortho/Tools/Bioscripts"
     "$HOME/.npm-global/bin"

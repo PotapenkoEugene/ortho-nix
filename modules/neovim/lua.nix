@@ -1,5 +1,9 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   programs.nixvim.extraConfigLua = ''
     vim.opt.conceallevel = 1
 

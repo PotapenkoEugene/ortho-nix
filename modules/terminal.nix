@@ -1,5 +1,9 @@
-{ config, pkgs, lib, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   nixGL = {
     packages = pkgs.nixgl;
     defaultWrapper = "mesa";

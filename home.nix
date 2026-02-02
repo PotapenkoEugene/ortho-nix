@@ -1,5 +1,10 @@
-{ config, pkgs, lib, nixgl, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  nixgl,
+  ...
+}: {
   imports = [
     ./modules/gnome.nix
     ./modules/theme.nix
@@ -9,6 +14,7 @@
     ./modules/terminal.nix
     ./modules/packages.nix
     ./modules/neovim
+    ./modules/claude-code.nix
   ];
 
   home.username = "ortho";
