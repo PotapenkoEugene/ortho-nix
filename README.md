@@ -41,7 +41,8 @@ home-manager switch
 │   ├── statusline.sh          # Custom status line with git indicators
 │   └── skills/                # Custom slash commands
 │       ├── hm-switch/         # Safe home-manager rebuild workflow
-│       └── process-transcript/ # Convert whisper transcripts to notes
+│       ├── process-transcript/ # Convert whisper transcripts to notes
+│       └── note/              # Add insights to Obsidian projects
 └── modules/
     ├── gnome.nix              # GNOME extensions & dconf
     ├── theme.nix              # QT + GTK theming
@@ -107,6 +108,12 @@ ortho │ ~/config/home-manager │  main ✓ │ Sonnet 4.5 │ [INSERT] │ �
   - Processes from `~/Orthidian/transcripts/`
   - Extracts summary, key points, action items
   - Saves to `~/Orthidian/processed-transcripts/`
+
+- **`/note`** - Add insights from conversation to Obsidian projects
+  - Intelligently adds subtasks/comments to existing objectives
+  - Avoids redundancy with semantic duplicate detection
+  - Never creates top-level tasks (archive-safe)
+  - Interactive project and objective selection
 
 ### Notification Hooks
 

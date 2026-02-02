@@ -27,6 +27,10 @@
     ".claude/skills/process-transcript/SKILL.md" = {
       source = ../claude-code/skills/process-transcript/SKILL.md;
     };
+
+    ".claude/skills/note/SKILL.md" = {
+      source = ../claude-code/skills/note/SKILL.md;
+    };
   };
 
   # Create directory for processed transcripts
