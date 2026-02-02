@@ -36,6 +36,12 @@ home-manager switch
 ├── home.nix                   # Main entrypoint — imports everything
 ├── scripts/
 │   └── obsidian_daily_notes.lua   # Daily note generator with task sync
+├── claude-code/
+│   ├── settings.json          # Claude Code hooks & permissions
+│   ├── statusline.sh          # Custom status line with git indicators
+│   └── skills/                # Custom slash commands
+│       ├── hm-switch/         # Safe home-manager rebuild workflow
+│       └── process-transcript/ # Convert whisper transcripts to notes
 └── modules/
     ├── gnome.nix              # GNOME extensions & dconf
     ├── theme.nix              # QT + GTK theming
@@ -44,6 +50,7 @@ home-manager switch
     ├── tmux.nix               # Tmux (prefix: Ctrl+A)
     ├── terminal.nix           # Kitty + nixGL
     ├── packages.nix           # All the packages
+    ├── claude-code.nix        # Claude Code integration
     └── neovim/
         ├── default.nix        # Neovim entrypoint
         ├── options.nix        # Editor settings & globals
@@ -62,12 +69,57 @@ home-manager switch
 | Multiplexer | Tmux (Ctrl+A) | sessions survive reboots thanks to resurrect |
 | Editor | Neovim (nixvim) | TokyoNight colorscheme, because Tokyo never sleeps |
 | Shell | Bash + vi mode | hjkl everywhere, no escape (well, jk actually) |
-| AI | Copilot + CodeCompanion | OpenAI for chat, Claude for agent mode |
+| AI | Copilot + CodeCompanion + Claude Code | OpenAI for chat, Claude for agentic coding |
 | Notebooks | Molten + Jupytext | Jupyter in Neovim, as nature intended |
 | Notes | Obsidian | daily notes with auto task sync magic |
 | Music | mpd + rmpc | lo-fi beats to bioinformatics to |
 | Files | Oil.nvim + Dolphin | one for terminal, one for normie moments |
 | Speech-to-text | whisper.cpp (tiny model) | because typing is so 2023 |
+
+## Claude Code Integration
+
+Claude Code is integrated with custom statusline, skills, and notification hooks.
+
+### Status Line
+
+A powerline-style status bar showing real-time session info:
+
+```
+ortho │ ~/config/home-manager │  main ✓ │ Sonnet 4.5 │ [INSERT] │ ▆ 76%
+```
+
+**Features:**
+- Git status indicators: `✓` (clean) `✗` (dirty) `●` (staged) `…` (untracked)
+- Color-coded context usage: gray (plenty) → yellow (medium) → red (low)
+- Vim mode display when active
+- Current agent tracking
+- Smart bar graph for context (▂▄▆)
+
+### Custom Skills (Slash Commands)
+
+- **`/hm-switch`** - Safe home-manager rebuild workflow
+  - Formats with alejandra
+  - Tests with `home-manager build`
+  - Applies with `home-manager switch`
+  - Shows git diff
+
+- **`/process-transcript`** - Convert whisper transcripts to structured notes
+  - Processes from `~/Orthidian/transcripts/`
+  - Extracts summary, key points, action items
+  - Saves to `~/Orthidian/processed-transcripts/`
+
+### Notification Hooks
+
+Desktop notifications for:
+- When Claude needs attention
+- Successful home-manager switch
+- Build completion
+- Command failures
+
+### Permission Presets
+
+Auto-allowed: `alejandra`, `home-manager build`, `git status/diff`
+Requires confirmation: `home-manager switch`, `git push`, `git commit`
 
 ## Neovim Keymaps Cheatsheet
 
