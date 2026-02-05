@@ -117,11 +117,13 @@ ortho │ ~/config/home-manager │  main ✓ │ Sonnet 4.5 │ [INSERT] │ �
 
 ### Notification Hooks
 
-Desktop notifications for:
-- When Claude needs attention
-- Successful home-manager switch
-- Build completion
-- Command failures
+Desktop notifications with sound alerts for:
+- **General attention** - Plays message-new-instant.oga when Claude needs attention
+- **Success** - Plays complete.oga after successful `home-manager switch`
+- **Build complete** - Notification after `home-manager build` finishes
+- **Errors** - Plays dialog-error.oga when commands fail
+
+Sound playback uses PipeWire (`pw-play`) with system sounds from `/usr/share/sounds/freedesktop/stereo/`.
 
 ### Permission Presets
 
