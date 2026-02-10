@@ -23,6 +23,9 @@
       # Whisper speech-to-text (using compiled version from ~/Tools)
       whisper = "~/Tools/whisper.cpp/build/bin/whisper-cli -m ~/whisper-models/ggml-tiny.en.bin";
 
+      # Piper text-to-speech with pre-downloaded model
+      piper-tts = "piper --model ~/piper-models/en_US-lessac-medium.onnx";
+
       vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
       vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";
       aws = "ssh evgenip@172.31.186.68";

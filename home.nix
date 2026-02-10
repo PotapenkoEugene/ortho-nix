@@ -15,6 +15,7 @@
     ./modules/packages.nix
     ./modules/neovim
     ./modules/claude-code.nix
+    ./modules/piper.nix
   ];
 
   home.username = "ortho";
