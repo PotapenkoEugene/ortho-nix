@@ -86,15 +86,15 @@ Claude Code is integrated with custom statusline, skills, and notification hooks
 A powerline-style status bar showing real-time session info:
 
 ```
-ortho │ ~/config/home-manager │  main ✓ │ Sonnet 4.5 │ [INSERT] │ ▆ 76%
+ortho │ ~/config/home-manager │  main ✓ │ Opus 4.6 │ [INSERT] │ ▆ 94k/200k │ ⟳0
 ```
 
 **Features:**
 - Git status indicators: `✓` (clean) `✗` (dirty) `●` (staged) `…` (untracked)
-- Color-coded context usage: gray (plenty) → yellow (medium) → red (low)
+- Context window usage as actual token count (e.g. `94k/200k`) with color: gray → yellow (>50%) → red (>75%)
+- Compaction counter `⟳N` with color gradient: green (0-1) → yellow (2) → red (3+)
 - Vim mode display when active
 - Current agent tracking
-- Smart bar graph for context (▂▄▆)
 
 ### Custom Skills (Slash Commands)
 

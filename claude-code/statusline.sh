@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Claude Code Status Line - Powerline Design
-# Shows: username │ directory │ git status │ model │ vim mode │ agent │ context usage
+# Shows: username │ directory │ git status │ model │ vim mode │ agent │ tokens
 
 input=$(cat)
 
@@ -8,9 +8,29 @@ input=$(cat)
 model=$(echo "$input" | jq -r '.model.display_name')
 cwd=$(echo "$input" | jq -r '.workspace.current_dir')
 output_style=$(echo "$input" | jq -r '.output_style.name // empty')
-remaining=$(echo "$input" | jq -r '.context_window.remaining_percentage // empty')
 vim_mode=$(echo "$input" | jq -r '.vim.mode // empty')
 agent=$(echo "$input" | jq -r '.agent.name // empty')
+ctx_size=$(echo "$input" | jq -r '.context_window.context_window_size // 200000')
+used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0')
+session_id=$(echo "$input" | jq -r '.session_id // empty')
+
+# Track compaction count per session
+# Detect compaction: used_percentage drops by >20 points between refreshes
+STATE_FILE="/tmp/claude-statusline-${session_id}"
+compact_count=0
+prev_pct=0
+if [ -n "$session_id" ] && [ -f "$STATE_FILE" ]; then
+    read -r prev_pct compact_count < "$STATE_FILE" 2>/dev/null
+    compact_count=${compact_count:-0}
+    prev_pct=${prev_pct:-0}
+    # If usage dropped significantly, a compaction happened
+    if [ "$prev_pct" -gt 0 ] && [ $(( prev_pct - used_pct )) -gt 20 ]; then
+        compact_count=$(( compact_count + 1 ))
+    fi
+fi
+if [ -n "$session_id" ]; then
+    echo "$used_pct $compact_count" > "$STATE_FILE"
+fi
 
 # Get username only
 user=$(whoami)
@@ -117,23 +137,54 @@ if [ -n "$agent" ]; then
     output+="$(block "$BG_AGENT" "$FG_BRIGHT" "$agent")"
 fi
 
-# Context remaining (with visual indicator)
-if [ -n "$remaining" ]; then
-    # Choose background and icon based on remaining percentage
-    if (( $(echo "$remaining < 20" | bc -l 2>/dev/null || echo 0) )); then
-        ctx_bg="$BG_CTX_LOW"
-        ctx_fg="$FG_BRIGHT"
-        ctx_icon="▂"
-    elif (( $(echo "$remaining < 50" | bc -l 2>/dev/null || echo 0) )); then
-        ctx_bg="$BG_CTX_MED"
-        ctx_fg="$FG_BLACK"
-        ctx_icon="▄"
+# Token usage (actual count + color by used percentage)
+# Format token count as "123k"
+format_tokens() {
+    local t=$1
+    if [ "$t" -ge 1000000 ]; then
+        printf "%.1fM" "$(echo "$t / 1000000" | bc -l)"
+    elif [ "$t" -ge 1000 ]; then
+        printf "%dk" "$(( t / 1000 ))"
     else
-        ctx_bg="$BG_CTX_HIGH"
-        ctx_fg="$FG_BRIGHT"
-        ctx_icon="▆"
+        printf "%d" "$t"
     fi
-    output+="$(block "$ctx_bg" "$ctx_fg" "$ctx_icon $remaining%")"
+}
+
+# Derive current context usage from percentage (total_input/output are cumulative, not current)
+current_tokens=$(( ctx_size * used_pct / 100 ))
+tokens_display="$(format_tokens "$current_tokens")/$(format_tokens "$ctx_size")"
+
+# Color based on used_percentage — thresholds adjusted for realistic compacting
+# Compacting often starts ~80% so warn earlier
+if (( $(echo "$used_pct > 75" | bc -l 2>/dev/null || echo 0) )); then
+    ctx_bg="$BG_CTX_LOW"
+    ctx_fg="$FG_BRIGHT"
+    ctx_icon="▂"
+elif (( $(echo "$used_pct > 50" | bc -l 2>/dev/null || echo 0) )); then
+    ctx_bg="$BG_CTX_MED"
+    ctx_fg="$FG_BLACK"
+    ctx_icon="▄"
+else
+    ctx_bg="$BG_CTX_HIGH"
+    ctx_fg="$FG_BRIGHT"
+    ctx_icon="▆"
 fi
+output+="$(block "$ctx_bg" "$ctx_fg" "$ctx_icon $tokens_display")"
+
+# Compaction counter with color gradient: green(0) → yellow(1-2) → red(3+)
+BG_COMPACT_0='\033[48;5;22m'   # Dark green — fresh session
+BG_COMPACT_1='\033[48;5;28m'   # Green — first compaction
+BG_COMPACT_2='\033[48;5;3m'    # Yellow — getting long
+BG_COMPACT_3='\033[48;5;1m'    # Red — consider new session
+if [ "$compact_count" -ge 3 ]; then
+    cmp_bg="$BG_COMPACT_3"; cmp_fg="$FG_BRIGHT"
+elif [ "$compact_count" -ge 2 ]; then
+    cmp_bg="$BG_COMPACT_2"; cmp_fg="$FG_BLACK"
+elif [ "$compact_count" -ge 1 ]; then
+    cmp_bg="$BG_COMPACT_1"; cmp_fg="$FG_BRIGHT"
+else
+    cmp_bg="$BG_COMPACT_0"; cmp_fg="$FG_BRIGHT"
+fi
+output+="$(block "$cmp_bg" "$cmp_fg" "⟳${compact_count}")"
 
 printf '%s\n' "$output"
