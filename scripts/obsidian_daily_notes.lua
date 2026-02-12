@@ -18,6 +18,7 @@
 local Config = {
   daily_folder = "daily",
   projects_folder = "projects",
+  personal_folder = "personal",
 
   undone_markers = { "[ ]", "[~]", "[!]", "[>]" },
   done_marker = "[x]",
@@ -68,6 +69,23 @@ function Utils.get_yesterday_date()
   local now = os.time()
   local yesterday = now - (24 * 60 * 60)
   return os.date("%Y-%m-%d", yesterday)
+end
+
+function Utils.find_last_daily_note(today_date)
+  local daily_dir = Utils.build_path(Config.daily_folder)
+  local files = vim.fn.glob(daily_dir .. "/*.md", false, true)
+  local dates = {}
+  for _, f in ipairs(files) do
+    local date = f:match("(%d%d%d%d%-%d%d%-%d%d)%.md$")
+    if date and date < today_date then
+      table.insert(dates, date)
+    end
+  end
+  table.sort(dates)
+  if #dates > 0 then
+    return dates[#dates]
+  end
+  return nil
 end
 
 function Utils.get_vault_root()
@@ -486,14 +504,66 @@ function DailyNote.reconstruct(sections)
   return table.concat(parts, "\n")
 end
 
+-- Forward-declare TaskSync (used by ProjectFile.create_from_task)
+local TaskSync = {}
+
 -- ============================================================================
 -- PROJECT FILE MODULE
 -- ============================================================================
 
 local ProjectFile = {}
 
-function ProjectFile.get_path(project_name)
-  return Utils.build_path(Config.projects_folder, project_name .. ".md")
+function ProjectFile.get_path(project_name, folder)
+  folder = folder or Config.projects_folder
+  return Utils.build_path(folder, project_name .. ".md")
+end
+
+function ProjectFile.create_from_task(project_name, task, folder)
+  folder = folder or Config.projects_folder
+  local path = ProjectFile.get_path(project_name, folder)
+
+  local obj_text = TaskSync.normalize_text(task.text)
+  local obj_lines = TaskParser.tree_to_lines({{
+    is_task = true,
+    marker = task.marker or "[ ]",
+    text = obj_text,
+    children = TaskSync.strip_emoji_from_tree(task.children or {}),
+  }}, 0)
+
+  local lines = {
+    "---",
+    "id: " .. project_name,
+    "aliases: []",
+    "tags:",
+    "  - project",
+    'Date created: "' .. os.date("%Y-%m-%d") .. '"',
+    "Time created: " .. os.date("%H:%M"),
+    "---",
+    "# " .. project_name,
+    "",
+    "## Summary",
+    "Brief description of project",
+    "",
+    "## Objectives",
+  }
+  for _, ol in ipairs(obj_lines) do table.insert(lines, ol) end
+  table.insert(lines, "")
+  table.insert(lines, "## Milestones")
+  table.insert(lines, "1.")
+  table.insert(lines, "")
+  table.insert(lines, "## Notes")
+  table.insert(lines, "-")
+  table.insert(lines, "")
+  table.insert(lines, "## Related")
+  table.insert(lines, "- [[]]")
+  table.insert(lines, "")
+
+  -- Ensure parent directory exists
+  local dir = Utils.build_path(folder)
+  vim.fn.mkdir(dir, "p")
+
+  Utils.write_file(path, Utils.join_lines(lines))
+  return path
 end
 
 function ProjectFile.parse_objectives(content)
@@ -547,8 +617,7 @@ end
 -- ============================================================================
 -- TASK SYNCHRONIZATION MODULE
 -- ============================================================================
-
-local TaskSync = {}
+-- (TaskSync table forward-declared above ProjectFile module)
 
 function TaskSync.normalize_text(text)
   local normalized = Utils.strip_emoji_counters(text)
@@ -608,15 +677,21 @@ function TaskSync.merge_daily_into_project(daily_children, project_children)
 end
 
 -- Sync daily task to project file (update status, add new items, never delete)
-function TaskSync.sync_to_project(daily_task, project_name)
-  Debug.log("Syncing task to project: %s", project_name)
+-- folder: override project folder (e.g. Config.personal_folder)
+-- content_override: use in-memory content instead of reading disk (fixes multi-todo-same-project bug)
+function TaskSync.sync_to_project(daily_task, project_name, folder, content_override)
+  folder = folder or Config.projects_folder
+  Debug.log("Syncing task to project: %s (folder: %s)", project_name, folder)
 
-  local project_path = ProjectFile.get_path(project_name)
-  local project_content = Utils.read_file(project_path)
+  local project_path = ProjectFile.get_path(project_name, folder)
+  local project_content = content_override or Utils.read_file(project_path)
 
   if not project_content then
-    Debug.log("Project file not found: %s", project_path)
-    return nil
+    -- Auto-create project file from the daily task
+    ProjectFile.create_from_task(project_name, daily_task, folder)
+    -- Read back the newly created file
+    project_content = Utils.read_file(project_path)
+    if not project_content then return nil end
   end
 
   local project_objectives = ProjectFile.parse_objectives(project_content)
@@ -679,10 +754,12 @@ function TaskSync.strip_emoji_from_tree(tasks)
   return result
 end
 
--- Load objective from project file for importing into Work todos
+-- Load objective from project file for importing into daily note
 -- Only imports uncompleted tasks (filters out [x] done with their subtrees)
-function TaskSync.load_project_objective(project_name, objective_text)
-  local project_path = ProjectFile.get_path(project_name)
+-- folder: override project folder (e.g. Config.personal_folder)
+function TaskSync.load_project_objective(project_name, objective_text, folder)
+  folder = folder or Config.projects_folder
+  local project_path = ProjectFile.get_path(project_name, folder)
   local project_content = Utils.read_file(project_path)
 
   if not project_content then
@@ -733,12 +810,11 @@ end
 Debug.log("=== Starting Daily Note Creation ===")
 
 local today = Utils.get_today_date()
-local yesterday = Utils.get_yesterday_date()
+local last_note_date = Utils.find_last_daily_note(today)
 
-Debug.log("Today: %s, Yesterday: %s", today, yesterday)
+Debug.log("Today: %s, Last note: %s", today, last_note_date or "none")
 
 local today_path = Utils.build_path(Config.daily_folder, today .. ".md")
-local yesterday_path = Utils.build_path(Config.daily_folder, yesterday .. ".md")
 
 -- Check if today's note exists
 if Utils.file_exists(today_path) then
@@ -751,22 +827,26 @@ end
 local today_content = DailyNote.generate_template(today)
 local today_sections = DailyNote.parse_sections(today_content)
 
--- Load yesterday's note
-local yesterday_content = Utils.read_file(yesterday_path)
+-- Load most recent previous daily note
+local last_note_content = nil
+if last_note_date then
+  local last_note_path = Utils.build_path(Config.daily_folder, last_note_date .. ".md")
+  last_note_content = Utils.read_file(last_note_path)
+end
 
-if yesterday_content then
-  Debug.log("Processing yesterday's note")
-  local yesterday_sections = DailyNote.parse_sections(yesterday_content)
+if last_note_content then
+  Debug.log("Processing previous note from %s", last_note_date)
+  local last_note_sections = DailyNote.parse_sections(last_note_content)
 
-  -- Parse yesterday's work objectives and todos
-  local yesterday_objectives = DailyNote.extract_tasks_from_section(yesterday_sections.work_objectives or {})
-  local yesterday_todos = DailyNote.extract_tasks_from_section(yesterday_sections.work_todos or {})
+  -- Parse previous note's work objectives and todos
+  local prev_objectives = DailyNote.extract_tasks_from_section(last_note_sections.work_objectives or {})
+  local prev_todos = DailyNote.extract_tasks_from_section(last_note_sections.work_todos or {})
 
   -- Build lookup: project_name -> completed todo task
   local completed_todos = {}  -- project_name -> daily_task (if top-level completed)
   local uncompleted_todos = {}  -- project_name -> daily_task (if top-level uncompleted)
 
-  for _, todo in ipairs(yesterday_todos) do
+  for _, todo in ipairs(prev_todos) do
     local project_name = Utils.extract_project_link(todo.text)
     if project_name then
       if todo.marker == "[x]" then
@@ -785,7 +865,7 @@ if yesterday_content then
   -- ========================================================================
   local new_objectives = {}
 
-  for _, obj in ipairs(yesterday_objectives) do
+  for _, obj in ipairs(prev_objectives) do
     local copy = Utils.deep_copy(obj)
     local project_name = Utils.extract_project_link(obj.text)
 
@@ -813,19 +893,28 @@ if yesterday_content then
   local project_updates = {}  -- project_name -> updated content
   local new_todos = {}
 
-  -- Sync ALL work todos to project files (update status, add new subtasks/comments)
-  for _, todo in ipairs(yesterday_todos) do
+  -- Step 2a: Sync ALL work todos to project files (accumulate in memory)
+  -- Uses content_override to chain syncs: 2nd call for same project gets 1st call's result
+  for _, todo in ipairs(prev_todos) do
     local project_name = Utils.extract_project_link(todo.text)
     if project_name then
-      local updated = TaskSync.sync_to_project(todo, project_name)
+      local previous = project_updates[project_name]  -- nil on first, accumulated after
+      local updated = TaskSync.sync_to_project(todo, project_name, Config.projects_folder, previous)
       if updated then
         project_updates[project_name] = updated
       end
     end
   end
 
-  -- Import uncompleted tasks for objectives that are [ ]
-  for _, obj in ipairs(yesterday_objectives) do
+  -- Step 2b: Write accumulated project files to disk BEFORE importing
+  for project_name, updated_content in pairs(project_updates) do
+    local project_path = ProjectFile.get_path(project_name, Config.projects_folder)
+    Debug.log("Writing updated project file: %s", project_path)
+    Utils.write_file(project_path, updated_content)
+  end
+
+  -- Step 2c: Import uncompleted tasks for objectives that are [ ]
+  for _, obj in ipairs(prev_objectives) do
     local project_name = Utils.extract_project_link(obj.text)
 
     if project_name and obj.is_task and obj.marker ~= "[x]" then
@@ -853,34 +942,76 @@ if yesterday_content then
 
   -- ========================================================================
   -- STEP 3: Process Personal Todos
-  -- - Filter out completed top-level tasks
-  -- - Keep children as-is (including completed subtasks)
-  -- - Increment emoji counter for uncompleted tasks
+  -- - For tasks WITH [[link]]: sync to personal/ files, import, filter done
+  -- - For tasks WITHOUT [[link]]: carry forward, filter done top-level, emoji
   -- ========================================================================
-  local yesterday_personal = DailyNote.extract_tasks_from_section(yesterday_sections.personal_todos or {})
+  local prev_personal = DailyNote.extract_tasks_from_section(last_note_sections.personal_todos or {})
   local new_personal = {}
 
-  for _, task in ipairs(yesterday_personal) do
-    -- Only keep uncompleted top-level tasks
+  -- Step 3a: Separate linked vs unlinked personal tasks
+  local personal_linked = {}
+  local personal_unlinked = {}
+
+  for _, task in ipairs(prev_personal) do
+    local project_name = Utils.extract_project_link(task.text)
+    if project_name then
+      table.insert(personal_linked, task)
+    else
+      table.insert(personal_unlinked, task)
+    end
+  end
+
+  -- Step 3b: Sync linked personal tasks to personal/ project files
+  local personal_updates = {}
+  for _, todo in ipairs(personal_linked) do
+    local project_name = Utils.extract_project_link(todo.text)
+    if project_name then
+      local previous = personal_updates[project_name]
+      local updated = TaskSync.sync_to_project(todo, project_name, Config.personal_folder, previous)
+      if updated then
+        personal_updates[project_name] = updated
+      end
+    end
+  end
+
+  -- Write personal project files to disk
+  for project_name, updated_content in pairs(personal_updates) do
+    local project_path = ProjectFile.get_path(project_name, Config.personal_folder)
+    Utils.write_file(project_path, updated_content)
+  end
+
+  -- Step 3c: Import from personal project files for undone linked tasks
+  for _, task in ipairs(personal_linked) do
+    local project_name = Utils.extract_project_link(task.text)
+    if project_name and task.marker ~= "[x]" then
+      local imported = TaskSync.load_project_objective(project_name, task.text, Config.personal_folder)
+      if imported then
+        -- Add emoji counter (increment from previous count)
+        local emoji_count = (task.emoji_count or 0) + 1
+        imported.emoji_count = emoji_count
+        imported.text = Utils.add_emoji_counter(
+          Utils.strip_emoji_counters(imported.text), emoji_count)
+        table.insert(new_personal, imported)
+      end
+    end
+    -- [x] linked tasks: filtered out (not added to new_personal)
+  end
+
+  -- Step 3d: Carry forward unlinked personal tasks (original behavior)
+  for _, task in ipairs(personal_unlinked) do
     if task.marker ~= "[x]" then
       local copy = Utils.deep_copy(task)
-
-      -- Increment emoji counter for the top task (if undone)
       if task.is_task then
         local is_undone = false
         for _, marker in ipairs(Config.undone_markers) do
-          if task.marker == marker then is_undone = true break end
+          if task.marker == marker then is_undone = true; break end
         end
-
         if is_undone then
           copy.emoji_count = (copy.emoji_count or 0) + 1
           copy.text = Utils.add_emoji_counter(
-            Utils.strip_emoji_counters(copy.text),
-            copy.emoji_count
-          )
+            Utils.strip_emoji_counters(copy.text), copy.emoji_count)
         end
       end
-
       table.insert(new_personal, copy)
     else
       Debug.log("Filtering out completed personal task: %s", task.text)
@@ -895,28 +1026,20 @@ if yesterday_content then
   -- ========================================================================
   -- STEP 4: Import other sections
   -- ========================================================================
-  if yesterday_sections.new_info then
-    today_sections.new_info = Utils.deep_copy(yesterday_sections.new_info)
+  if last_note_sections.new_info then
+    today_sections.new_info = Utils.deep_copy(last_note_sections.new_info)
   end
 
-  if yesterday_sections.scratch_notes then
-    today_sections.scratch_notes = Utils.deep_copy(yesterday_sections.scratch_notes)
+  if last_note_sections.scratch_notes then
+    today_sections.scratch_notes = Utils.deep_copy(last_note_sections.scratch_notes)
   end
 
-  -- ========================================================================
-  -- STEP 5: Write updated project files
-  -- ========================================================================
-  for project_name, updated_content in pairs(project_updates) do
-    local project_path = ProjectFile.get_path(project_name)
-    Debug.log("Writing updated project file: %s", project_path)
-    Utils.write_file(project_path, updated_content)
-  end
 else
-  Debug.log("No yesterday's note found, starting fresh")
+  Debug.log("No previous daily note found, starting fresh")
 end
 
 -- ========================================================================
--- STEP 6: Write today's note
+-- STEP 5: Write today's note
 -- ========================================================================
 local final_content = DailyNote.reconstruct(today_sections)
 
