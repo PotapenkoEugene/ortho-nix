@@ -2,7 +2,6 @@
   config,
   pkgs,
   lib,
-  nixgl,
   ...
 }: {
   imports = [
@@ -17,6 +16,9 @@
     ./modules/claude-code.nix
     ./modules/piper.nix
   ];
+
+  # GPU support for non-NixOS (replaces nixGL)
+  targets.genericLinux.enable = true;
 
   home.username = "ortho";
   home.homeDirectory = "/home/ortho";

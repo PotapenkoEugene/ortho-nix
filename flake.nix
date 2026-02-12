@@ -4,11 +4,6 @@
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    # Add nixgl
-    nixgl = {
-      url = "github:nix-community/nixGL";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     # Home manager
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -27,16 +22,11 @@
     nixpkgs,
     home-manager,
     nixvim,
-    nixgl,
     ...
   }: let
     system = "x86_64-linux";
-    # pkgs = nixpkgs.legacyPackages.${system};
     pkgs = import nixpkgs {
       inherit system;
-      overlays = [
-        nixgl.overlay
-      ];
     };
   in {
     homeConfigurations."ortho" = home-manager.lib.homeManagerConfiguration {

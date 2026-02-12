@@ -178,7 +178,7 @@
             owner = "omerxx";
             repo = "tmux-sessionx";
             rev = "main"; # or a specific commit
-            sha256 = "sha256-SRKI4mliMSMp/Yd+oSn48ArbbRA+szaj70BQeTd8NhM="; # Add SHA256 hash here
+            sha256 = "sha256-a/wI6UMQayOfQswIm690ypyT/Lxfbz0Uja21ZbqN3Xk=";
           };
         };
         extraConfig = ''
@@ -204,7 +204,7 @@
             owner = "omerxx";
             repo = "tmux-floax";
             rev = "main"; # or a specific commit
-            sha256 = "sha256-DOwn7XEg/L95YieUAyZU0FJ49vm2xKGUclm8WCKDizU="; # Add SHA256 hash here
+            sha256 = "sha256-TCY3W0/4c4KIsY55uClrlzu90XcK/mgbD58WWu6sPrU=";
           };
         };
         extraConfig = ''

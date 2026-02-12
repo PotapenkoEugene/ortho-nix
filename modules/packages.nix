@@ -9,6 +9,7 @@
     #system logs
     htop
     btop
+    witr # "why is this running?" - process causality chain explorer
     # Analytics
     datamash
     xan
