@@ -35,7 +35,7 @@
       bind g display-popup -d "#{pane_current_path}" -w 90% -h 85% -E "lazygit"
 
       # daily note viewer popup
-      bind n display-popup -w 80% -h 75% -E "bat --style=plain --paging=always ~/Orthidian/daily/$(date +%Y-%m-%d).md"
+      bind n display-popup -w 80% -h 75% -E "nvim '+/Work todos' '+normal zt' ~/Orthidian/daily/$(date +%Y-%m-%d).md"
 
       # disk usage popup
       bind d display-popup -w 60% -h 50% -E "bash -c 'duf; read -n1'"

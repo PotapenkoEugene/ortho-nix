@@ -139,7 +139,7 @@ Prefix = `Ctrl+A`
 | **Popups** | |
 | `prefix + t` | btop (system monitor) |
 | `prefix + g` | lazygit (git TUI) |
-| `prefix + n` | today's daily note (bat) |
+| `prefix + n` | today's daily note (nvim) |
 | `prefix + d` | duf (disk usage) |
 | `prefix + m` | rmpc (music player) |
 | `prefix + p` | floax (floating pane) |
