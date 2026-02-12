@@ -72,7 +72,7 @@ home-manager switch
 | Shell | Bash + vi mode | hjkl everywhere, no escape (well, jk actually) |
 | AI | Copilot + CodeCompanion + Claude Code | OpenAI for chat, Claude for agentic coding |
 | Notebooks | Molten + Jupytext | Jupyter in Neovim, as nature intended |
-| Notes | Obsidian | daily notes with auto task sync magic |
+| Notes | Obsidian | daily notes with bidirectional project sync |
 | Music | mpd + rmpc | lo-fi beats to bioinformatics to |
 | Files | Oil.nvim + Dolphin | one for terminal, one for normie moments |
 | Speech-to-text | whisper.cpp (tiny model) | because typing is so 2023 |
@@ -156,6 +156,40 @@ Leader = `Space`
 | **Obsidian** | |
 | `<leader>on` | New note |
 | `<leader>od` | Generate daily note |
+
+## Obsidian Daily Notes
+
+`<leader>od` generates a daily note that syncs tasks bidirectionally with project files.
+
+### How It Works
+
+Each morning, the script reads yesterday's note and:
+
+1. **Work Objectives** - Carries over, marks done if corresponding todo was completed/resolved
+2. **Work Todos** - Syncs subtasks to `projects/` files, imports fresh undone subtasks from project
+3. **Personal Todos** - Two modes:
+   - **With `[[link]]`**: Full project sync to `personal/` dir (same as work)
+   - **Without `[[link]]`**: Simple carry-forward with emoji aging
+
+### Task Markers
+
+| Marker | Meaning | Behavior |
+|--------|---------|----------|
+| `[ ]` | Todo | Carries forward, gets emoji |
+| `[!]` | Urgent | Carries forward, gets emoji |
+| `[>]` | Deferred | Carries forward, gets emoji |
+| `[x]` | Completed | Filtered out from daily, synced to project |
+| `[~]` | Decided not to do | Same as `[x]` — filtered out, synced to project |
+
+### Auto-Create
+
+If a task links to `[[new-project]]` but no file exists, a full project template is created automatically in the appropriate directory (`projects/` or `personal/`).
+
+### Directories
+
+- `~/Orthidian/projects/` - Work project files (archives)
+- `~/Orthidian/personal/` - Personal project files (archives)
+- `~/Orthidian/daily/` - Daily notes (YYYY-MM-DD.md)
 
 ## Hotkeys (Because Mouse is Lava)
 
