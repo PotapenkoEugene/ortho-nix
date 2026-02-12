@@ -20,8 +20,8 @@ local Config = {
   projects_folder = "projects",
   personal_folder = "personal",
 
-  undone_markers = { "[ ]", "[~]", "[!]", "[>]" },
-  done_marker = "[x]",
+  undone_markers = { "[ ]", "[!]", "[>]" },
+  done_markers = { "[x]", "[~]" },  -- [x] = completed, [~] = decided not to do
 
   day_counter_emoji = "\226\143\176",  -- UTF-8 for ⏰
 
@@ -192,6 +192,13 @@ end
 
 function Utils.extract_project_link(text)
   return text:match("%[%[([^%]]+)%]%]")
+end
+
+function Utils.is_done(marker)
+  for _, m in ipairs(Config.done_markers) do
+    if marker == m then return true end
+  end
+  return false
 end
 
 function Utils.deep_copy(orig)
@@ -651,9 +658,9 @@ function TaskSync.merge_daily_into_project(daily_children, project_children)
   for _, dc in ipairs(daily_children or {}) do
     local idx, pc = TaskSync.find_matching_task(dc.text, merged)
     if idx then
-      -- Found match - update status if daily is [x]
-      if dc.marker == "[x]" then
-        merged[idx].marker = "[x]"
+      -- Found match - update status if daily is done/resolved
+      if Utils.is_done(dc.marker) then
+        merged[idx].marker = dc.marker
         merged[idx].is_task = true
       end
       -- Recursively merge children
@@ -702,9 +709,9 @@ function TaskSync.sync_to_project(daily_task, project_name, folder, content_over
     if TaskSync.normalize_text(obj.text) == daily_normalized then
       Debug.log("Found matching objective at index %d", i)
 
-      -- Update marker if daily task is done
-      if daily_task.marker == "[x]" then
-        project_objectives[i].marker = "[x]"
+      -- Update marker if daily task is done/resolved
+      if Utils.is_done(daily_task.marker) then
+        project_objectives[i].marker = daily_task.marker
         project_objectives[i].is_task = true
       end
 
@@ -721,12 +728,12 @@ function TaskSync.sync_to_project(daily_task, project_name, folder, content_over
   return ProjectFile.update_objectives(project_content, project_objectives)
 end
 
--- Filter out [x] done tasks with their entire subtree (for daily import)
+-- Filter out done/resolved tasks with their entire subtree (for daily import)
 function TaskSync.filter_undone_tree(tasks)
   local result = {}
   for _, task in ipairs(tasks or {}) do
-    -- Skip [x] done tasks entirely (with all children)
-    if task.marker ~= "[x]" then
+    -- Skip done/resolved tasks entirely (with all children)
+    if not Utils.is_done(task.marker) then
       local copy = Utils.deep_copy(task)
       -- Recursively filter children
       if task.children and #task.children > 0 then
@@ -780,8 +787,8 @@ function TaskSync.load_project_objective(project_name, objective_text, folder)
     if normalized_proj:sub(1, #normalized_daily) == normalized_daily then
       Debug.log("  -> Match found!")
 
-      -- Skip if the objective itself is done
-      if obj.marker == "[x]" then
+      -- Skip if the objective itself is done/resolved
+      if Utils.is_done(obj.marker) then
         Debug.log("  -> Objective is done, skipping")
         return nil
       end
@@ -849,7 +856,7 @@ if last_note_content then
   for _, todo in ipairs(prev_todos) do
     local project_name = Utils.extract_project_link(todo.text)
     if project_name then
-      if todo.marker == "[x]" then
+      if Utils.is_done(todo.marker) then
         completed_todos[project_name] = todo
         Debug.log("Completed todo for project: %s", project_name)
       else
@@ -861,7 +868,7 @@ if last_note_content then
 
   -- ========================================================================
   -- STEP 1: Process Work Objectives
-  -- Mark as [x] if corresponding todo was completed
+  -- Mark as done/resolved if corresponding todo was completed
   -- ========================================================================
   local new_objectives = {}
 
@@ -870,8 +877,8 @@ if last_note_content then
     local project_name = Utils.extract_project_link(obj.text)
 
     if project_name and obj.is_task and completed_todos[project_name] then
-      -- This objective's todo was completed - mark as done
-      copy.marker = "[x]"
+      -- This objective's todo was completed/resolved - match marker
+      copy.marker = completed_todos[project_name].marker
       copy.is_task = true
       Debug.log("Marking objective as done: %s", obj.text)
     end
@@ -917,7 +924,7 @@ if last_note_content then
   for _, obj in ipairs(prev_objectives) do
     local project_name = Utils.extract_project_link(obj.text)
 
-    if project_name and obj.is_task and obj.marker ~= "[x]" then
+    if project_name and obj.is_task and not Utils.is_done(obj.marker) then
       -- This objective has a checkbox and is not done
 
       if not completed_todos[project_name] then
@@ -983,7 +990,7 @@ if last_note_content then
   -- Step 3c: Import from personal project files for undone linked tasks
   for _, task in ipairs(personal_linked) do
     local project_name = Utils.extract_project_link(task.text)
-    if project_name and task.marker ~= "[x]" then
+    if project_name and not Utils.is_done(task.marker) then
       local imported = TaskSync.load_project_objective(project_name, task.text, Config.personal_folder)
       if imported then
         -- Add emoji counter (increment from previous count)
@@ -994,12 +1001,12 @@ if last_note_content then
         table.insert(new_personal, imported)
       end
     end
-    -- [x] linked tasks: filtered out (not added to new_personal)
+    -- done/resolved linked tasks: filtered out (not added to new_personal)
   end
 
   -- Step 3d: Carry forward unlinked personal tasks (original behavior)
   for _, task in ipairs(personal_unlinked) do
-    if task.marker ~= "[x]" then
+    if not Utils.is_done(task.marker) then
       local copy = Utils.deep_copy(task)
       if task.is_task then
         local is_undone = false
