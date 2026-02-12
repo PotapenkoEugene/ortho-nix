@@ -28,6 +28,24 @@
          -h 80% \
          -E "openvpn3 session-start --config ~/evgenip.ovpn"
 
+      # btop popup
+      bind t display-popup -w 90% -h 85% -E "btop"
+
+      # lazygit popup
+      bind g display-popup -d "#{pane_current_path}" -w 90% -h 85% -E "lazygit"
+
+      # daily note viewer popup
+      bind n display-popup -w 80% -h 75% -E "bat --style=plain --paging=always ~/Orthidian/daily/$(date +%Y-%m-%d).md"
+
+      # disk usage popup
+      bind d display-popup -w 60% -h 50% -E "bash -c 'duf; read -n1'"
+
+      # rmpc (music player) popup
+      bind m display-popup -w 80% -h 75% -E "rmpc"
+
+      # Reload tmux config
+      bind R source-file ~/.config/tmux/tmux.conf \; display-message "Config reloaded"
+
       # Required for image.nvim
       set -gq allow-passthrough on
       set -g visual-activity off
@@ -172,12 +190,13 @@
       # tmux-sessionx plugin
       {
         plugin = pkgs.tmuxPlugins.mkTmuxPlugin {
-          pluginName = "tmux-sessionx";
+          pluginName = "sessionx";
+          rtpFilePath = "sessionx.tmux";
           version = "unstable-2024-01-01";
           src = pkgs.fetchFromGitHub {
             owner = "omerxx";
             repo = "tmux-sessionx";
-            rev = "main"; # or a specific commit
+            rev = "main";
             sha256 = "sha256-a/wI6UMQayOfQswIm690ypyT/Lxfbz0Uja21ZbqN3Xk=";
           };
         };
@@ -198,12 +217,13 @@
       #      # tmux-floax plugin
       {
         plugin = pkgs.tmuxPlugins.mkTmuxPlugin {
-          pluginName = "tmux-floax";
+          pluginName = "floax";
+          rtpFilePath = "floax.tmux";
           version = "unstable-2024-01-01";
           src = pkgs.fetchFromGitHub {
             owner = "omerxx";
             repo = "tmux-floax";
-            rev = "main"; # or a specific commit
+            rev = "main";
             sha256 = "sha256-TCY3W0/4c4KIsY55uClrlzu90XcK/mgbD58WWu6sPrU=";
           };
         };

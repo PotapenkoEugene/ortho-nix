@@ -66,7 +66,7 @@ home-manager switch
 |-------|------|------|
 | Desktop | GNOME + Tiling Shell | i use tiling btw |
 | Theme | Orchis-Dark + Papirus | dark mode is not a preference, it's a lifestyle |
-| Terminal | Kitty (via nixGL) | fast + GPU-accelerated + images in terminal |
+| Terminal | Kitty | fast + GPU-accelerated + images in terminal |
 | Multiplexer | Tmux (Ctrl+A) | sessions survive reboots thanks to resurrect |
 | Editor | Neovim (nixvim) | TokyoNight colorscheme, because Tokyo never sleeps |
 | Shell | Bash + vi mode | hjkl everywhere, no escape (well, jk actually) |
@@ -129,6 +129,30 @@ Sound playback uses PipeWire (`pw-play`) with system sounds from `/usr/share/sou
 
 Auto-allowed: `alejandra`, `home-manager build`, `git status/diff`
 Requires confirmation: `home-manager switch`, `git push`, `git commit`
+
+## Tmux Keymaps
+
+Prefix = `Ctrl+A`
+
+| Keys | What it does |
+|------|-------------|
+| **Popups** | |
+| `prefix + t` | btop (system monitor) |
+| `prefix + g` | lazygit (git TUI) |
+| `prefix + n` | today's daily note (bat) |
+| `prefix + d` | duf (disk usage) |
+| `prefix + m` | rmpc (music player) |
+| `prefix + p` | floax (floating pane) |
+| `prefix + o` | sessionx (session picker) |
+| `prefix + C-y` | VPN connect |
+| `prefix + R` | Reload tmux config |
+| **Navigation** | |
+| `prefix + h/j/k/l` | Select pane (left/down/up/right) |
+| `prefix + H/L` | Previous/next window |
+| `prefix + s/v` | Split horizontal/vertical |
+| `prefix + z` | Zoom pane |
+| `prefix + c` | Kill pane |
+| `prefix + S` | Choose session |
 
 ## Neovim Keymaps Cheatsheet
 
