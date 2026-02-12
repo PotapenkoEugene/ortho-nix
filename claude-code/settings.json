@@ -55,17 +55,23 @@
   "permissions": {
     "allow": [
       "Bash(alejandra *)",
-      "Bash(home-manager build)",
+      "Bash(home-manager build*)",
+      "Bash(home-manager switch*)",
       "Bash(git status)",
       "Bash(git diff)",
       "Bash(ls *)",
       "Read(*.nix)",
       "Read(*.lua)",
       "Read(*.sh)",
-      "Read(~/Orthidian/transcripts/*)"
+      "Read(*.json)",
+      "Read(*.md)",
+      "Read(~/Orthidian/transcripts/*)",
+      "Bash(nix search *)",
+      "Bash(docker run --user * --rm --memory=20g -v *:/pipeline adaptogene:latest*)",
+      "Bash(alejandra * && home-manager build *)",
+      "Bash(alejandra * && home-manager switch *)"
     ],
     "ask": [
-      "Bash(home-manager switch)",
       "Bash(git push *)",
       "Bash(git commit *)"
     ]
