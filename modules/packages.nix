@@ -35,6 +35,7 @@
     zathura
     libreoffice
     pdftk
+    pandoc
     brightnessctl
     git
     lazygit
