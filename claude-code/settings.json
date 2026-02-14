@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "notify-send 'Claude Code' 'Claude needs your attention' -t 5000 -u normal && pw-play /usr/share/sounds/freedesktop/stereo/message-new-instant.oga >/dev/null 2>&1 &"
+            "command": "notify-send 'Claude Code' 'Claude needs your attention' -t 5000 -u normal && pw-play $(shuf -n1 -e ~/.config/home-manager/sounds/peon/PeonWhat{1,2,3,4}.wav) >/dev/null 2>&1 &"
           }
         ]
       }
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "notify-send 'Home Manager' 'Configuration applied successfully! 🎉' -t 5000 -u normal && pw-play /usr/share/sounds/freedesktop/stereo/complete.oga >/dev/null 2>&1 &"
+            "command": "notify-send 'Home Manager' 'Configuration applied successfully!' -t 5000 -u normal && pw-play $(shuf -n1 -e ~/.config/home-manager/sounds/peon/PeonYes{1,2,3,4}.wav) >/dev/null 2>&1 &"
           }
         ]
       },
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "notify-send 'Home Manager' 'Build completed successfully ✓' -t 3000 -u low && pw-play /usr/share/sounds/freedesktop/stereo/complete.oga >/dev/null 2>&1 &"
+            "command": "notify-send 'Home Manager' 'Build completed successfully' -t 3000 -u low && pw-play $(shuf -n1 -e ~/.config/home-manager/sounds/peon/PeonReady1.wav ~/.config/home-manager/sounds/peon/PeonYes3.wav) >/dev/null 2>&1 &"
           }
         ]
       }
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "notify-send 'Home Manager' 'Build/switch failed! Check errors.' -t 5000 -u critical && pw-play /usr/share/sounds/freedesktop/stereo/dialog-error.oga >/dev/null 2>&1 &"
+            "command": "notify-send 'Home Manager' 'Build/switch failed! Check errors.' -t 5000 -u critical && pw-play $(shuf -n1 -e ~/.config/home-manager/sounds/peon/PeonAngry4.wav ~/.config/home-manager/sounds/peon/PeonDeath.wav) >/dev/null 2>&1 &"
           }
         ]
       }
