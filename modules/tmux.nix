@@ -21,12 +21,15 @@
     # Base tmux configuration
     extraConfig = ''
       # Custom keybindings
-      # VPN popup
+      # AWS VPN popup
       bind C-y display-popup \
          -d "#{pane_current_path}" \
          -w 80% \
          -h 80% \
          -E "openvpn3 session-start --config ~/evgenip.ovpn"
+
+      # Migal VPN popup (persistent session)
+      bind y display-popup -w 80% -h 50% -E "~/.config/home-manager/scripts/vpn-migal-popup.sh"
 
       # btop popup
       bind t display-popup -w 90% -h 85% -E "btop"
