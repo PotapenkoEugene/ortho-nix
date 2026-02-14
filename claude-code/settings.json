@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c '/usr/bin/notify-send \"Claude Code\" \"Claude needs your attention\" -t 5000 -u normal; /home/ortho/.nix-profile/bin/pw-play $(/usr/bin/shuf -n1 -e /home/ortho/.config/home-manager/sounds/peon/PeonWhat{1,2,3,4}.wav) 2>>/tmp/peon-debug.log &'"
+            "command": "bash -c '/usr/bin/notify-send \"Claude Code\" \"Claude needs your attention\" -t 5000 -u normal; /home/ortho/.nix-profile/bin/pw-play $(/usr/bin/shuf -n1 -e /home/ortho/.config/home-manager/sounds/peasant/PeasantWhat{1,2,3,4}.wav) 2>>/tmp/peon-debug.log &'"
           }
         ]
       }
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c '/usr/bin/notify-send \"Home Manager\" \"Configuration applied successfully!\" -t 5000 -u normal; /home/ortho/.nix-profile/bin/pw-play $(/usr/bin/shuf -n1 -e /home/ortho/.config/home-manager/sounds/peon/PeonYes{1,2,3,4}.wav) 2>>/tmp/peon-debug.log &'"
+            "command": "bash -c '/usr/bin/notify-send \"Home Manager\" \"Configuration applied successfully!\" -t 5000 -u normal; /home/ortho/.nix-profile/bin/pw-play $(/usr/bin/shuf -n1 -e /home/ortho/.config/home-manager/sounds/peasant/PeasantYes{1,2,3,4}.wav) 2>>/tmp/peon-debug.log &'"
           }
         ]
       },
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c '/usr/bin/notify-send \"Home Manager\" \"Build completed successfully\" -t 3000 -u low; /home/ortho/.nix-profile/bin/pw-play $(/usr/bin/shuf -n1 -e /home/ortho/.config/home-manager/sounds/peon/PeonReady1.wav /home/ortho/.config/home-manager/sounds/peon/PeonYes3.wav) 2>>/tmp/peon-debug.log &'"
+            "command": "bash -c '/usr/bin/notify-send \"Home Manager\" \"Build completed successfully\" -t 3000 -u low; /home/ortho/.nix-profile/bin/pw-play $(/usr/bin/shuf -n1 -e /home/ortho/.config/home-manager/sounds/peasant/PeasantReady1.wav /home/ortho/.config/home-manager/sounds/peasant/PeasantYes3.wav) 2>>/tmp/peon-debug.log &'"
           }
         ]
       }
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c '/usr/bin/notify-send \"Home Manager\" \"Build/switch failed! Check errors.\" -t 5000 -u critical; /home/ortho/.nix-profile/bin/pw-play $(/usr/bin/shuf -n1 -e /home/ortho/.config/home-manager/sounds/peon/PeonAngry4.wav /home/ortho/.config/home-manager/sounds/peon/PeonDeath.wav) 2>>/tmp/peon-debug.log &'"
+            "command": "bash -c '/usr/bin/notify-send \"Home Manager\" \"Build/switch failed! Check errors.\" -t 5000 -u critical; /home/ortho/.nix-profile/bin/pw-play $(/usr/bin/shuf -n1 -e /home/ortho/.config/home-manager/sounds/peasant/PeasantAngry4.wav /home/ortho/.config/home-manager/sounds/peasant/PeasantYesAttack4.wav) 2>>/tmp/peon-debug.log &'"
           }
         ]
       }
