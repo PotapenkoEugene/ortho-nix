@@ -12,8 +12,7 @@
     witr # "why is this running?" - process causality chain explorer
     # Analytics
     datamash
-    xan
-    tabview
+    tabiew
     # Music
     mpd
     yt-dlp

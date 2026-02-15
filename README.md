@@ -79,7 +79,7 @@ home-manager switch
 | Music | mpd + rmpc | lo-fi beats to bioinformatics to |
 | Files | Oil.nvim + Dolphin | one for terminal, one for normie moments |
 | Speech-to-text | whisper.cpp (tiny model) | because typing is so 2023 |
-| Analytics | datamash + xan + tabview | CSV wrangling in the terminal |
+| Analytics | datamash + tabiew (`tw`) | awesome colorful viewer for xlsx, tsv, csv and other table formats — with SQL-like querying |
 | Weather | wego + OpenWeatherMap | because alt-tabbing to a browser is too slow |
 | Containers | ctop | Docker monitoring without leaving tmux |
 | Documents | pandoc + pdftk + zathura | convert, merge, and read anything |
