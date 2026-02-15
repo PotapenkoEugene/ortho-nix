@@ -36,6 +36,9 @@ home-manager switch
 ├── home.nix                   # Main entrypoint — imports everything
 ├── scripts/
 │   └── obsidian_daily_notes.lua   # Daily note generator with task sync
+├── sounds/
+│   ├── peon/                      # Orc Peon voice lines (original)
+│   └── peasant/                   # Human Peasant voice lines (active)
 ├── claude-code/
 │   ├── settings.json          # Claude Code hooks & permissions
 │   ├── statusline.sh          # Custom status line with git indicators
@@ -76,6 +79,10 @@ home-manager switch
 | Music | mpd + rmpc | lo-fi beats to bioinformatics to |
 | Files | Oil.nvim + Dolphin | one for terminal, one for normie moments |
 | Speech-to-text | whisper.cpp (tiny model) | because typing is so 2023 |
+| Analytics | datamash + xan + tabview | CSV wrangling in the terminal |
+| Weather | wego + OpenWeatherMap | because alt-tabbing to a browser is too slow |
+| Containers | ctop | Docker monitoring without leaving tmux |
+| Documents | pandoc + pdftk + zathura | convert, merge, and read anything |
 
 ## Claude Code Integration
 
@@ -117,18 +124,18 @@ ortho │ ~/config/home-manager │  main ✓ │ Opus 4.6 │ [INSERT] │ ▆ 
 
 ### Notification Hooks
 
-Desktop notifications with sound alerts for:
-- **General attention** - Plays message-new-instant.oga when Claude needs attention
-- **Success** - Plays complete.oga after successful `home-manager switch`
-- **Build complete** - Notification after `home-manager build` finishes
-- **Errors** - Plays dialog-error.oga when commands fail
+Desktop notifications with Warcraft III Human Peasant voice lines:
+- **General attention** - Random `PeasantWhat{1-4}.wav` — "Yes, milord?" / "What is it?"
+- **Success** - Random `PeasantYes{1-4}.wav` — "Right-o" / "Off I go, then!"
+- **Build complete** - `PeasantReady1.wav` or `PeasantYes3.wav` — "Ready to work" / "All right"
+- **Errors** - `PeasantAngry4.wav` or `PeasantYesAttack4.wav` — "A horse kicked me once" / "That's it. I'm dead."
 
-Sound playback uses PipeWire (`pw-play`) with system sounds from `/usr/share/sounds/freedesktop/stereo/`.
+Sound playback uses PipeWire (`pw-play`) with voice lines from `sounds/peasant/`.
 
 ### Permission Presets
 
-Auto-allowed: `alejandra`, `home-manager build`, `git status/diff`
-Requires confirmation: `home-manager switch`, `git push`, `git commit`
+Auto-allowed: `alejandra`, `home-manager build`, `home-manager switch`, `git status/diff`
+Requires confirmation: `git push`, `git commit`
 
 ## Tmux Keymaps
 
@@ -138,13 +145,16 @@ Prefix = `Ctrl+A`
 |------|-------------|
 | **Popups** | |
 | `prefix + t` | btop (system monitor) |
+| `prefix + d` | ctop (container monitor) |
 | `prefix + g` | lazygit (git TUI) |
 | `prefix + n` | today's daily note (nvim, jumps to Work todos) |
-| `prefix + d` | duf (disk usage) |
+| `prefix + u` | duf (disk usage) |
+| `prefix + w` | wego (weather via OpenWeatherMap) |
 | `prefix + m` | rmpc (music player) |
 | `prefix + p` | floax (floating pane) |
 | `prefix + o` | sessionx (session picker) |
-| `prefix + C-y` | VPN connect |
+| `prefix + y` | Migal VPN popup |
+| `prefix + C-y` | AWS VPN connect |
 | `prefix + R` | Reload tmux config |
 | **Navigation** | |
 | `prefix + h/j/k/l` | Select pane (left/down/up/right) |
