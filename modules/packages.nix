@@ -13,6 +13,7 @@
     # Analytics
     datamash
     xan
+    tabview
     # Music
     mpd
     yt-dlp
@@ -36,6 +37,8 @@
     libreoffice
     pdftk
     pandoc
+    wego # terminal weather
+    ctop # container top
     brightnessctl
     git
     lazygit

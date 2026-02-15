@@ -40,8 +40,11 @@
       # daily note viewer popup
       bind n display-popup -w 80% -h 75% -E "nvim '+/Work todos' '+normal zt' ~/Orthidian/daily/$(date +%Y-%m-%d).md"
 
+      # ctop (container monitor) popup
+      bind d display-popup -w 90% -h 85% -E "ctop"
+
       # disk usage popup
-      bind d display-popup -w 60% -h 50% -E "bash -c 'duf; read -n1'"
+      bind u display-popup -w 60% -h 50% -E "bash -c 'duf; read -n1'"
 
       # rmpc (music player) popup
       bind m display-popup -w 80% -h 75% -E "rmpc"
@@ -82,7 +85,8 @@
       bind r command-prompt "rename-window %%"
       bind ^A last-window
       bind ^W list-windows
-      bind w list-windows
+      # weather popup (overrides default list-windows)
+      bind w display-popup -w 120 -h 40 -E "bash -c 'wego -owm-api-key \$OPENWEATHERMAP_API_KEY; read -n1'"
       bind z resize-pane -Z
       bind ^L refresh-client
       bind l refresh-client
