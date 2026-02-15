@@ -86,7 +86,7 @@
       bind ^A last-window
       bind ^W list-windows
       # weather popup (overrides default list-windows)
-      bind w display-popup -w 120 -h 40 -E "bash -c 'wego -owm-api-key \$OPENWEATHERMAP_API_KEY; read -n1'"
+      bind w display-popup -w 100% -h 100% -E "bash -c 'source ~/.secrets/env && LOC=\$(curl -s ipinfo.io/loc) && wego -owm-api-key \$OPENWEATHERMAP_API_KEY -l \$LOC; read -n1'"
       bind z resize-pane -Z
       bind ^L refresh-client
       bind l refresh-client
