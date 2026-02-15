@@ -118,6 +118,12 @@
 
       # Copy mode
       bind-key -T copy-mode-vi v send-keys -X begin-selection
+
+      # Catppuccin status bar composition (must be after catppuccin plugin loads)
+      set -g status-left-length 100
+      set -g status-right-length 100
+      set -g status-left "#{E:@catppuccin_status_session}"
+      set -g status-right "#{E:@catppuccin_status_directory}#{E:@catppuccin_status_date_time}"
     '';
 
     # Plugins
@@ -149,29 +155,28 @@
       }
       {
         plugin = tmux-fzf;
-        extraConfig = "
-          set -g @catppuccin_window_left_separator ''
-          set -g @catppuccin_window_right_separator ' '
-          set -g @catppuccin_window_middle_separator ' █'
-          set -g @catppuccin_window_number_position 'right'
-          set -g @catppuccin_window_default_fill 'number'
-          set -g @catppuccin_window_default_text '#W'
-          set -g @catppuccin_window_current_fill 'number'
-          set -g @catppuccin_window_current_text '#W#{?window_zoomed_flag,(),}'
-          set -g @catppuccin_status_modules_right 'directory date_time'
-          set -g @catppuccin_status_modules_left 'session'
-          set -g @catppuccin_status_left_separator  ' '
-          set -g @catppuccin_status_right_separator ' '
-          set -g @catppuccin_status_right_separator_inverse 'no'
-          set -g @catppuccin_status_fill 'icon'
-          set -g @catppuccin_status_connect_separator 'no'
-          set -g @catppuccin_directory_text '#{b:pane_current_path}'
-          set -g @catppuccin_date_time_text '%H:%M'
-        ";
+        extraConfig = "";
       }
       {
         plugin = catppuccin;
-        extraConfig = "";
+        extraConfig = ''
+          # Catppuccin v2 configuration
+          set -g @catppuccin_flavor "mocha"
+          set -g @catppuccin_window_status_style "basic"
+          set -g @catppuccin_window_number_position "right"
+          set -g @catppuccin_window_text " #W"
+          set -g @catppuccin_window_current_text " #W"
+          set -g @catppuccin_window_number " #I"
+          set -g @catppuccin_window_current_number " #I"
+          set -g @catppuccin_window_number_color "#{@thm_blue}"
+          set -g @catppuccin_window_current_number_color "#{@thm_peach}"
+          set -g @catppuccin_window_flags "icon"
+          set -g @catppuccin_status_left_separator ""
+          set -g @catppuccin_status_right_separator ""
+          set -g @catppuccin_status_connect_separator "no"
+          set -g @catppuccin_directory_text " #{b:pane_current_path}"
+          set -g @catppuccin_date_time_text " %H:%M"
+        '';
       }
       # Custom plugins (not available in nixpkgs)
       # Uncomment the ones you want to use and add proper SHA256 hashes
