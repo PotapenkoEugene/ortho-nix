@@ -56,4 +56,10 @@
     enable = true;
     enableBashIntegration = true;
   };
+
+  programs.zoxide = {
+    enable = true;
+    enableBashIntegration = true;
+    options = ["--cmd cd"]; # replaces cd with zoxide
+  };
 }
