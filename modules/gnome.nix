@@ -23,6 +23,10 @@
         # Next input source
         "switch-input-source" = ["<Alt>Shift_L"];
       };
+      "org/gnome/desktop/input-sources" = {
+        # Remap Caps Lock to Escape (fixes LED desync on login + useful for vim)
+        xkb-options = ["caps:escape"];
+      };
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
         name = "Brightness to Zero";
         command = "${pkgs.brightnessctl}/bin/brightnessctl s 0";
