@@ -52,13 +52,23 @@
         command = "/home/ortho/.config/home-manager/scripts/whisper-stream-toggle.sh";
         binding = "F8";
       };
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4" = {
+        name = "Connect AirPods";
+        command = "bluetoothctl connect C4:B3:49:8F:63:42";
+        binding = "<Super>b";
+      };
       "org/gnome/settings-daemon/plugins/media-keys" = {
         custom-keybindings = [
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
         ];
+      };
+      # Disable middle-click paste
+      "org/gnome/desktop/interface" = {
+        gtk-enable-primary-paste = false;
       };
       "org/gnome/shell" = {
         disable-user-extensions = false;
