@@ -24,6 +24,11 @@
         "switch-input-source" = ["<Alt>Shift_L"];
       };
       "org/gnome/desktop/input-sources" = {
+        sources = [
+          (lib.hm.gvariant.mkTuple ["xkb" "us"])
+          (lib.hm.gvariant.mkTuple ["xkb" "ru"])
+        ];
+        per-window = true; # each window remembers its own language
         # Remap Caps Lock to Escape (fixes LED desync on login + useful for vim)
         xkb-options = ["caps:escape"];
       };
