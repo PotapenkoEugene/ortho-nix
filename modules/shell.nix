@@ -44,7 +44,7 @@
       export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
       export RSTUDIO_WHICH_R="/home/ortho/micromamba/envs/R42/bin/R"
       set -o vi
-      copyclip() {
+      cc() {
         local content
         content=$(base64 | tr -d '\n')
         printf '\033]52;c;%s\a' "$content"
