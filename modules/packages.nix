@@ -118,6 +118,7 @@
     # libs - not correctly installing - often can't find the path to installation - headache with zlib, xml2
     # Conda
     micromamba
+    dos2unix
 
     # R
     #	(rWrapper.override { # works strangely for now, install by hand
