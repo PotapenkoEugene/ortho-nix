@@ -227,4 +227,16 @@
       };
     };
   }; # plugins
+
+  programs.nixvim.extraPlugins = [
+    (pkgs.vimUtils.buildVimPlugin {
+      name = "pantran-nvim";
+      src = pkgs.fetchFromGitHub {
+        owner = "potamides";
+        repo = "pantran.nvim";
+        rev = "main";
+        sha256 = "sha256-b4odpXwh+BmFsK5v3HmSWG43FA+ygOAPU+qFNy6vWDU=";
+      };
+    })
+  ];
 }

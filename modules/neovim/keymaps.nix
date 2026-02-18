@@ -152,6 +152,35 @@
       };
     }
 
+    # Translation (pantran)
+    {
+      mode = ["n"];
+      key = "<leader>tw";
+      action = "<cmd>Pantran target=en motion=true<CR>iw";
+      options = {
+        desc = "Translate word";
+        silent = true;
+      };
+    }
+    {
+      mode = ["n"];
+      key = "<leader>ts";
+      action = "<cmd>Pantran target=en motion=true<CR>is";
+      options = {
+        desc = "Translate sentence";
+        silent = true;
+      };
+    }
+    {
+      mode = ["v"];
+      key = "<leader>tr";
+      action = "<cmd>Pantran target=en<CR>";
+      options = {
+        desc = "Translate selection";
+        silent = true;
+      };
+    }
+
     # Obsidian
     {
       mode = ["n"];

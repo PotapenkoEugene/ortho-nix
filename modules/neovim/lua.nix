@@ -7,6 +7,17 @@
   programs.nixvim.extraConfigLua = ''
     vim.opt.conceallevel = 1
 
+    -- Pantran (translation)
+    require("pantran").setup({
+      default_engine = "google",
+      engines = {
+        google = {
+          default_source = "auto",
+          default_target = "ru",
+        },
+      },
+    })
+
     local default_notebook = [[
     {
       "cells": [
