@@ -7,16 +7,12 @@
   programs.nixvim.extraConfigLua = ''
     vim.opt.conceallevel = 1
 
-    -- Pantran (translation)
-    require("pantran").setup({
-      default_engine = "google",
-      engines = {
-        google = {
-          default_source = "auto",
-          default_target = "ru",
-        },
-      },
-    })
+    -- vim-translator (lightweight floating popup)
+    vim.g.translator_target_lang = "ru"
+    vim.g.translator_default_engines = {"google"}
+    vim.g.translator_window_type = "popup"
+    vim.g.translator_window_max_width = 0.6
+    vim.g.translator_window_max_height = 0.6
 
     local default_notebook = [[
     {

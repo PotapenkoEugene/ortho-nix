@@ -152,31 +152,22 @@
       };
     }
 
-    # Translation (pantran)
+    # Translation (vim-translator) — popup shows translation without leaving context
     {
       mode = ["n"];
       key = "<leader>tw";
-      action = "<cmd>Pantran target=en motion=true<CR>iw";
+      action = "<cmd>TranslateW<CR>";
       options = {
-        desc = "Translate word";
+        desc = "Translate word (popup)";
         silent = true;
       };
     }
     {
       mode = ["n"];
       key = "<leader>ts";
-      action = "<cmd>Pantran target=en motion=true<CR>is";
+      action = "vis:TranslateW<CR>";
       options = {
-        desc = "Translate sentence";
-        silent = true;
-      };
-    }
-    {
-      mode = ["v"];
-      key = "<leader>tr";
-      action = "<cmd>Pantran target=en<CR>";
-      options = {
-        desc = "Translate selection";
+        desc = "Translate sentence (popup)";
         silent = true;
       };
     }

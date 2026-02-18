@@ -230,12 +230,12 @@
 
   programs.nixvim.extraPlugins = [
     (pkgs.vimUtils.buildVimPlugin {
-      name = "pantran-nvim";
+      name = "vim-translator";
       src = pkgs.fetchFromGitHub {
-        owner = "potamides";
-        repo = "pantran.nvim";
-        rev = "main";
-        sha256 = "sha256-b4odpXwh+BmFsK5v3HmSWG43FA+ygOAPU+qFNy6vWDU=";
+        owner = "voldikss";
+        repo = "vim-translator";
+        rev = "master";
+        sha256 = "sha256-ow5axYMtH433hXwYF5Oz3wWT/24VUHpALrH+Phlwk90=";
       };
     })
   ];

@@ -82,6 +82,7 @@ home-manager switch
 | Analytics | datamash + tabiew (`tw`) | awesome colorful viewer for xlsx, tsv, csv and other table formats — with SQL-like querying |
 | Weather | wego + OpenWeatherMap | because alt-tabbing to a browser is too slow |
 | Containers | ctop | Docker monitoring without leaving tmux |
+| Translation | vim-translator + Google | hover-translate words and sentences without leaving Neovim |
 | Documents | pandoc + pdftk + zathura | convert, merge, and read anything |
 
 ## Claude Code Integration
@@ -187,6 +188,9 @@ Leader = `Space`
 | `<leader>ma` | Execute all |
 | `<leader>mn/mp` | Next/prev chunk |
 | `<leader>mh/ms` | Hide/show output |
+| **Translation** | |
+| `<leader>tw` | Translate word under cursor (popup) |
+| `<leader>ts` | Translate sentence (popup) |
 | **Obsidian** | |
 | `<leader>on` | New note |
 | `<leader>od` | Generate daily note |
