@@ -156,9 +156,19 @@
     {
       mode = ["n"];
       key = "<leader>tw";
-      action = "<cmd>TranslateW<CR>";
+      action.__raw = ''
+        function()
+          local word = vim.fn.expand('<cword>')
+          local file = io.open(os.getenv("HOME") .. "/Orthidian/personal/english.md", "a")
+          if file then
+            file:write("- " .. word .. "\n")
+            file:close()
+          end
+          vim.cmd('TranslateW')
+        end
+      '';
       options = {
-        desc = "Translate word (popup)";
+        desc = "Translate word (popup + save)";
         silent = true;
       };
     }
