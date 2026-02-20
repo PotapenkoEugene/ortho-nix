@@ -40,6 +40,7 @@
     wego # terminal weather
     ctop # container top
     brightnessctl
+    cmatrix
     git
     lazygit
     obsidian # sudo chmod 4755 /nix/store/kqv91gd6jy83v2918bq1p90lzkir7y5n-electron-35.2.1/libexec/electron/chrome-sandbox

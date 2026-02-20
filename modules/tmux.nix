@@ -43,6 +43,9 @@
       # ctop (container monitor) popup
       bind d display-popup -w 90% -h 85% -E "ctop"
 
+      # cmatrix screensaver popup
+      bind e display-popup -w 100% -h 100% -E "cmatrix -ab"
+
       # disk usage popup
       bind u display-popup -w 60% -h 50% -E "bash -c 'duf; read -n1'"
 
