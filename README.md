@@ -79,7 +79,7 @@ home-manager switch
 | Music | mpd + rmpc | lo-fi beats to bioinformatics to |
 | Files | Oil.nvim + Dolphin | one for terminal, one for normie moments |
 | Speech-to-text | whisper.cpp (tiny model) | because typing is so 2023 |
-| Analytics | datamash + tabiew (`tw`) | awesome colorful viewer for xlsx, tsv, csv and other table formats — with SQL-like querying |
+| Analytics | datamash + tabiew (`tw`) + xan | tabiew: colorful viewer for xlsx, tsv, csv with SQL-like querying; xan: CSV Swiss Army knife — search, filter, sort, join, aggregate, plot histograms and scatter plots, all from the shell |
 | Weather | wego + OpenWeatherMap | because alt-tabbing to a browser is too slow |
 | Containers | ctop | Docker monitoring without leaving tmux |
 | Translation | vim-translator + Google | hover-translate words and sentences without leaving Neovim |

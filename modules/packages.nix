@@ -13,6 +13,7 @@
     # Analytics
     datamash
     tabiew
+    xan # CSV Swiss Army knife
     # Music
     mpd
     yt-dlp
