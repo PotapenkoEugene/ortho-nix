@@ -182,6 +182,23 @@
       };
     }
 
+    # DOI
+    {
+      mode = ["n"];
+      key = "<leader>gd";
+      action.__raw = ''
+        function()
+          local word = vim.fn.expand('<cWORD>')
+          word = word:gsub("^[%[%(]+", ""):gsub("[%]%)%.,;:]+$", "")
+          vim.ui.open((word:gsub('^doi:', 'https://doi.org/')))
+        end
+      '';
+      options = {
+        desc = "Open DOI in browser";
+        silent = true;
+      };
+    }
+
     # Obsidian
     {
       mode = ["n"];
