@@ -182,19 +182,20 @@
       };
     }
 
-    # DOI
+    # Links
     {
       mode = ["n"];
-      key = "<leader>gd";
+      key = "<leader>gl";
       action.__raw = ''
         function()
           local word = vim.fn.expand('<cWORD>')
-          word = word:gsub("^[%[%(]+", ""):gsub("[%]%)%.,;:]+$", "")
-          vim.ui.open((word:gsub('^doi:', 'https://doi.org/')))
+          local url = word:match("https?://[%w%./_%-~:@!%$&*+,;=%%?#]+")
+            or word:match("doi:[%w%./_%-]+")
+          if url then vim.ui.open((url:gsub('^doi:', 'https://doi.org/'))) end
         end
       '';
       options = {
-        desc = "Open DOI in browser";
+        desc = "Open link under cursor";
         silent = true;
       };
     }

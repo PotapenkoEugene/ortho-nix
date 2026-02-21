@@ -191,8 +191,8 @@ Leader = `Space`
 | **Translation** | |
 | `<leader>tw` | Translate word under cursor (popup) |
 | `<leader>ts` | Translate sentence (popup) |
-| **DOI** | |
-| `<leader>gd` | Open DOI under cursor in browser |
+| **Links** | |
+| `<leader>gl` | Open link under cursor (URLs, DOIs) |
 | **Obsidian** | |
 | `<leader>on` | New note |
 | `<leader>od` | Generate daily note |
