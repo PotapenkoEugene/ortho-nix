@@ -83,6 +83,7 @@ home-manager switch
 | Weather | wego + OpenWeatherMap | because alt-tabbing to a browser is too slow |
 | Containers | ctop | Docker monitoring without leaving tmux |
 | Translation | vim-translator + Google | hover-translate words and sentences without leaving Neovim |
+| Highlighter | vim-highlighter | green/red text highlights that persist across sessions |
 | Documents | pandoc + pdftk + zathura | convert, merge, and read anything |
 
 ## Claude Code Integration
