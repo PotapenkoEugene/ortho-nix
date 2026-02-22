@@ -238,5 +238,14 @@
         sha256 = "sha256-ow5axYMtH433hXwYF5Oz3wWT/24VUHpALrH+Phlwk90=";
       };
     })
+    (pkgs.vimUtils.buildVimPlugin {
+      name = "vim-highlighter";
+      src = pkgs.fetchFromGitHub {
+        owner = "azabiong";
+        repo = "vim-highlighter";
+        rev = "master";
+        sha256 = "sha256-ie73po2C99jp8Q0fL3sklNu76xn5GkanQKFxCWTQicM=";
+      };
+    })
   ];
 }

@@ -193,6 +193,10 @@ Leader = `Space`
 | `<leader>ts` | Translate sentence (popup) |
 | **Links** | |
 | `<leader>gl` | Open link under cursor (URLs, DOIs) |
+| **Highlighter** | |
+| `<leader>hg` | Highlight green (sentence / visual selection) |
+| `<leader>hr` | Highlight red (sentence / visual selection) |
+| `<leader>h<BS>` | Remove highlight under cursor |
 | **Obsidian** | |
 | `<leader>on` | New note |
 | `<leader>od` | Generate daily note |

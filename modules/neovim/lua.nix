@@ -7,6 +7,10 @@
   programs.nixvim.extraConfigLua = ''
     vim.opt.conceallevel = 1
 
+    -- vim-highlighter: green as default color
+    vim.api.nvim_set_hl(0, "HiColor1", { bg = "#2e7d32", fg = "#ffffff" })
+    vim.api.nvim_set_hl(0, "HiColor2", { bg = "#c62828", fg = "#ffffff" })
+
     -- vim-translator (lightweight floating popup)
     vim.g.translator_target_lang = "ru"
     vim.g.translator_default_engines = {"google"}

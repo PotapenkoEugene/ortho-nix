@@ -200,6 +200,74 @@
       };
     }
 
+    # Highlighter
+    {
+      mode = ["n"];
+      key = "<leader>hg";
+      action.__raw = ''
+        function()
+          vim.fn.feedkeys("vis1f\r", "")
+        end
+      '';
+      options = {
+        desc = "Highlight sentence green";
+        silent = true;
+      };
+    }
+    {
+      mode = ["v"];
+      key = "<leader>hg";
+      action.__raw = ''
+        function()
+          vim.fn.feedkeys("1f\r", "")
+        end
+      '';
+      options = {
+        desc = "Highlight selection green";
+        silent = true;
+      };
+    }
+    {
+      mode = ["n"];
+      key = "<leader>hr";
+      action.__raw = ''
+        function()
+          vim.fn.feedkeys("vis2f\r", "")
+        end
+      '';
+      options = {
+        desc = "Highlight sentence red";
+        silent = true;
+      };
+    }
+    {
+      mode = ["v"];
+      key = "<leader>hr";
+      action.__raw = ''
+        function()
+          vim.fn.feedkeys("2f\r", "")
+        end
+      '';
+      options = {
+        desc = "Highlight selection red";
+        silent = true;
+      };
+    }
+
+    {
+      mode = ["n" "v"];
+      key = "<leader>h<BS>";
+      action.__raw = ''
+        function()
+          vim.fn.feedkeys("f\8", "")
+        end
+      '';
+      options = {
+        desc = "Remove highlight";
+        silent = true;
+      };
+    }
+
     # Obsidian
     {
       mode = ["n"];
