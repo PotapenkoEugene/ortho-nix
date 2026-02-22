@@ -206,7 +206,7 @@
       key = "<leader>hg";
       action.__raw = ''
         function()
-          vim.fn.feedkeys("vis1f\r", "")
+          vim.fn.feedkeys("vis1f\r`>", "")
         end
       '';
       options = {
@@ -232,7 +232,7 @@
       key = "<leader>hr";
       action.__raw = ''
         function()
-          vim.fn.feedkeys("vis2f\r", "")
+          vim.fn.feedkeys("vis2f\r`>", "")
         end
       '';
       options = {
