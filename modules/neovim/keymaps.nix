@@ -259,11 +259,12 @@
       key = "<leader>h<BS>";
       action.__raw = ''
         function()
-          vim.fn.feedkeys("f\8", "")
+          local bs = vim.api.nvim_replace_termcodes("f<BS>", true, false, true)
+          vim.api.nvim_feedkeys(bs, "m", false)
         end
       '';
       options = {
-        desc = "Remove highlight";
+        desc = "Remove highlight under cursor";
         silent = true;
       };
     }

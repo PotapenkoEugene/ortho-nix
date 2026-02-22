@@ -7,9 +7,23 @@
   programs.nixvim.extraConfigLua = ''
     vim.opt.conceallevel = 1
 
-    -- vim-highlighter: green as default color
+    -- vim-highlighter: colors and auto-save/load
     vim.api.nvim_set_hl(0, "HiColor1", { bg = "#2e7d32", fg = "#ffffff" })
     vim.api.nvim_set_hl(0, "HiColor2", { bg = "#c62828", fg = "#ffffff" })
+
+    local hi_group = vim.api.nvim_create_augroup("HiAutoSave", { clear = true })
+    vim.api.nvim_create_autocmd({ "BufLeave", "VimLeave" }, {
+      group = hi_group,
+      callback = function()
+        pcall(vim.cmd, "Hi save")
+      end,
+    })
+    vim.api.nvim_create_autocmd("BufReadPost", {
+      group = hi_group,
+      callback = function()
+        pcall(vim.cmd, "Hi load")
+      end,
+    })
 
     -- vim-translator (lightweight floating popup)
     vim.g.translator_target_lang = "ru"
