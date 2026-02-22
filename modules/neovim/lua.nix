@@ -25,6 +25,25 @@
       end,
     })
 
+    -- cursor beacon: flash on large jumps
+    do
+      local last_line = 0
+      local ns = vim.api.nvim_create_namespace("beacon")
+      vim.api.nvim_create_autocmd("CursorMoved", {
+        callback = function()
+          local cur = vim.fn.line(".")
+          if math.abs(cur - last_line) > 5 then
+            local buf = vim.api.nvim_get_current_buf()
+            vim.api.nvim_buf_add_highlight(buf, ns, "Visual", cur - 1, 0, -1)
+            vim.defer_fn(function()
+              pcall(vim.api.nvim_buf_clear_namespace, buf, ns, 0, -1)
+            end, 300)
+          end
+          last_line = cur
+        end,
+      })
+    end
+
     -- vim-translator (lightweight floating popup)
     vim.g.translator_target_lang = "ru"
     vim.g.translator_default_engines = {"google"}

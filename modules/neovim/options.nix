@@ -20,6 +20,7 @@
       ignorecase = true;
       smartcase = true;
       signcolumn = "yes:1";
+      cursorline = true;
     };
 
     globals = {
