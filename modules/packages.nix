@@ -72,6 +72,7 @@
         pip
         fpdf
         pypdf2 # read/write pdf for editing pdf
+        python-docx
       ]))
 
     #GNOME/KDE
