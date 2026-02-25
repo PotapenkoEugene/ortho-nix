@@ -28,6 +28,7 @@
 
       # WORKAROUND: tmux 3.6a has "open terminal failed: not a terminal" bug with xterm-kitty
       tmux = "/nix/store/msrldc9bfz6piaa0704m0djjm14mq151-tmux-3.5a/bin/tmux";
+      tb = "tmux attach -t base";
 
       vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
       vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";
