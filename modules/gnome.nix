@@ -12,7 +12,6 @@
       #	    { package = pkgs.gnomeExtensions.caffeine; }
       {package = pkgs.gnomeExtensions.clipboard-indicator;}
       {package = pkgs.gnomeExtensions.system-monitor;}
-      {package = pkgs.gnomeExtensions.quick-lofi;}
     ];
   };
 
@@ -57,6 +56,11 @@
         command = "bluetoothctl connect C4:B3:49:8F:63:42";
         binding = "<Super>b";
       };
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
+        name = "Toggle Lofi Radio";
+        command = "/home/ortho/.config/home-manager/scripts/lofi-toggle.sh";
+        binding = "<Super>m";
+      };
       "org/gnome/settings-daemon/plugins/media-keys" = {
         custom-keybindings = [
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
@@ -64,9 +68,13 @@
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
         ];
       };
       # Disable middle-click paste
+      "org/gnome/shell/keybindings" = {
+        toggle-message-tray = ["<Super>v"];
+      };
       "org/gnome/desktop/interface" = {
         gtk-enable-primary-paste = false;
       };
