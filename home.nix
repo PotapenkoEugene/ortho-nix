@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  nixgl,
   ...
 }: {
   imports = [
@@ -17,8 +18,9 @@
     ./modules/piper.nix
   ];
 
-  # GPU support for non-NixOS (replaces nixGL)
+  # GPU support for non-NixOS via nixGL
   targets.genericLinux.enable = true;
+  targets.genericLinux.nixGL.packages = nixgl.packages;
 
   home.username = "ortho";
   home.homeDirectory = "/home/ortho";

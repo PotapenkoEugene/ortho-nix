@@ -16,12 +16,18 @@
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nixgl = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
     nixpkgs,
     home-manager,
     nixvim,
+    nixgl,
     ...
   }: let
     system = "x86_64-linux";
@@ -39,8 +45,9 @@
         ./home.nix
       ];
 
-      # Optionally use extraSpecialArgs
-      # to pass through arguments to home.nix
+      extraSpecialArgs = {
+        inherit nixgl;
+      };
     };
   };
 }
