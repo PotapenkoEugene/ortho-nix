@@ -40,7 +40,11 @@ if [ -f "$PID_FILE" ]; then
         
         if [ -f "$OUTPUT_FILE" ] && [ -s "$OUTPUT_FILE" ]; then
             mv "$OUTPUT_FILE" "$FINAL_FILE"
-            notify "Recording stopped\nSaved: $(basename "$FINAL_FILE")"
+            notify "Recording stopped\nSaved: $(basename "$FINAL_FILE")\nCleaning transcript..."
+
+            # Run LLM cleanup in background
+            clean-transcript.sh "$FINAL_FILE" &
+            disown
         else
             notify "Recording stopped\n(No transcription recorded)"
         fi

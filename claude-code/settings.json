@@ -70,7 +70,10 @@
       "Bash(nix search:*)",
       "Bash(docker run --user * --rm --memory=20g -v *:/pipeline adaptogene:latest*:*)",
       "Bash(alejandra * && home-manager build:*)",
-      "Bash(alejandra * && home-manager switch:*)"
+      "Bash(alejandra * && home-manager switch:*)",
+      "Bash(clean-transcript.sh:*)",
+      "Bash(llama-cli:*)",
+      "Bash(llama-completion:*)"
     ],
     "ask": [
       "Bash(git push:*)",

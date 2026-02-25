@@ -16,6 +16,7 @@
     ./modules/neovim
     ./modules/claude-code.nix
     ./modules/piper.nix
+    ./modules/llm.nix
   ];
 
   # GPU support for non-NixOS via nixGL
