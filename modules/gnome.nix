@@ -12,7 +12,6 @@
       #	    { package = pkgs.gnomeExtensions.caffeine; }
       {package = pkgs.gnomeExtensions.clipboard-indicator;}
       {package = pkgs.gnomeExtensions.system-monitor;}
-      {package = pkgs.gnomeExtensions.lock-keys;}
       {package = pkgs.gnomeExtensions.quick-lofi;}
     ];
   };
