@@ -106,6 +106,7 @@
     #pkgs.gnome-tweaks
     nodejs_24
     # BIOINF
+    qgis
     multiqc
     samtools
     bcftools
