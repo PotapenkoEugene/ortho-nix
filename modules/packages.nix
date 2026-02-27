@@ -73,6 +73,12 @@
         fpdf
         pypdf2 # read/write pdf for editing pdf
         python-docx
+        scipy
+        geopandas
+        shapely
+        rasterio
+        fiona
+        requests
       ]))
 
     #GNOME/KDE
