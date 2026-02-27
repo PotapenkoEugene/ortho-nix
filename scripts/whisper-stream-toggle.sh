@@ -1,68 +1,66 @@
 #!/usr/bin/env bash
 #============================================================================
-# Whisper Stream Toggle - Start/Stop with one hotkey
+# Whisper Capture Toggle - System audio capture via PipeWire + batch transcription
+# F8: Start/stop recording system audio (whatever plays through speakers/AirPods)
 #============================================================================
 
 PID_FILE="/tmp/whisper-stream.pid"
-OUTPUT_FILE="/tmp/whisper-stream-output.txt"
-WHISPER_BIN="$HOME/Tools/whisper.cpp/build/bin/whisper-stream"
+AUDIO_FILE="/tmp/whisper-capture.wav"
+WHISPER_BIN="$HOME/Tools/whisper.cpp/build/bin/whisper-cli"
 MODEL_PATH="$HOME/whisper-models/ggml-tiny.en.bin"
 TRANSCRIPTS_DIR="$HOME/Orthidian/transcripts"
 
-notify() {
-    notify-send "Whisper Stream" "$1" -t 3000
-}
+notify() { notify-send "Whisper" "$1" -t 3000; }
 
-# Check if recording is in progress
 if [ -f "$PID_FILE" ]; then
-    # Stop recording
+    # --- STOP ---
     PID=$(cat "$PID_FILE")
-    
-    if kill -0 "$PID" 2>/dev/null; then
-        # Kill all child processes first (including whisper-stream)
-        pkill -P "$PID" 2>/dev/null || true
+    kill "$PID" 2>/dev/null
+    wait "$PID" 2>/dev/null
+    rm -f "$PID_FILE"
 
-        # Also kill any whisper-stream by name (in case it escaped)
-        pkill -f "whisper-stream.*ggml-tiny.en.bin" 2>/dev/null || true
-
-        # Then kill the parent nix-shell process
-        kill "$PID" 2>/dev/null || true
-        sleep 1
-
-        # Force kill everything if still running
-        pkill -9 -P "$PID" 2>/dev/null || true
-        pkill -9 -f "whisper-stream.*ggml-tiny.en.bin" 2>/dev/null || true
-        kill -9 "$PID" 2>/dev/null || true
-        
-        # Save to final location
+    if [ -f "$AUDIO_FILE" ] && [ -s "$AUDIO_FILE" ]; then
         mkdir -p "$TRANSCRIPTS_DIR"
-        FINAL_FILE="$TRANSCRIPTS_DIR/recording-$(date +%Y-%m-%d-%H%M).txt"
-        
-        if [ -f "$OUTPUT_FILE" ] && [ -s "$OUTPUT_FILE" ]; then
-            mv "$OUTPUT_FILE" "$FINAL_FILE"
-            notify "Recording stopped\nSaved: $(basename "$FINAL_FILE")\nCleaning transcript..."
+        BASENAME="recording-$(date +%Y-%m-%d-%H%M)"
+        FINAL_FILE="$TRANSCRIPTS_DIR/${BASENAME}.txt"
 
-            # Run LLM cleanup in background
+        notify "Transcribing..."
+        # Convert pw-record WAV to whisper-compatible format (pw-record headers aren't fully compatible)
+        CONVERTED="/tmp/whisper-capture-converted.wav"
+        ffmpeg -y -i "$AUDIO_FILE" -ar 16000 -ac 1 -c:a pcm_s16le "$CONVERTED" 2>/dev/null
+        rm -f "$AUDIO_FILE"
+
+        # Batch transcribe (more accurate than streaming)
+        "$WHISPER_BIN" -m "$MODEL_PATH" -t 12 -f "$CONVERTED" --no-timestamps 2>/dev/null > "$FINAL_FILE"
+        rm -f "$CONVERTED"
+
+        if [ -s "$FINAL_FILE" ]; then
+            notify "Saved: ${BASENAME}.txt\nCleaning..."
             clean-transcript.sh "$FINAL_FILE" &
             disown
         else
-            notify "Recording stopped\n(No transcription recorded)"
+            notify "No speech detected"
+            rm -f "$FINAL_FILE"
         fi
-        
-        rm -f "$PID_FILE"
     else
-        rm -f "$PID_FILE"
-        notify "No active recording found"
+        notify "No audio captured"
+        rm -f "$AUDIO_FILE"
     fi
 else
-    # Start recording
-    notify "Recording started... (Press F8 to stop)"
-    
-    # Clear previous output
-    > "$OUTPUT_FILE"
-    
-    # Run whisper-stream in background with output to file
-    nix-shell -p SDL2 --run "$WHISPER_BIN -m $MODEL_PATH -t 12 --step 0 --length 30000 -vth 0.6 -ng -f $OUTPUT_FILE" &>/dev/null &
-    
+    # --- START ---
+    # Auto-detect current default audio sink (need object.serial, not wpctl id)
+    SINK_SERIAL=$(wpctl inspect @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep 'object.serial' | grep -oP '[0-9]+')
+    if [ -z "$SINK_SERIAL" ]; then
+        notify "Error: no default audio sink found"
+        exit 1
+    fi
+
+    SINK_NAME=$(wpctl inspect @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep 'node.description' | sed 's/.*= "\(.*\)"/\1/')
+    rm -f "$AUDIO_FILE"
+
+    # Record system audio: 16kHz mono WAV (whisper format)
+    pw-record --target "$SINK_SERIAL" --rate 16000 --channels 1 "$AUDIO_FILE" &
     echo $! > "$PID_FILE"
+
+    notify "Recording system audio...\nSource: ${SINK_NAME:-sink $SINK_SERIAL}\nPress F8 to stop"
 fi
