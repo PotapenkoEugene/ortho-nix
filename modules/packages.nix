@@ -132,6 +132,8 @@
     # Conda
     micromamba
     dos2unix
+    tldr
+    tree
 
     # R
     #	(rWrapper.override { # works strangely for now, install by hand
