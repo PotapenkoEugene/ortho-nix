@@ -122,6 +122,9 @@
     igv
     macs2
     fuse # for installing mendeley from appimage file
+    # Speech-to-text (Vulkan iGPU accelerated)
+    # lowPrio: llama-cpp-vulkan has newer libggml.so.0 (0.9.7 vs 0.9.5)
+    (lib.lowPrio whisper-cpp-vulkan)
     # Compile
     cmake
     gcc

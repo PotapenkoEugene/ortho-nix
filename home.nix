@@ -38,6 +38,24 @@
   nixpkgs.config.allowUnfree = true;
 
   home.file = {
+    # PipeWire echo cancellation — creates virtual mic with system audio removed
+    ".config/pipewire/pipewire.conf.d/echo-cancel.conf".text = ''
+      context.modules = [
+        {
+          name = libpipewire-module-echo-cancel
+          args = {
+            library.name = aec/libspa-aec-webrtc
+            monitor.mode = true
+            audio.rate = 48000
+            audio.channels = 1
+            source.props = {
+              node.name = "echo-cancel-source"
+              node.description = "Echo-Cancelled Mic"
+            }
+          }
+        }
+      ]
+    '';
   };
 
   home.activation.copyDesktopFiles = lib.hm.dag.entryAfter ["installPackages"] ''
