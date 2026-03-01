@@ -134,6 +134,7 @@
     dos2unix
     tldr
     tree
+    presenterm # terminal presentations in markdown
 
     # R
     #	(rWrapper.override { # works strangely for now, install by hand
