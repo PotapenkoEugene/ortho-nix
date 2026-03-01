@@ -35,7 +35,9 @@ home-manager switch
 ├── flake.lock                 # Pinned versions (touch even less)
 ├── home.nix                   # Main entrypoint — imports everything
 ├── scripts/
-│   └── obsidian_daily_notes.lua   # Daily note generator with task sync
+│   ├── obsidian_daily_notes.lua   # Daily note generator with task sync
+│   ├── whisper-stream-toggle.sh   # F8 hotkey: record + transcribe + speaker separation
+│   └── clean-transcript.sh        # Timestamp interleave + speaker merge (awk)
 ├── sounds/
 │   ├── peon/                      # Orc Peon voice lines (original)
 │   └── peasant/                   # Human Peasant voice lines (active)
@@ -55,6 +57,8 @@ home-manager switch
     ├── terminal.nix           # Kitty + nixGL
     ├── packages.nix           # All the packages
     ├── claude-code.nix        # Claude Code integration
+    ├── llm.nix                # Local LLM (Qwen 3B) + whisper model downloads
+    ├── piper.nix              # Piper TTS + voice models
     └── neovim/
         ├── default.nix        # Neovim entrypoint
         ├── options.nix        # Editor settings & globals
@@ -78,7 +82,8 @@ home-manager switch
 | Notes | Obsidian | daily notes with bidirectional project sync |
 | Music | mpd + rmpc | lo-fi beats to bioinformatics to |
 | Files | Oil.nvim + Dolphin | one for terminal, one for normie moments |
-| Speech-to-text | whisper.cpp (tiny model) | because typing is so 2023 |
+| Speech-to-text | whisper.cpp-vulkan (medium model) | iGPU-accelerated, echo-cancelled, speaker separation |
+| Local LLM | Qwen2.5-3B (Vulkan iGPU) | interactive chat, iGPU-accelerated via llama-cpp |
 | Analytics | datamash + tabiew (`tw`) + xan | tabiew: colorful viewer for xlsx, tsv, csv with SQL-like querying; xan: CSV Swiss Army knife — search, filter, sort, join, aggregate, plot histograms and scatter plots, all from the shell |
 | Weather | wego + OpenWeatherMap | because alt-tabbing to a browser is too slow |
 | Containers | ctop | Docker monitoring without leaving tmux |
@@ -240,25 +245,28 @@ If a task links to `[[new-project]]` but no file exists, a full project template
 
 | Key | What happens | Why you'll love it |
 |-----|-------------|-------------------|
-| `F8` | Toggle whisper-stream 🎤 | Talk to your computer like a sci-fi movie character. First press = start recording, second press = stop & save to `~/Orthidian/transcripts/`. Perfect for meetings when you're too lazy to type (or pretending to pay attention). |
+| `F8` | Toggle whisper capture 🎤 | Records system audio + echo-cancelled mic simultaneously. Stop = parallel transcription (medium.en on iGPU) + awk speaker separation → `Other:`/`Me:` dialog in `~/Orthidian/transcripts/`. |
 | `Ctrl+F5` | Brightness → 0 | Instant stealth mode. Your screen becomes a black hole. |
 | `Alt+T` | Launch Kitty | Terminal faster than you can say "sudo" |
 | `Alt+D` | Launch Dolphin | File manager goes *click click* |
 
-### Whisper Commands (For When F8 Isn't Enough)
+### Whisper Setup
+
+- **Package:** `whisper-cpp-vulkan` from nixpkgs (Intel Arc iGPU via Vulkan)
+- **Model:** Medium English (1.5GB, auto-downloaded on `home-manager switch`)
+- **Echo cancellation:** PipeWire WebRTC AEC module — subtracts system audio from mic in real-time
+- **Parallel transcription:** Both tracks transcribed simultaneously (6 threads each)
+- **Cleanup:** Pure awk — timestamps interleave, speaker labels, paragraph merge (no LLM)
 
 ```bash
-# The "did I just say that?" test
-~/test-whisper-mic.sh          # Record 5 seconds, transcribe immediately
-
-# Transcribe that embarrassing voice memo
+# Transcribe any audio file
 whisper -f /path/to/audio.wav
 
-# Check what nonsense you've been dictating
+# Check transcripts
 ls ~/Orthidian/transcripts/
+# Raw: recording-YYYY-MM-DD-HHMM.txt ([System Audio] + [Mic] sections)
+# Clean: recording-YYYY-MM-DD-HHMM-clean.txt (Other:/Me: dialog)
 ```
-
-**Fun fact:** After fighting with whisper for 6 hours and spawning 400+ processes that almost nuked the system, we discovered the magic `-f` flag that just... writes to a file. Sometimes the best solutions are the simplest ones. 🤦
 
 ---
 
