@@ -23,17 +23,17 @@
     fi
   '';
 
-  # Download Whisper small.en model on first `home-manager switch` (idempotent)
+  # Download Whisper medium.en model on first `home-manager switch` (idempotent)
   home.activation.downloadWhisperModel = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    MODEL_FILE="${config.home.homeDirectory}/whisper-models/ggml-small.en.bin"
+    MODEL_FILE="${config.home.homeDirectory}/whisper-models/ggml-medium.en.bin"
     if [ ! -f "$MODEL_FILE" ]; then
       mkdir -p "$(dirname "$MODEL_FILE")"
-      echo "Downloading Whisper small.en model (~466MB)..."
+      echo "Downloading Whisper medium.en model (~1.5GB)..."
       ${pkgs.aria2}/bin/aria2c \
         --dir="$(dirname "$MODEL_FILE")" \
-        --out="ggml-small.en.bin" \
+        --out="ggml-medium.en.bin" \
         --max-connection-per-server=8 --split=8 --continue=true \
-        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin"
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.en.bin"
     fi
   '';
 }

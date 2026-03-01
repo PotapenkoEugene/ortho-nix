@@ -12,8 +12,10 @@ MIC_FILE="/tmp/whisper-capture-mic.wav"
 MODEL_DIR="$HOME/whisper-models"
 TRANSCRIPTS_DIR="$HOME/Orthidian/transcripts"
 
-# Model fallback: prefer small.en, fall back to tiny.en
-if [ -f "$MODEL_DIR/ggml-small.en.bin" ]; then
+# Model fallback: prefer medium.en, then small.en, then tiny.en
+if [ -f "$MODEL_DIR/ggml-medium.en.bin" ]; then
+    MODEL_PATH="$MODEL_DIR/ggml-medium.en.bin"
+elif [ -f "$MODEL_DIR/ggml-small.en.bin" ]; then
     MODEL_PATH="$MODEL_DIR/ggml-small.en.bin"
 else
     MODEL_PATH="$MODEL_DIR/ggml-tiny.en.bin"
@@ -37,23 +39,34 @@ if [ -f "$PID_FILE" ]; then
 
         notify "Transcribing ($(basename "$MODEL_PATH"))..."
 
-        SYS_TXT=""
-        MIC_TXT=""
+        SYS_OUT="/tmp/whisper-out-sys.txt"
+        MIC_OUT="/tmp/whisper-out-mic.txt"
+        rm -f "$SYS_OUT" "$MIC_OUT"
 
-        # Convert and transcribe each track separately (with timestamps)
+        # Convert and transcribe both tracks in parallel
         if [ -s "$SYS_FILE" ]; then
             SYS_CONV="/tmp/whisper-capture-sys-conv.wav"
             ffmpeg -y -i "$SYS_FILE" -ar 16000 -ac 1 -c:a pcm_s16le "$SYS_CONV" 2>/dev/null
-            SYS_TXT=$(whisper-cli -m "$MODEL_PATH" -t 12 -f "$SYS_CONV" 2>/dev/null)
-            rm -f "$SYS_CONV"
+            whisper-cli -m "$MODEL_PATH" -t 6 -f "$SYS_CONV" > "$SYS_OUT" 2>/dev/null &
+            SYS_WPID=$!
         fi
         if [ -s "$MIC_FILE" ]; then
             MIC_CONV="/tmp/whisper-capture-mic-conv.wav"
             ffmpeg -y -i "$MIC_FILE" -ar 16000 -ac 1 -c:a pcm_s16le "$MIC_CONV" 2>/dev/null
-            MIC_TXT=$(whisper-cli -m "$MODEL_PATH" -t 12 -f "$MIC_CONV" 2>/dev/null)
-            rm -f "$MIC_CONV"
+            whisper-cli -m "$MODEL_PATH" -t 6 -f "$MIC_CONV" > "$MIC_OUT" 2>/dev/null &
+            MIC_WPID=$!
         fi
-        rm -f "$SYS_FILE" "$MIC_FILE"
+
+        # Wait for both to finish
+        [ -n "${SYS_WPID:-}" ] && wait "$SYS_WPID"
+        [ -n "${MIC_WPID:-}" ] && wait "$MIC_WPID"
+        rm -f "$SYS_FILE" "$MIC_FILE" /tmp/whisper-capture-*-conv.wav
+
+        SYS_TXT=""
+        MIC_TXT=""
+        [ -s "$SYS_OUT" ] && SYS_TXT=$(cat "$SYS_OUT")
+        [ -s "$MIC_OUT" ] && MIC_TXT=$(cat "$MIC_OUT")
+        rm -f "$SYS_OUT" "$MIC_OUT"
 
         # Combine transcripts with source labels
         {

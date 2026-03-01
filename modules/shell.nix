@@ -21,7 +21,7 @@
       fzfp = "fzf --preview='cat {}'";
 
       # Whisper speech-to-text (using compiled version from ~/Tools)
-      whisper = "whisper-cli -m ~/whisper-models/ggml-small.en.bin";
+      whisper = "whisper-cli -m ~/whisper-models/ggml-medium.en.bin";
 
       # Piper text-to-speech with pre-downloaded model
       piper-tts = "piper --model ~/piper-models/en_US-lessac-medium.onnx";
