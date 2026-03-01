@@ -13,6 +13,11 @@
       source = ../claude-code/settings.json;
     };
 
+    # Global Claude Code instructions (applies to all projects)
+    ".claude/CLAUDE.md" = {
+      source = ../claude-code/CLAUDE.md;
+    };
+
     # Status line script
     ".claude/statusline.sh" = {
       source = ../claude-code/statusline.sh;
