@@ -122,10 +122,15 @@
       # Copy mode
       bind-key -T copy-mode-vi v send-keys -X begin-selection
 
+      # Copy mode visual indicator — turns entire status bar red
+      set-hook -g pane-mode-changed 'if-shell -F "#{pane_in_mode}" \
+        "set status-style bg=#f38ba8,fg=#11111b" \
+        "set status-style bg=#181825,fg=#cdd6f4"'
+
       # Catppuccin status bar composition (must be after catppuccin plugin loads)
-      set -g status-left-length 100
+      set -g status-left-length 120
       set -g status-right-length 100
-      set -g status-left "#{E:@catppuccin_status_session}"
+      set -g status-left "#{?pane_in_mode,#[bg=#f38ba8#,fg=#11111b#,bold] COPY #[default] ,}#{E:@catppuccin_status_session}"
       set -g status-right "#{E:@catppuccin_status_directory}#{E:@catppuccin_status_date_time}"
     '';
 
