@@ -13,7 +13,7 @@
   programs.bash = {
     enable = true;
     shellAliases = {
-       bat = "bat --color=always";
+      bat = "bat --color=always";
       ls = "eza --color=always --group-directories-first";
       ll = "eza -la --color=always --group-directories-first --sort new";
       "..." = "cd ../../";

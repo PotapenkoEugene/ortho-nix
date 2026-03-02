@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c '/usr/bin/notify-send \"Claude Code\" \"Claude needs your attention\" -t 5000 -u normal; /home/ortho/.nix-profile/bin/pw-play $(/usr/bin/shuf -n1 -e /home/ortho/.config/home-manager/sounds/peasant/PeasantWhat{1,2,3,4}.wav) 2>>/tmp/peon-debug.log &'"
+            "command": "bash -c '/home/ortho/.config/home-manager/scripts/claude-notify.sh'"
           }
         ]
       }
