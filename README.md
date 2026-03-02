@@ -167,6 +167,7 @@ Prefix = `Ctrl+A`
 | `prefix + Escape` | Enter copy mode (vi: `/` search, `v` select, `y` yank) |
 | `prefix + f` | Fuzzback — fuzzy search scrollback, jump to match |
 | **Navigation** | |
+| `prefix + ;` | Toggle last pane (like `Ctrl+a a` for windows) |
 | `prefix + h/j/k/l` | Select pane (left/down/up/right) |
 | `prefix + H/L` | Previous/next window |
 | `prefix + s/v` | Split horizontal/vertical |
