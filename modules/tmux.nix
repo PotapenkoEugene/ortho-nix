@@ -120,6 +120,7 @@
       bind K send-keys "clear"\; send-keys "Enter"
 
       # Copy mode
+      bind Escape copy-mode
       bind-key -T copy-mode-vi v send-keys -X begin-selection
 
       # Copy mode visual indicator — turns entire status bar red
@@ -164,6 +165,14 @@
       {
         plugin = tmux-fzf;
         extraConfig = "";
+      }
+      {
+        plugin = fuzzback;
+        extraConfig = ''
+          set -g @fuzzback-bind 'f'
+          set -g @fuzzback-popup 1
+          set -g @fuzzback-popup-size '80%'
+        '';
       }
       {
         plugin = catppuccin;
