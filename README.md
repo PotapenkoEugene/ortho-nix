@@ -163,6 +163,9 @@ Prefix = `Ctrl+A`
 | `prefix + y` | Migal VPN popup |
 | `prefix + C-y` | AWS VPN connect |
 | `prefix + R` | Reload tmux config |
+| **Scrollback** | |
+| `prefix + Escape` | Enter copy mode (vi: `/` search, `v` select, `y` yank) |
+| `prefix + f` | Fuzzback — fuzzy search scrollback, jump to match |
 | **Navigation** | |
 | `prefix + h/j/k/l` | Select pane (left/down/up/right) |
 | `prefix + H/L` | Previous/next window |
