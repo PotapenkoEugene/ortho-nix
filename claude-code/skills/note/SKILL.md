@@ -1,21 +1,63 @@
 # note
 
-Add insights from conversation to Obsidian project files.
+Manage Obsidian project tasks — add insights, track progress, mark completions.
 
 ## Instructions
 
-You are helping to capture valuable insights from the current conversation into the user's Obsidian project note system.
+You help capture insights and track task progress in the user's Obsidian project note system.
+
+### Modes
+
+**Quick-start mode**: `/note PROJECTNAME`
+1. Validate project exists in `~/Orthidian/projects/` or `~/Orthidian/personal/`
+2. Read project file, display current objectives
+3. Suggest the first undone task: "Next: [objective] > [subtask]"
+4. Write project association to working directory's `.claude/CLAUDE.md`:
+   ```markdown
+   ## Active Obsidian Project
+   - Project: PROJECTNAME
+   - File: ~/Orthidian/projects/PROJECTNAME.md
+   ```
+
+**Interactive mode**: `/note` (no args)
+1. List available projects from both `projects/` and `personal/`
+2. Ask user to select one (use AskUserQuestion)
+3. Proceed as quick-start mode
 
 ### Task Structure Rules
 
 **CRITICAL CONSTRAINTS:**
-- **NEVER create new top-level objectives** - they already exist in project files
+- **NEVER create new top-level objectives** — they already exist in project files
 - **ONLY add subtasks** to existing objectives
 - **ONLY add comments** to existing objectives or subtasks
-- **NO redundancy** - check existing subtasks before adding
-- **Project files are archives** - never delete anything, only add
+- **NO redundancy** — check existing subtasks before adding
+- **Project files are archives** — never delete anything, only add
 
-### Workflow
+### Autonomous Task Tracking
+
+After `/note` sets the active project for a session, autonomously manage the project file as you work:
+
+**Marking tasks complete:**
+- When you complete a task, mark it `[x]` in the project file
+- Add a completion note as a child line (4-space indent):
+  ```markdown
+  - [x] Implement feature X
+      - Done 2026-03-05: Added X with Y approach, tested with Z
+  ```
+
+**Adding new subtasks:**
+- When you discover work needed during implementation, add subtasks under existing objectives
+- Use Edit tool (never Write) — always re-read the file before modifying
+
+**Rules:**
+- Never delete tasks
+- Never create top-level objectives
+- Never modify existing task text (only markers and adding children)
+- Always re-read the project file before each edit
+
+### Insight Capture Workflow
+
+When adding insights from conversation:
 
 1. **Analyze the conversation** to extract:
    - Actionable subtasks (tasks that need to be done)
@@ -23,33 +65,23 @@ You are helping to capture valuable insights from the current conversation into 
    - Decisions made
    - Problems discovered and solutions
 
-2. **Get project context:**
-   ```bash
-   # List available projects
-   ls ~/Orthidian/projects/*.md | xargs -n1 basename -s .md
-   ```
-
-3. **Ask the user which project** to add notes to (use AskUserQuestion):
-   - Show available projects as options
-   - Ask for project selection
-
-4. **Read the selected project file:**
+2. **Read the project file:**
    ```bash
    cat ~/Orthidian/projects/<PROJECT_NAME>.md
    ```
 
-5. **Ask which objective** to add to (use AskUserQuestion):
-   - Parse the "## Objectives" section
-   - Show top-level tasks (lines starting with `- [ ]` or `- [x]` at base indent)
+3. **Ask which objective** to add to (use AskUserQuestion):
+   - Parse the `## Objectives` section
+   - Show top-level tasks as options
    - Let user select which objective is relevant
 
-6. **Check for redundancy:**
+4. **Check for redundancy:**
    - Read all existing subtasks under the selected objective
    - Compare extracted insights with existing subtasks
    - **Only include new, non-duplicate items**
    - Use semantic matching (not just exact string match)
 
-7. **Format additions properly:**
+5. **Format additions properly:**
 
    **For subtasks:**
    ```markdown
@@ -66,35 +98,21 @@ You are helping to capture valuable insights from the current conversation into 
        - General note about objective (4 spaces for direct comment)
    ```
 
-8. **Add to project file:**
+   **For completion notes:**
+   ```markdown
+   - [x] Completed subtask
+       - Done 2026-03-05: description of what was done
+   ```
+
+6. **Add to project file:**
    - Find the exact line of the selected objective
    - Insert new subtasks/comments at the appropriate indent level
    - Maintain existing structure
    - Use Edit tool to add new items
 
-9. **Verify and report:**
+7. **Verify and report:**
    - Show what was added
    - Confirm the location (project name, objective title)
-
-### Example Structure
-
-```markdown
-## Objectives
-- [ ] Update pipeline
-    - [x] Configure access to hubnerlab git
-    - [x] Fix topr version
-    - [ ] Add GAPIT association analysis  ← CAN ADD SUBTASKS HERE
-        - Before that should be add phenotype processing ← CAN ADD COMMENTS HERE
-    - [ ] Add Haplotype analysis  ← CAN ADD SUBTASKS HERE
-```
-
-**Valid additions:**
-- `    - [ ] Implement BLINK algorithm` (subtask under "Update pipeline")
-- `        - Consider using linear mixed models` (comment under "Add GAPIT")
-
-**Invalid additions:**
-- `- [ ] New top-level objective` (NOT ALLOWED)
-- Duplicate of existing subtask (NOT ALLOWED)
 
 ### Redundancy Detection
 
@@ -125,30 +143,38 @@ When checking if a subtask already exists:
 
 ### Output
 
-After successfully adding to project file:
-1. Show summary of what was added
+After successfully modifying a project file:
+1. Show summary of what was added/changed
 2. Indicate which project and objective
 3. Confirm no duplicates were created
 
 ## Example Usage
 
-**User:** This GAPIT analysis needs better SNP filtering
+**Quick-start:** `/note Desktop`
+1. Reads `~/Orthidian/projects/Desktop.md`
+2. Shows objectives: "Claude Code Skills", "Obsidian Automation"
+3. Suggests: "Next: Claude Code Skills > /test skill - detect framework, run relevant tests"
+4. Writes project association to `.claude/CLAUDE.md`
 
-**Claude:**
-1. Lists projects: ADAPTOGENE, CutNrun, GenomeSize...
+**Insight capture:** `/note`
+1. Lists projects: ADAPTOGENE, BOB, Conferences, CutNrun, Desktop, ...
 2. User selects: "ADAPTOGENE"
 3. Reads project file, shows objectives
-4. User selects: "Update pipeline" → "Add GAPIT association analysis"
-5. Checks existing subtasks: "Before that should be add phenotype processing"
-6. Extracts new insight: "Improve SNP filtering in BLINK algorithm"
-7. Verifies not duplicate
-8. Adds: `        - [ ] Improve SNP filtering in BLINK algorithm`
-9. Reports: "Added subtask to ADAPTOGENE → Update pipeline → Add GAPIT association analysis"
+4. User selects: "Update pipeline" > "Add GAPIT association analysis"
+5. Checks existing subtasks
+6. Adds: `        - [ ] Improve SNP filtering in BLINK algorithm`
+7. Reports: "Added subtask to ADAPTOGENE > Update pipeline > Add GAPIT"
+
+**Task completion during session:**
+1. `/note Desktop` at session start
+2. Work on `/test skill`... complete it
+3. Claude marks `[x]` in Desktop.md and adds completion note
 
 ## Important
 
-- Always use Read tool to check current state
+- Always use Read tool to check current state before modifying
 - Always use Edit tool to modify (never Write)
 - Preserve exact indentation (4 spaces per level)
 - Maintain checkbox format: `- [ ]` for undone, `- [x]` for done
-- Never modify existing tasks unless explicitly asked
+- Never modify existing task text unless explicitly asked
+- Completion notes format: `- Done YYYY-MM-DD: description`

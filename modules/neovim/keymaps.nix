@@ -279,18 +279,12 @@
         silent = true;
       };
     }
-
     {
       mode = ["n"];
-      key = "<leader>od";
-      action.__raw = ''
-        function()
-          -- TEMP path
-          ${builtins.readFile ../../scripts/obsidian_daily_notes.lua}
-        end
-      '';
+      key = "<leader>or";
+      action = "<cmd>DailyRefresh<CR>";
       options = {
-        desc = "Open Obsidian daily notes";
+        desc = "Refresh daily note";
         silent = true;
       };
     }

@@ -37,8 +37,8 @@
       # lazygit popup
       bind g display-popup -d "#{pane_current_path}" -w 90% -h 85% -E "lazygit"
 
-      # daily note viewer popup
-      bind n display-popup -w 80% -h 75% -E "nvim '+/Work todos' '+normal zt' ~/Orthidian/daily/$(date +%Y-%m-%d).md"
+      # notes popup (persistent nvim session in Orthidian vault)
+      bind n display-popup -w 80% -h 75% -E "~/.config/home-manager/scripts/notes-popup.sh"
 
       # ctop (container monitor) popup
       bind d display-popup -w 90% -h 85% -E "ctop"

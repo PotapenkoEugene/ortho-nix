@@ -95,7 +95,7 @@
       };
     };
     otter = {
-      enable = true;
+      enable = false;
     };
     molten = {
       enable = true;

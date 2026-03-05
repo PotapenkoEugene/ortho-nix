@@ -38,5 +38,10 @@ These rules apply to ALL projects and sessions. Project-level CLAUDE.md files ad
 
 ## Obsidian Integration
 
-- My note system lives in `~/Orthidian/`. Project files in `projects/` and `personal/` are append-only archives — never delete content, only add or update.
-- Future skills will handle task tracking between Claude Code sessions and Obsidian project files. When those skills exist, use them to log completed work.
+- Note system at `~/Orthidian/`. Project files in `projects/` and `personal/` are append-only archives.
+- **Use `/note PROJECTNAME` at session start** when working on a tracked project.
+- After `/note`, autonomously manage the project file:
+  - Mark tasks `[x]` when completed, add `- Done YYYY-MM-DD: description` notes
+  - Add new subtasks discovered during work
+  - Never delete tasks, never create top-level objectives
+- **Daily notes (`~/Orthidian/daily/`) are read-only views.** Never modify them.
