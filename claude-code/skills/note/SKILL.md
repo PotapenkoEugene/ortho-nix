@@ -27,7 +27,7 @@ You help capture insights and track task progress in the user's Obsidian project
 ### Task Structure Rules
 
 **CRITICAL CONSTRAINTS:**
-- **NEVER create new top-level objectives** — they already exist in project files
+- **Top-level objectives**: only create when the user suggests it (never autonomously)
 - **ONLY add subtasks** to existing objectives
 - **ONLY add comments** to existing objectives or subtasks
 - **NO redundancy** — check existing subtasks before adding
@@ -37,13 +37,19 @@ You help capture insights and track task progress in the user's Obsidian project
 
 After `/note` sets the active project for a session, autonomously manage the project file as you work:
 
-**Marking tasks complete:**
-- When you complete a task, mark it `[x]` in the project file
+**Marking subtasks complete:**
+- When you complete a subtask, mark it `[x]` in the project file
 - Add a completion note as a child line (4-space indent):
   ```markdown
   - [x] Implement feature X
       - Done 2026-03-05: Added X with Y approach, tested with Z
   ```
+- Mark subtasks done autonomously when confident the user would agree
+
+**Marking top-level objectives complete:**
+- **ALWAYS ask the user** before marking a top-level objective `[x]`
+- Subtasks being done does NOT mean the objective is done — the user decides
+- The daily note dashboard tracks the objective's own `[x]` marker, not subtask state
 
 **Adding new subtasks:**
 - When you discover work needed during implementation, add subtasks under existing objectives
@@ -51,7 +57,6 @@ After `/note` sets the active project for a session, autonomously manage the pro
 
 **Rules:**
 - Never delete tasks
-- Never create top-level objectives
 - Never modify existing task text (only markers and adding children)
 - Always re-read the project file before each edit
 

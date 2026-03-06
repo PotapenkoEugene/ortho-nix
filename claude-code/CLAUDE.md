@@ -41,7 +41,9 @@ These rules apply to ALL projects and sessions. Project-level CLAUDE.md files ad
 - Note system at `~/Orthidian/`. Project files in `projects/` and `personal/` are append-only archives.
 - **Use `/note PROJECTNAME` at session start** when working on a tracked project.
 - After `/note`, autonomously manage the project file:
-  - Mark tasks `[x]` when completed, add `- Done YYYY-MM-DD: description` notes
+  - Mark subtasks `[x]` when completed, add `- Done YYYY-MM-DD: description` notes
+  - **Always ask before marking top-level objectives `[x]`** — user decides when an objective is done
+  - Create top-level objectives only when user suggests it
   - Add new subtasks discovered during work
-  - Never delete tasks, never create top-level objectives
+  - Never delete tasks
 - **Daily notes (`~/Orthidian/daily/`) are read-only views.** Never modify them.
