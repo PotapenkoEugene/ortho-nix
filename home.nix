@@ -17,6 +17,7 @@
     ./modules/claude-code.nix
     ./modules/piper.nix
     ./modules/llm.nix
+    ./modules/obsidian-backup.nix
   ];
 
   # GPU support for non-NixOS via nixGL
