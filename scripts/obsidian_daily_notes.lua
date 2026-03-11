@@ -30,8 +30,12 @@ local Config = {
   sections = {
     today = "## Today",
     meetings = "## Meetings",
+    important = "## Important",
     notes = "## Notes",
   },
+
+  mails_folder = "mails",
+  payments_file = "personal/payments.md",
 
   debug = false,
 }
@@ -352,6 +356,110 @@ function Dashboard.make_unlinked_line(t)
 end
 
 -- ============================================================================
+-- MAIL
+-- ============================================================================
+
+local Mail = {}
+
+-- Scan mail digest files for ## Tasks sections, return list of task lines
+function Mail.scan_mail_tasks(since_date)
+  local dir = Utils.build_path(Config.mails_folder)
+  local files = vim.fn.glob(dir .. "/*.md", false, true)
+  local tasks = {}
+
+  for _, fp in ipairs(files) do
+    local date = fp:match("(%d%d%d%d%-%d%d%-%d%d)%.md$")
+    if date and (not since_date or date >= since_date) then
+      local content = Utils.read_file(fp)
+      if content then
+        local in_tasks = false
+        for line in content:gmatch("([^\n]*)\n?") do
+          if line:match("^## Tasks") then
+            in_tasks = true
+          elseif in_tasks then
+            if line:match("^## ") then break end
+            local trimmed = Utils.trim(line)
+            if trimmed:match("^%- %[.%]") then
+              table.insert(tasks, trimmed)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  return tasks
+end
+
+-- Read payments.md, return list of all lines and set of existing task texts (sink file for all mail tasks)
+function Mail.read_payments_file()
+  local path = Utils.build_path(Config.payments_file)
+  local content = Utils.read_file(path)
+  local lines = {}
+  local existing = {}
+
+  if content then
+    lines = Utils.split_lines(content)
+    for _, line in ipairs(lines) do
+      local trimmed = Utils.trim(line)
+      if trimmed:match("^%- %[.%]") then
+        -- Normalize: strip marker, trim for comparison
+        local text = trimmed:match("^%- %[.%]%s*(.*)") or ""
+        existing[text:lower()] = true
+      end
+    end
+  end
+
+  return lines, existing
+end
+
+-- Sync mail digest tasks into payments.md (append new, skip duplicates)
+function Mail.sync()
+  local pay_lines, existing = Mail.read_payments_file()
+  local mail_tasks = Mail.scan_mail_tasks()
+  local added = 0
+
+  for _, task in ipairs(mail_tasks) do
+    local text = task:match("^%- %[.%]%s*(.*)") or ""
+    if not existing[text:lower()] then
+      table.insert(pay_lines, task)
+      existing[text:lower()] = true
+      added = added + 1
+      Debug.log("Mail task added: %s", text)
+    end
+  end
+
+  if added > 0 or #pay_lines == 0 then
+    local path = Utils.build_path(Config.payments_file)
+    -- Ensure header exists
+    if #pay_lines == 0 or not pay_lines[1]:match("^# ") then
+      table.insert(pay_lines, 1, "# Payments")
+      table.insert(pay_lines, 2, "")
+    end
+    Utils.write_file(path, table.concat(pay_lines, "\n") .. "\n")
+  end
+
+  Debug.log("Mail sync: %d new tasks added", added)
+end
+
+-- Get undone tasks from payments.md for daily note display
+function Mail.get_undone()
+  local path = Utils.build_path(Config.payments_file)
+  local content = Utils.read_file(path)
+  if not content then return {} end
+
+  local tasks = {}
+  for line in content:gmatch("([^\n]*)\n?") do
+    local trimmed = Utils.trim(line)
+    local marker = trimmed:match("^%- (%[.%])")
+    if marker and not Utils.is_done(marker) then
+      table.insert(tasks, trimmed)
+    end
+  end
+  return tasks
+end
+
+-- ============================================================================
 -- DAILY NOTE
 -- ============================================================================
 
@@ -472,6 +580,10 @@ local function generate(ref_date)
     end
   end
 
+  -- Sync mail tasks from digests into payments.md
+  Mail.sync()
+  local mail_tasks = Mail.get_undone()
+
   -- Carry forward Meetings/Notes from previous note if they have content
   local meetings_lines = {}
   local notes_lines = {}
@@ -506,6 +618,12 @@ local function generate(ref_date)
   for _, line in ipairs(today_lines) do table.insert(out, line) end
   if #today_lines == 0 then table.insert(out, "") end
   table.insert(out, "")
+
+  if #mail_tasks > 0 then
+    table.insert(out, Config.sections.important)
+    for _, line in ipairs(mail_tasks) do table.insert(out, line) end
+    table.insert(out, "")
+  end
 
   table.insert(out, Config.sections.notes)
   if #notes_lines > 0 then

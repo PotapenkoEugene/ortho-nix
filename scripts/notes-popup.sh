@@ -15,4 +15,7 @@ elif [ ! -f "$TODAY_NOTE" ]; then
     tmux -L "$SOCK" send-keys -t "$SESSION" ":luafile $SCRIPT" Enter
 fi
 
+# Trigger email digest in background (non-blocking)
+"$HOME/.config/home-manager/scripts/email-digest.sh" &>/dev/null &
+
 tmux -L "$SOCK" attach-session -t "$SESSION"

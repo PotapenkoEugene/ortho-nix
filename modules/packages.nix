@@ -132,6 +132,8 @@
     # libs - not correctly installing - often can't find the path to installation - headache with zlib, xml2
     # Conda
     micromamba
+    uv # Python package manager (provides uvx)
+    gws # Google Workspace CLI
     dos2unix
     tldr
     tree
