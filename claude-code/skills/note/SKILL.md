@@ -55,6 +55,12 @@ After `/note` sets the active project for a session, autonomously manage the pro
 - When you discover work needed during implementation, add subtasks under existing objectives
 - Use Edit tool (never Write) — always re-read the file before modifying
 
+**Waiting tasks (`[>]`):**
+- Use `[>]` for tasks waiting on an external event (reviewer decision, approval, someone else's action)
+- Shows as `⏳` in the daily note dashboard
+- When the event happens, mark directly as `[x]` (done)
+- Example: `- [>] Publish OAuth consent screen` — waiting for Google review
+
 **Rules:**
 - Never delete tasks
 - Never modify existing task text (only markers and adding children)
