@@ -167,6 +167,21 @@ function Utils.strip_age(text)
   return Utils.trim(result)
 end
 
+-- Progress bar: 🟩🟩🟩⬜⬜ 3/5 (or ✅ if all done, empty if no children)
+function Utils.progress_bar(done, total)
+  if total == 0 then return "" end
+  if done == total then return "✅" end
+  local bar = ""
+  for i = 1, total do
+    if i <= done then
+      bar = bar .. "🟩"
+    else
+      bar = bar .. "⬜"
+    end
+  end
+  return bar .. " " .. done .. "/" .. total
+end
+
 function Utils.is_done(marker)
   if not marker then return false end
   local m = marker:lower()
@@ -209,13 +224,18 @@ function ProjectFile.path(name, folder)
   return Utils.build_path(folder or Config.projects_folder, name .. ".md")
 end
 
--- Returns {marker, objective_text, display_text} for first undone top-level objective
--- display_text = first undone direct child, or objective_text if no undone children
-function ProjectFile.first_undone(content)
+-- Returns list of ALL top-level objectives with subtask progress:
+-- { {marker, text, done, children_done, children_total}, ... }
+-- Also returns first_undone_text (text of first undone objective, for age tracking)
+function ProjectFile.all_objectives(content)
   local lines = Utils.split_lines(content)
   local in_obj = false
+  local objectives = {}
   local current = nil
-  local first_child = nil
+
+  local function flush()
+    if current then table.insert(objectives, current) end
+  end
 
   for _, line in ipairs(lines) do
     if line:match("^## Objectives") then
@@ -226,31 +246,35 @@ function ProjectFile.first_undone(content)
       local indent = Utils.get_indent_level(line)
 
       if indent == 0 and TaskParser.is_task(line) then
-        -- New top-level: return previous if it was undone
-        if current then
-          current.display_text = first_child or current.objective_text
-          return current
-        end
+        flush()
         local m = TaskParser.marker(line)
-        if not Utils.is_done(m) then
-          current = { marker = m, objective_text = TaskParser.text(line) }
-          first_child = nil
-        end
+        current = {
+          marker = m,
+          text = TaskParser.text(line),
+          done = Utils.is_done(m),
+          children_done = 0,
+          children_total = 0,
+        }
       elseif indent == 1 and current and TaskParser.is_task(line) then
-        local m = TaskParser.marker(line)
-        if not first_child and not Utils.is_done(m) then
-          first_child = TaskParser.text(line)
+        current.children_total = current.children_total + 1
+        if Utils.is_done(TaskParser.marker(line)) then
+          current.children_done = current.children_done + 1
         end
       end
     end
   end
+  flush()
 
-  -- Handle last objective in file
-  if current then
-    current.display_text = first_child or current.objective_text
-    return current
+  -- Find first undone objective text (for age tracking)
+  local first_undone_text = nil
+  for _, obj in ipairs(objectives) do
+    if not obj.done then
+      first_undone_text = obj.text
+      break
+    end
   end
-  return nil
+
+  return objectives, first_undone_text
 end
 
 -- ============================================================================
@@ -259,7 +283,8 @@ end
 
 local Dashboard = {}
 
--- Scan folder for projects with undone objectives
+-- Scan folder for projects with at least one undone objective
+-- Returns list of {name, objectives, first_undone_text, age}
 function Dashboard.scan(folder)
   local dir = Utils.build_path(folder)
   local files = vim.fn.glob(dir .. "/*.md", false, true)
@@ -270,16 +295,15 @@ function Dashboard.scan(folder)
     if name then
       local content = Utils.read_file(fp)
       if content then
-        local obj = ProjectFile.first_undone(content)
-        if obj then
+        local objectives, first_undone_text = ProjectFile.all_objectives(content)
+        if first_undone_text then -- has at least one undone objective
           table.insert(entries, {
             name = name,
-            marker = obj.marker,
-            objective_text = obj.objective_text,
-            display_text = obj.display_text,
+            objectives = objectives,
+            first_undone_text = first_undone_text,
             age = 1,
           })
-          Debug.log("Found: %s -> %s", name, obj.objective_text)
+          Debug.log("Found: %s -> %d objectives", name, #objectives)
         end
       end
     end
@@ -289,8 +313,8 @@ function Dashboard.scan(folder)
 end
 
 -- Parse previous Today section for age tracking
--- Returns: linked = {[name] = {age, objective_text}}, unlinked = {{text, age}, ...}
--- Handles both new nested format and old "-- display_text" format
+-- Returns: linked = {[name] = {age, first_undone_text}}, unlinked = {{text, age}, ...}
+-- first_undone_text = first indented undone objective (for age comparison)
 function Dashboard.parse_prev_today(content)
   local lines = Utils.split_lines(content)
   local in_today = false
@@ -314,12 +338,10 @@ function Dashboard.parse_prev_today(content)
 
         if project then
           local age = Utils.extract_age(text)
-          -- Old format compat: extract objective from "-- text" suffix
-          local old_obj = Utils.trim(text:match("%-%-+%s*(.+)$") or "")
-          linked[project] = { age = age, objective_text = old_obj }
+          linked[project] = { age = age, first_undone_text = "" }
           current_project = project
         else
-          -- Unlinked personal task — filter done markers (old format compat)
+          -- Unlinked personal task
           local m = TaskParser.marker(line)
           if not Utils.is_done(m) then
             table.insert(unlinked, {
@@ -329,9 +351,22 @@ function Dashboard.parse_prev_today(content)
           end
         end
       elseif indent >= 1 and current_project and trimmed:match("^%-") then
-        -- New format: indented objective line after project
-        local obj_text = trimmed:match("^%-%s*(.*)") or trimmed
-        linked[current_project].objective_text = obj_text
+        -- Indented objective line: find first undone for age tracking
+        local entry = linked[current_project]
+        if entry.first_undone_text == "" then
+          -- Check if this line has an undone marker (or no done marker like ✅)
+          local obj_text = trimmed:match("^%-%s*(.*)") or trimmed
+          -- Strip progress bar artifacts for comparison
+          local clean = obj_text:gsub("%s*[🟩⬜✅]+%s*%d*/?%d*%s*$", "")
+          clean = Utils.trim(clean)
+          -- Check for done markers: [x], [X], [~], or ✅ at start
+          local marker = trimmed:match("^%-%s*(%[.%])")
+          if marker and Utils.is_done(marker) then
+            -- skip done objectives
+          else
+            entry.first_undone_text = clean
+          end
+        end
       end
     end
   end
@@ -345,10 +380,20 @@ function Dashboard.same_objective(a, b)
 end
 
 function Dashboard.make_lines(e)
-  return {
-    string.format("- [[%s]] %s", e.name, Utils.keycap(e.age)),
-    string.format("    - %s", e.objective_text),
-  }
+  local lines = { string.format("- [[%s]] %s", e.name, Utils.keycap(e.age)) }
+  for _, obj in ipairs(e.objectives) do
+    if not obj.done then
+      local progress = Utils.progress_bar(obj.children_done, obj.children_total)
+      local bar = ""
+      if obj.marker == "[>]" then
+        bar = " ⏳"
+      else
+        bar = progress ~= "" and (" " .. progress) or ""
+      end
+      table.insert(lines, string.format("    - %s%s", obj.text, bar))
+    end
+  end
+  return lines
 end
 
 function Dashboard.make_unlinked_line(t)
@@ -528,17 +573,17 @@ local function generate(ref_date)
   local work = Dashboard.scan(Config.projects_folder)
   local personal = Dashboard.scan(Config.personal_folder)
 
-  -- Calculate ages (same objective_text = increment, different = reset to 1)
+  -- Calculate ages (same first_undone_text = increment, different = reset to 1)
   for _, e in ipairs(work) do
     local prev = prev_linked[e.name]
-    if prev and Dashboard.same_objective(prev.objective_text, e.objective_text) then
+    if prev and Dashboard.same_objective(prev.first_undone_text, e.first_undone_text) then
       e.age = math.min(prev.age + days_gap, 9)
     end
   end
 
   for _, e in ipairs(personal) do
     local prev = prev_linked[e.name]
-    if prev and Dashboard.same_objective(prev.objective_text, e.objective_text) then
+    if prev and Dashboard.same_objective(prev.first_undone_text, e.first_undone_text) then
       e.age = math.min(prev.age + days_gap, 9)
     end
   end
