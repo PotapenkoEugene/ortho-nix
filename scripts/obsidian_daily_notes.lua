@@ -593,44 +593,28 @@ end
 function Tasks.sync_google(google_tasks, today_date)
   local entries, existing = Tasks.read()
   local changed = false
+  local last_entry = nil
 
-  local current_notes = {}
   for _, line in ipairs(google_tasks) do
     if line:match("^%- %[.%]") then
       local text = line:match("^%- %[.%]%s*(.*)") or line
       if not existing[text:lower()] then
-        current_notes = {}
-        local entry = {
+        last_entry = {
           text = text,
           marker = "[ ]",
-          notes = current_notes,
+          notes = {},
           date = today_date,
           done = false,
         }
-        table.insert(entries, entry)
+        table.insert(entries, last_entry)
         existing[text:lower()] = #entries
         changed = true
         Debug.log("Task added from Google: %s", text)
       else
-        current_notes = {} -- for attaching notes to skipped task
+        last_entry = nil
       end
-    elseif line:match("^    %- ") then
-      -- Attach notes to the last processed task (even if it existed)
-      local idx = nil
-      -- Find the last task we processed
-      for i = #entries, 1, -1 do
-        if current_notes == entries[i].notes then
-          idx = i
-          break
-        end
-      end
-      if idx then
-        table.insert(entries[idx].notes, line)
-      elseif #current_notes == 0 then
-        -- Notes for a skipped (existing) task — update if no notes yet
-        -- Find by scanning backwards
-      end
-      table.insert(current_notes, line)
+    elseif line:match("^    %- ") and last_entry then
+      table.insert(last_entry.notes, line)
     end
   end
 
@@ -735,7 +719,7 @@ function Calendar.fetch()
       in_tasks = true
     elseif trimmed ~= "" then
       if in_tasks then
-        table.insert(tasks, trimmed)
+        table.insert(tasks, line) -- preserve indentation for note lines
       else
         table.insert(events, trimmed)
       end
