@@ -29,11 +29,12 @@ local Config = {
 
   sections = {
     today = "## Today",
-    meetings = "## Meetings",
+    events = "## Events",
     important = "## Important",
     notes = "## Notes",
   },
 
+  calendar_script = os.getenv("HOME") .. "/.config/home-manager/scripts/calendar-events.sh",
   mails_folder = "mails",
   payments_file = "personal/payments.md",
 
@@ -505,6 +506,27 @@ function Mail.get_undone()
 end
 
 -- ============================================================================
+-- CALENDAR
+-- ============================================================================
+
+local Calendar = {}
+
+-- Fetch today's events by calling the calendar script
+function Calendar.fetch()
+  local output = vim.fn.system(Config.calendar_script)
+  if vim.v.shell_error ~= 0 then return {} end
+
+  local lines = {}
+  for line in output:gmatch("([^\n]*)\n?") do
+    local trimmed = Utils.trim(line)
+    if trimmed ~= "" then
+      table.insert(lines, trimmed)
+    end
+  end
+  return lines
+end
+
+-- ============================================================================
 -- DAILY NOTE
 -- ============================================================================
 
@@ -518,7 +540,7 @@ function DailyNote.parse_sections(content)
   for _, line in ipairs(lines) do
     local new_key = nil
     if line == Config.sections.today then new_key = "today"
-    elseif line == Config.sections.meetings then new_key = "meetings"
+    elseif line == Config.sections.events then new_key = "events"
     elseif line == Config.sections.notes then new_key = "notes"
     elseif line:match("^## ") then new_key = "other"
     end
@@ -629,17 +651,19 @@ local function generate(ref_date)
   Mail.sync()
   local mail_tasks = Mail.get_undone()
 
-  -- Carry forward Meetings/Notes from previous note if they have content
-  local meetings_lines = {}
-  local notes_lines = {}
-  if DailyNote.has_content(prev_sections.meetings) then
-    meetings_lines = prev_sections.meetings
+  -- Events: fetch from calendar, fall back to carry-forward
+  local events_lines = Calendar.fetch()
+  if #events_lines == 0 and DailyNote.has_content(prev_sections.events) then
+    events_lines = prev_sections.events
   end
+
+  -- Carry forward Notes from previous note if they have content
+  local notes_lines = {}
   if DailyNote.has_content(prev_sections.notes) then
     notes_lines = prev_sections.notes
   end
 
-  -- Build final output: Meetings -> Today -> Notes
+  -- Build final output: Events -> Today -> Notes
   local out = {
     "---",
     "tags:",
@@ -649,11 +673,11 @@ local function generate(ref_date)
     "",
     "# " .. today,
     "",
-    Config.sections.meetings,
+    Config.sections.events,
   }
 
-  if #meetings_lines > 0 then
-    for _, line in ipairs(meetings_lines) do table.insert(out, line) end
+  if #events_lines > 0 then
+    for _, line in ipairs(events_lines) do table.insert(out, line) end
   else
     table.insert(out, "")
   end
