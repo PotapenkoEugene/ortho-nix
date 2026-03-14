@@ -135,6 +135,7 @@
     micromamba
     uv # Python package manager (provides uvx)
     gws # Google Workspace CLI
+    yad # GUI dialogs (used for REC indicator in whisper-stream)
     dos2unix
     tldr
     tree

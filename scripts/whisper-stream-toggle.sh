@@ -25,8 +25,9 @@ notify() { notify-send "Whisper" "$1" -t 3000; }
 
 if [ -f "$PID_FILE" ]; then
     # --- STOP ---
-    read -r SYS_PID MIC_PID < "$PID_FILE"
+    read -r SYS_PID MIC_PID REC_PID < "$PID_FILE"
     kill "$SYS_PID" "$MIC_PID" 2>/dev/null
+    [ -n "${REC_PID:-}" ] && kill "$REC_PID" 2>/dev/null
     wait "$SYS_PID" "$MIC_PID" 2>/dev/null
     rm -f "$PID_FILE"
     # Kill any orphaned pw-record capture processes (prevents PipeWire disruption)
@@ -83,7 +84,13 @@ if [ -f "$PID_FILE" ]; then
 
         if [ -s "$FINAL_FILE" ]; then
             notify "Saved: ${BASENAME}.txt\nCleaning..."
-            clean-transcript.sh "$FINAL_FILE" &
+            CLEAN_FILE="$TRANSCRIPTS_DIR/${BASENAME}-clean.txt"
+            (
+                clean-transcript.sh "$FINAL_FILE" "$CLEAN_FILE"
+                if [ -f "$CLEAN_FILE" ] && [ -s "$CLEAN_FILE" ]; then
+                    polish-transcript.sh "$CLEAN_FILE"
+                fi
+            ) &
             disown
         else
             notify "No speech detected"
@@ -131,7 +138,16 @@ else
     pw-record --target "$SOURCE_SERIAL" --rate 16000 --channels 1 "$MIC_FILE" &
     MIC_PID=$!
 
-    echo "$SYS_PID $MIC_PID" > "$PID_FILE"
+    # Show red REC indicator in top-right corner
+    echo " ● REC " | yad --text-info \
+        --no-buttons --undecorated --on-top --sticky --skip-taskbar \
+        --no-focus --width=40 --height=45 \
+        --geometry=+1820+5 \
+        --back='#cc0000' --fore='#ffffff' \
+        --fontname='Bold 16' &
+    REC_PID=$!
+
+    echo "$SYS_PID $MIC_PID $REC_PID" > "$PID_FILE"
 
     notify "Recording system + mic...\nOutput: ${SINK_NAME:-sink $SINK_SERIAL}\nMic: ${SOURCE_LABEL}\nPress F8 to stop"
 fi

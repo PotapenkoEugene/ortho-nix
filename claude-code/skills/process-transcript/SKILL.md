@@ -21,7 +21,12 @@ Process transcribed speech from whisper-stream and convert to structured notes.
 
 1. **Find the transcript**
    - If $ARGUMENTS provided, use that file
-   - Otherwise, find the latest in ~/Orthidian/transcripts/
+   - Otherwise, find the latest recording in ~/Orthidian/transcripts/
+   - For each recording, prefer the best available version in this order:
+     1. `recording-*-polished.txt` (claude-polished, fewest errors)
+     2. `recording-*-clean.txt` (speaker-labeled, chronological)
+     3. `recording-*.txt` (raw whisper output)
+   - Use `ls -t ~/Orthidian/transcripts/recording-*-polished.txt` to find latest polished, fall back to clean, then raw
 
 2. **Read the transcript**
    ```bash
