@@ -11,17 +11,27 @@
     vim.api.nvim_set_hl(0, "HiColor1", { bg = "#2e7d32", fg = "#ffffff" })
     vim.api.nvim_set_hl(0, "HiColor2", { bg = "#c62828", fg = "#ffffff" })
 
+    vim.g.HiSyncMode = 0
+
+    local function hi_filepath()
+      local path = vim.api.nvim_buf_get_name(0)
+      if path == "" or vim.bo.buftype ~= "" then return nil end
+      return path
+    end
+
     local hi_group = vim.api.nvim_create_augroup("HiAutoSave", { clear = true })
     vim.api.nvim_create_autocmd({ "BufLeave", "VimLeave" }, {
       group = hi_group,
       callback = function()
-        pcall(vim.cmd, "Hi save")
+        local path = hi_filepath()
+        if path then pcall(vim.cmd, "silent! Hi save " .. vim.fn.fnameescape(path)) end
       end,
     })
     vim.api.nvim_create_autocmd("BufReadPost", {
       group = hi_group,
       callback = function()
-        pcall(vim.cmd, "Hi load")
+        local path = hi_filepath()
+        if path then pcall(vim.cmd, "silent! Hi load " .. vim.fn.fnameescape(path)) end
       end,
     })
 

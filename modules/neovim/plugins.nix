@@ -129,7 +129,7 @@
           codebase.enable = true;
         };
         opts = {
-          log_level = "TRACE";
+          log_level = "WARN";
           send_code = true;
           use_default_actions = true;
           use_default_prompts = true;
