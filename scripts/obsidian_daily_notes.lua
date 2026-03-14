@@ -170,19 +170,24 @@ function Utils.strip_age(text)
   return Utils.trim(result)
 end
 
--- Progress bar: 🟩🟩🟩⬜⬜ 3/5 (or ✅ if all done, empty if no children)
+-- Progress bar: fixed 4-bar width, percentage-based
+-- 🟩 = full segment, 🟨 = partial, ⬜ = empty, ✅ = all done
 function Utils.progress_bar(done, total)
   if total == 0 then return "" end
   if done == total then return "✅" end
+  local pct = (done / total) * 100
   local bar = ""
-  for i = 1, total do
-    if i <= done then
+  for i = 1, 4 do
+    local threshold = i * 25
+    if pct >= threshold then
       bar = bar .. "🟩"
+    elseif pct > threshold - 25 then
+      bar = bar .. "🟨"
     else
       bar = bar .. "⬜"
     end
   end
-  return bar .. " " .. done .. "/" .. total
+  return bar
 end
 
 function Utils.is_done(marker)
@@ -361,7 +366,7 @@ function Dashboard.parse_prev_lines(section_lines, linked, unlinked)
         local entry = linked[current_project]
         if entry.first_undone_text == "" then
           local obj_text = trimmed:match("^%-%s*(.*)") or trimmed
-          local clean = obj_text:gsub("%s*[🟩⬜✅]+%s*%d*/?%d*%s*$", "")
+          local clean = obj_text:gsub("%s*[🟩🟨⬜✅]+%s*$", "")
           clean = Utils.trim(clean)
           local marker = trimmed:match("^%-%s*(%[.%])")
           if marker and Utils.is_done(marker) then
