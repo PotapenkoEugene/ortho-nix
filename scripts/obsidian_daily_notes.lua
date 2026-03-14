@@ -28,13 +28,15 @@ local Config = {
   indent_size = 4,
 
   sections = {
-    today = "## Today",
     events = "## Events",
+    personal = "## Personal",
+    work = "## Work",
     important = "## Important",
     notes = "## Notes",
   },
 
   calendar_script = os.getenv("HOME") .. "/.config/home-manager/scripts/calendar-events.sh",
+  tasks_file = "personal/tasks.md",
   mails_folder = "mails",
   payments_file = "personal/payments.md",
 
@@ -282,6 +284,7 @@ end
 -- DASHBOARD
 -- ============================================================================
 
+local DailyNote = {} -- forward declaration (methods added later)
 local Dashboard = {}
 
 -- Scan folder for projects with at least one undone objective
@@ -313,54 +316,53 @@ function Dashboard.scan(folder)
   return entries
 end
 
--- Parse previous Today section for age tracking
+-- Parse lines from a dashboard section for age tracking
 -- Returns: linked = {[name] = {age, first_undone_text}}, unlinked = {{text, age}, ...}
--- first_undone_text = first indented undone objective (for age comparison)
-function Dashboard.parse_prev_today(content)
-  local lines = Utils.split_lines(content)
-  local in_today = false
-  local linked, unlinked = {}, {}
+function Dashboard.parse_prev_lines(section_lines, linked, unlinked)
+  linked = linked or {}
+  unlinked = unlinked or {}
   local current_project = nil
+  local last_unlinked = nil
 
-  for _, line in ipairs(lines) do
-    if line == Config.sections.today then
-      in_today = true
-    elseif in_today then
-      if line:match("^## ") then break end
-      local trimmed = Utils.trim(line)
-      local indent = Utils.get_indent_level(line)
+  for _, line in ipairs(section_lines or {}) do
+    local trimmed = Utils.trim(line)
+    local indent = Utils.get_indent_level(line)
 
-      if trimmed == "" then
-        -- skip blank lines
-      elseif indent == 0 and trimmed:match("^%-") then
-        current_project = nil
-        local text = TaskParser.text(line)
-        local project = Utils.extract_link(text)
+    if trimmed == "" then
+      -- skip blank lines
+    elseif indent == 0 and trimmed:match("^%-") then
+      current_project = nil
+      last_unlinked = nil
+      local text = TaskParser.text(line)
+      local project = Utils.extract_link(text)
 
-        if project then
-          local age = Utils.extract_age(text)
-          linked[project] = { age = age, first_undone_text = "" }
-          current_project = project
-        else
-          -- Unlinked personal task
-          local m = TaskParser.marker(line)
-          if not Utils.is_done(m) then
-            table.insert(unlinked, {
-              text = Utils.strip_age(text),
-              age = Utils.extract_age(text),
-            })
-          end
+      if project then
+        local age = Utils.extract_age(text)
+        linked[project] = { age = age, first_undone_text = "" }
+        current_project = project
+      else
+        -- Unlinked personal task
+        local m = TaskParser.marker(line)
+        if not Utils.is_done(m) then
+          last_unlinked = {
+            text = Utils.strip_age(text),
+            age = Utils.extract_age(text),
+            notes = {},
+          }
+          table.insert(unlinked, last_unlinked)
         end
-      elseif indent >= 1 and current_project and trimmed:match("^%-") then
+      end
+    elseif indent >= 1 and trimmed:match("^%-") then
+      if last_unlinked and not current_project then
+        -- Indented line under unlinked task: preserve as note
+        table.insert(last_unlinked.notes, line)
+      elseif current_project then
         -- Indented objective line: find first undone for age tracking
         local entry = linked[current_project]
         if entry.first_undone_text == "" then
-          -- Check if this line has an undone marker (or no done marker like ✅)
           local obj_text = trimmed:match("^%-%s*(.*)") or trimmed
-          -- Strip progress bar artifacts for comparison
           local clean = obj_text:gsub("%s*[🟩⬜✅]+%s*%d*/?%d*%s*$", "")
           clean = Utils.trim(clean)
-          -- Check for done markers: [x], [X], [~], or ✅ at start
           local marker = trimmed:match("^%-%s*(%[.%])")
           if marker and Utils.is_done(marker) then
             -- skip done objectives
@@ -371,6 +373,22 @@ function Dashboard.parse_prev_today(content)
       end
     end
   end
+
+  return linked, unlinked
+end
+
+-- Parse previous daily note for age tracking + carry-forward
+-- Reads Personal + Work sections (with backward compat for Today)
+function Dashboard.parse_prev(content)
+  local sections = DailyNote.parse_sections(content)
+  local linked, unlinked = {}, {}
+
+  -- Parse Personal section (unlinked tasks + personal projects)
+  Dashboard.parse_prev_lines(sections.personal, linked, unlinked)
+  -- Parse Work section (work projects)
+  Dashboard.parse_prev_lines(sections.work, linked, unlinked)
+  -- Backward compat: old "## Today" section (combined)
+  Dashboard.parse_prev_lines(sections.today, linked, unlinked)
 
   return linked, unlinked
 end
@@ -397,8 +415,15 @@ function Dashboard.make_lines(e)
   return lines
 end
 
-function Dashboard.make_unlinked_line(t)
-  return string.format("- %s %s", t.text, Utils.keycap(t.age))
+-- Returns a list of lines for an unlinked task (with optional notes)
+function Dashboard.make_unlinked_lines(t)
+  local lines = { string.format("- [ ] %s %s", t.text, Utils.keycap(t.age)) }
+  if t.notes then
+    for _, note in ipairs(t.notes) do
+      table.insert(lines, note)
+    end
+  end
+  return lines
 end
 
 -- ============================================================================
@@ -506,31 +531,222 @@ function Mail.get_undone()
 end
 
 -- ============================================================================
+-- TASKS (personal/tasks.md)
+-- ============================================================================
+
+local Tasks = {}
+
+-- Parse tasks file into structured list
+-- Each entry: {text, marker, notes={...}, date}
+-- date stored as trailing (YYYY-MM-DD) on the task line
+function Tasks.read()
+  local path = Utils.build_path(Config.tasks_file)
+  local content = Utils.read_file(path)
+  local entries = {}
+  local existing = {} -- lowercase text -> index in entries
+
+  if not content then return entries, existing end
+
+  local current = nil
+  for line in content:gmatch("([^\n]*)\n?") do
+    local trimmed = Utils.trim(line)
+    local indent = Utils.get_indent_level(line)
+
+    if indent == 0 and trimmed:match("^%- %[.%]") then
+      local marker = trimmed:match("^%- (%[.%])")
+      local rest = trimmed:match("^%- %[.%]%s*(.*)")
+      -- Extract date from trailing (YYYY-MM-DD)
+      local date = rest:match("%((%d%d%d%d%-%d%d%-%d%d)%)%s*$")
+      local text = rest:gsub("%s*%(%d%d%d%d%-%d%d%-%d%d%)%s*$", "")
+      current = {
+        text = text,
+        marker = marker,
+        notes = {},
+        date = date,
+        done = Utils.is_done(marker),
+      }
+      table.insert(entries, current)
+      existing[text:lower()] = #entries
+    elseif indent >= 1 and current and trimmed:match("^%-") then
+      table.insert(current.notes, line)
+    end
+  end
+
+  return entries, existing
+end
+
+-- Write tasks back to file
+function Tasks.write(entries)
+  local path = Utils.build_path(Config.tasks_file)
+  local lines = { "# Tasks", "" }
+  for _, e in ipairs(entries) do
+    local date_str = e.date and (" (" .. e.date .. ")") or ""
+    table.insert(lines, string.format("- %s %s%s", e.marker, e.text, date_str))
+    for _, note in ipairs(e.notes) do
+      table.insert(lines, note)
+    end
+  end
+  Utils.write_file(path, table.concat(lines, "\n") .. "\n")
+end
+
+-- Sync Google Tasks into file (add new ones)
+function Tasks.sync_google(google_tasks, today_date)
+  local entries, existing = Tasks.read()
+  local changed = false
+
+  local current_notes = {}
+  for _, line in ipairs(google_tasks) do
+    if line:match("^%- %[.%]") then
+      local text = line:match("^%- %[.%]%s*(.*)") or line
+      if not existing[text:lower()] then
+        current_notes = {}
+        local entry = {
+          text = text,
+          marker = "[ ]",
+          notes = current_notes,
+          date = today_date,
+          done = false,
+        }
+        table.insert(entries, entry)
+        existing[text:lower()] = #entries
+        changed = true
+        Debug.log("Task added from Google: %s", text)
+      else
+        current_notes = {} -- for attaching notes to skipped task
+      end
+    elseif line:match("^    %- ") then
+      -- Attach notes to the last processed task (even if it existed)
+      local idx = nil
+      -- Find the last task we processed
+      for i = #entries, 1, -1 do
+        if current_notes == entries[i].notes then
+          idx = i
+          break
+        end
+      end
+      if idx then
+        table.insert(entries[idx].notes, line)
+      elseif #current_notes == 0 then
+        -- Notes for a skipped (existing) task — update if no notes yet
+        -- Find by scanning backwards
+      end
+      table.insert(current_notes, line)
+    end
+  end
+
+  if changed then Tasks.write(entries) end
+  return entries, existing
+end
+
+-- Sync tasks from previous daily note's Personal section back to file
+-- - Marks done tasks as [x]
+-- - Adds manually written tasks that aren't in the file yet
+function Tasks.sync_from_daily(prev_personal_lines, ref_date)
+  if not prev_personal_lines then return end
+
+  local entries, existing = Tasks.read()
+  local changed = false
+  local last_new = nil
+
+  for _, line in ipairs(prev_personal_lines) do
+    local trimmed = Utils.trim(line)
+    local indent = Utils.get_indent_level(line)
+
+    if indent == 0 and trimmed:match("^%- %[.%]") then
+      last_new = nil
+      local marker = trimmed:match("^%- (%[.%])")
+      local text = Utils.strip_age(trimmed:match("^%- %[.%]%s*(.*)") or "")
+      if text == "" then goto continue end
+
+      local idx = existing[text:lower()]
+      if idx then
+        -- Existing task: sync done status
+        if Utils.is_done(marker) and not entries[idx].done then
+          entries[idx].marker = marker
+          entries[idx].done = true
+          changed = true
+          Debug.log("Task marked done: %s", text)
+        end
+      else
+        -- New task from daily note: add to file
+        local entry = {
+          text = text,
+          marker = marker,
+          notes = {},
+          date = ref_date,
+          done = Utils.is_done(marker),
+        }
+        table.insert(entries, entry)
+        existing[text:lower()] = #entries
+        last_new = entry
+        changed = true
+        Debug.log("Task added from daily note: %s", text)
+      end
+    elseif indent >= 1 and last_new and trimmed:match("^%-") then
+      -- Indented note line under a newly added task
+      table.insert(last_new.notes, line)
+    else
+      last_new = nil
+    end
+
+    ::continue::
+  end
+
+  if changed then Tasks.write(entries) end
+end
+
+-- Get undone tasks for display, with age calculated from creation date
+function Tasks.get_undone(today_date)
+  local entries = Tasks.read()
+  local result = {}
+  for _, e in ipairs(entries) do
+    if not e.done then
+      local age = 1
+      if e.date then
+        age = math.max(1, Utils.days_between(e.date, today_date))
+      end
+      table.insert(result, {
+        text = e.text,
+        age = math.min(age, 9),
+        notes = e.notes,
+      })
+    end
+  end
+  return result
+end
+
+-- ============================================================================
 -- CALENDAR
 -- ============================================================================
 
 local Calendar = {}
 
--- Fetch today's events by calling the calendar script
+-- Fetch today's events and tasks by calling the calendar script
+-- Returns: events (list of lines), tasks (list of lines)
 function Calendar.fetch()
   local output = vim.fn.system(Config.calendar_script)
-  if vim.v.shell_error ~= 0 then return {} end
+  if vim.v.shell_error ~= 0 then return {}, {} end
 
-  local lines = {}
+  local events, tasks = {}, {}
+  local in_tasks = false
   for line in output:gmatch("([^\n]*)\n?") do
     local trimmed = Utils.trim(line)
-    if trimmed ~= "" then
-      table.insert(lines, trimmed)
+    if trimmed == "---TASKS---" then
+      in_tasks = true
+    elseif trimmed ~= "" then
+      if in_tasks then
+        table.insert(tasks, trimmed)
+      else
+        table.insert(events, trimmed)
+      end
     end
   end
-  return lines
+  return events, tasks
 end
 
 -- ============================================================================
 -- DAILY NOTE
 -- ============================================================================
-
-local DailyNote = {}
 
 function DailyNote.parse_sections(content)
   local lines = Utils.split_lines(content)
@@ -539,8 +755,11 @@ function DailyNote.parse_sections(content)
 
   for _, line in ipairs(lines) do
     local new_key = nil
-    if line == Config.sections.today then new_key = "today"
-    elseif line == Config.sections.events then new_key = "events"
+    if line == Config.sections.events then new_key = "events"
+    elseif line == "## Meetings" then new_key = "events" -- backward compat
+    elseif line == Config.sections.personal then new_key = "personal"
+    elseif line == Config.sections.work then new_key = "work"
+    elseif line == "## Today" then new_key = "today" -- backward compat
     elseif line == Config.sections.notes then new_key = "notes"
     elseif line:match("^## ") then new_key = "other"
     end
@@ -584,7 +803,7 @@ local function generate(ref_date)
     local ref_path = Utils.build_path(Config.daily_folder, ref_date .. ".md")
     local content = Utils.read_file(ref_path)
     if content then
-      prev_linked, prev_unlinked = Dashboard.parse_prev_today(content)
+      prev_linked, prev_unlinked = Dashboard.parse_prev(content)
       prev_sections = DailyNote.parse_sections(content)
       days_gap = Utils.days_between(ref_date, today)
       Debug.log("Ref: %s, Days gap: %d", ref_date, days_gap)
@@ -610,14 +829,17 @@ local function generate(ref_date)
     end
   end
 
-  -- Carry forward unlinked personal tasks (done already filtered in parse_prev_today)
-  local unlinked = {}
-  for _, t in ipairs(prev_unlinked) do
-    table.insert(unlinked, {
-      text = t.text,
-      age = math.min(t.age + days_gap, 9),
-    })
-  end
+  -- Fetch calendar events and Google Tasks
+  local events_lines, google_tasks = Calendar.fetch()
+
+  -- Sync tasks from previous daily note back to tasks file (done + new manual tasks)
+  Tasks.sync_from_daily(prev_sections.personal, ref_date or today)
+
+  -- Sync Google Tasks into tasks file (adds new ones)
+  Tasks.sync_google(google_tasks, today)
+
+  -- Read undone tasks from file (source of truth)
+  local unlinked = Tasks.get_undone(today)
 
   -- Sort each group by age descending, then name ascending
   local function sort_by_age(list, key)
@@ -631,19 +853,24 @@ local function generate(ref_date)
   sort_by_age(personal, "name")
   sort_by_age(work, "name")
 
-  -- Build Today lines: unlinked -> personal -> work
-  local today_lines = {}
+  -- Build Personal lines: unlinked tasks -> personal projects
+  local personal_lines = {}
   for _, t in ipairs(unlinked) do
-    table.insert(today_lines, Dashboard.make_unlinked_line(t))
+    for _, line in ipairs(Dashboard.make_unlinked_lines(t)) do
+      table.insert(personal_lines, line)
+    end
   end
   for _, e in ipairs(personal) do
     for _, line in ipairs(Dashboard.make_lines(e)) do
-      table.insert(today_lines, line)
+      table.insert(personal_lines, line)
     end
   end
+
+  -- Build Work lines: work projects
+  local work_lines = {}
   for _, e in ipairs(work) do
     for _, line in ipairs(Dashboard.make_lines(e)) do
-      table.insert(today_lines, line)
+      table.insert(work_lines, line)
     end
   end
 
@@ -651,8 +878,7 @@ local function generate(ref_date)
   Mail.sync()
   local mail_tasks = Mail.get_undone()
 
-  -- Events: fetch from calendar, fall back to carry-forward
-  local events_lines = Calendar.fetch()
+  -- Events: fall back to carry-forward if fetch returned nothing
   if #events_lines == 0 and DailyNote.has_content(prev_sections.events) then
     events_lines = prev_sections.events
   end
@@ -663,7 +889,7 @@ local function generate(ref_date)
     notes_lines = prev_sections.notes
   end
 
-  -- Build final output: Events -> Today -> Notes
+  -- Build final output: Events -> Personal -> Work -> Important -> Notes
   local out = {
     "---",
     "tags:",
@@ -683,9 +909,14 @@ local function generate(ref_date)
   end
   table.insert(out, "")
 
-  table.insert(out, Config.sections.today)
-  for _, line in ipairs(today_lines) do table.insert(out, line) end
-  if #today_lines == 0 then table.insert(out, "") end
+  table.insert(out, Config.sections.personal)
+  for _, line in ipairs(personal_lines) do table.insert(out, line) end
+  if #personal_lines == 0 then table.insert(out, "") end
+  table.insert(out, "")
+
+  table.insert(out, Config.sections.work)
+  for _, line in ipairs(work_lines) do table.insert(out, line) end
+  if #work_lines == 0 then table.insert(out, "") end
   table.insert(out, "")
 
   if #mail_tasks > 0 then
