@@ -37,6 +37,7 @@
     libreoffice
     pdftk
     pandoc
+    mermaid-cli # diagram generation from text
     wego # terminal weather
     ctop # container top
     brightnessctl
