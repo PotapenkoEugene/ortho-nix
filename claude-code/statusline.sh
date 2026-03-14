@@ -11,6 +11,10 @@ output_style=$(echo "$input" | jq -r '.output_style.name // empty')
 vim_mode=$(echo "$input" | jq -r '.vim.mode // empty')
 agent=$(echo "$input" | jq -r '.agent.name // empty')
 ctx_size=$(echo "$input" | jq -r '.context_window.context_window_size // 200000')
+# Workaround: Claude Code underreports context window for 1M-token models
+if [[ "$model" == *"Opus 4.6"* || "$model" == *"Sonnet 4.6"* ]]; then
+    ctx_size=1000000
+fi
 used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0')
 session_id=$(echo "$input" | jq -r '.session_id // empty')
 
