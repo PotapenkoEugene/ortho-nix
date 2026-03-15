@@ -134,6 +134,14 @@
         "set status-style bg=#f38ba8,fg=#11111b" \
         "set status-style bg=#181825,fg=#cdd6f4"'
 
+      # Only enable continuum auto-save/restore on the main (default) tmux server.
+      # Prevents secondary sockets (-L notes, -L vpn) from restoring all sessions.
+      %if #{m:*/default,#{socket_path}}
+      set -g @continuum-restore 'on'
+      %else
+      set -g @continuum-save-interval '0'
+      %endif
+
       # Catppuccin status bar composition (must be after catppuccin plugin loads)
       set -g status-left-length 120
       set -g status-right-length 100
@@ -160,9 +168,7 @@
       }
       {
         plugin = continuum;
-        extraConfig = ''
-          set -g @continuum-restore 'on'
-        '';
+        extraConfig = "";
       }
       {
         plugin = tmux-thumbs;

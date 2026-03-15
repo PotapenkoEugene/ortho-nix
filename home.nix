@@ -18,6 +18,7 @@
     ./modules/piper.nix
     ./modules/llm.nix
     ./modules/obsidian-backup.nix
+    ./modules/kitty-session.nix
   ];
 
   # GPU support for non-NixOS via nixGL
