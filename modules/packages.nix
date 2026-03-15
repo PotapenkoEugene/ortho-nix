@@ -27,7 +27,6 @@
     fd # Modern find alternative, works well with fzf
     eza # color alternative for ls
     bat # cat with syntax highlight
-    duf # disk usage overview
     # clipboard
     xclip
     wl-clipboard

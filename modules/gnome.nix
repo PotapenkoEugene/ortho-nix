@@ -11,7 +11,7 @@
       {package = pkgs.gnomeExtensions.tiling-shell;}
       #	    { package = pkgs.gnomeExtensions.caffeine; }
       {package = pkgs.gnomeExtensions.clipboard-indicator;}
-      {package = pkgs.gnomeExtensions.system-monitor;}
+      {package = pkgs.gnomeExtensions.astra-monitor;}
     ];
   };
 
@@ -121,6 +121,10 @@
         clear-history = [];
         private-mode-binding = [];
         toggle-menu = ["<Super><Control>v"];
+      };
+      "org/gnome/shell/extensions/astra-monitor" = {
+        panel-box = "left";
+        panel-box-order = 0;
       };
       "org/gnome/shell/extensions/unite" = {
         extend-left-box = false;

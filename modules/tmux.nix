@@ -46,9 +46,6 @@
       # cmatrix screensaver popup
       bind e display-popup -w 100% -h 100% -E "cmatrix -ab"
 
-      # disk usage popup
-      bind u display-popup -w 60% -h 50% -E "bash -c 'duf; read -n1'"
-
       # rmpc (music player) popup
       bind m display-popup -w 80% -h 75% -E "rmpc"
 
