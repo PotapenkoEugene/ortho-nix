@@ -80,6 +80,22 @@
         silent = true;
       };
     }
+    {
+      mode = "v";
+      key = "<leader>ai";
+      action.__raw = ''
+        function()
+          vim.ui.input({ prompt = "CodeCompanion: " }, function(input)
+            if input and input ~= "" then
+              vim.cmd("'<,'>CodeCompanion " .. input)
+            end
+          end)
+        end
+      '';
+      options = {
+        desc = "CodeCompanion inline edit";
+      };
+    }
 
     # Molten
     {

@@ -27,6 +27,7 @@
       #    ];
     };
 
+    dressing.enable = true; # floating UI for vim.ui.input/select
     oil.enable = true; # view\rename\create files\dirs
 
     # LSP nixvim: https://nix-community.github.io/nixvim/lsp/index.html
