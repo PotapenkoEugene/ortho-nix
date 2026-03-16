@@ -52,6 +52,7 @@ Apply these sender rules (user refines over time):
 - Glassdoor, Indeed, job board emails
 - App store promos, gaming platform marketing
 - Mass promotional campaigns, coupons
+- **Partner** (mobile operator) — bulk invoices and promotions, not important
 - **Journal/article solicitations**: Invitations to publish, write articles, submit to journals (MDPI, Springer Nature unsolicited, Frontiers invitations) = Skip, not spam
 - University bulk announcements (not personally relevant)
 

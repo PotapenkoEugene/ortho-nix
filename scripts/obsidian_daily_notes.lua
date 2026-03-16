@@ -900,19 +900,18 @@ local function generate(ref_date)
 
   table.insert(out, Config.sections.personal)
   for _, line in ipairs(personal_lines) do table.insert(out, line) end
-  if #personal_lines == 0 then table.insert(out, "") end
+  if #mail_tasks > 0 then
+    for _, line in ipairs(mail_tasks) do
+      table.insert(out, line)
+    end
+  end
+  if #personal_lines == 0 and #mail_tasks == 0 then table.insert(out, "") end
   table.insert(out, "")
 
   table.insert(out, Config.sections.work)
   for _, line in ipairs(work_lines) do table.insert(out, line) end
   if #work_lines == 0 then table.insert(out, "") end
   table.insert(out, "")
-
-  if #mail_tasks > 0 then
-    table.insert(out, Config.sections.important)
-    for _, line in ipairs(mail_tasks) do table.insert(out, line) end
-    table.insert(out, "")
-  end
 
   table.insert(out, Config.sections.notes)
   if #notes_lines > 0 then
