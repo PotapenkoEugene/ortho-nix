@@ -40,6 +40,14 @@
     ".claude/skills/mail/SKILL.md" = {
       source = ../claude-code/skills/mail/SKILL.md;
     };
+
+    ".claude/skills/peon-ping-config/SKILL.md" = {
+      source = ../claude-code/skills/peon-ping-config/SKILL.md;
+    };
+
+    ".claude/skills/peon-ping-toggle/SKILL.md" = {
+      source = ../claude-code/skills/peon-ping-toggle/SKILL.md;
+    };
   };
 
   # Create directory for processed transcripts

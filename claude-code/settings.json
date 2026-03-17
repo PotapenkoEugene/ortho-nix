@@ -10,6 +10,17 @@
     "command": "/home/ortho/.config/home-manager/claude-code/statusline.sh"
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '/home/ortho/.config/home-manager/scripts/peon-sound.sh session.start &'"
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "*",

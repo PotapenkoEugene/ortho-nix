@@ -901,8 +901,16 @@ local function generate(ref_date)
   table.insert(out, Config.sections.personal)
   for _, line in ipairs(personal_lines) do table.insert(out, line) end
   if #mail_tasks > 0 then
+    -- Build set of existing unlinked task texts to deduplicate against mail
+    local seen = {}
+    for _, t in ipairs(unlinked) do
+      seen[t.text:lower()] = true
+    end
     for _, line in ipairs(mail_tasks) do
-      table.insert(out, line)
+      local text = line:match("^%- %[.%]%s*(.*)") or ""
+      if not seen[text:lower()] then
+        table.insert(out, line)
+      end
     end
   end
   if #personal_lines == 0 and #mail_tasks == 0 then table.insert(out, "") end
