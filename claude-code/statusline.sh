@@ -331,25 +331,22 @@ else
 fi
 output+="$(block "$cmp_bg" "$cmp_fg" "${CHAR_CYCLE}${compact_count}")"
 
-# Context: text-on-bar
+# Context: text-on-bar (static label, API percentage for fill)
 ctx_pct=${used_pct:-0}
-ctx_label=" $(format_tokens "$total_tokens")/$(format_tokens "$ctx_size") "
-output+="$(text_bar "$ctx_label" "$ctx_pct")${C_RESET}"
+output+="$(text_bar " 1M " "$ctx_pct")${C_RESET}"
 
 # 5-hour usage: text-on-bar
-fh_label=" ${five_hour_elapsed:-?}/5h "
 if [ -n "$five_hour" ]; then
-  output+="$(text_bar "$fh_label" "$five_hour")${C_RESET}"
+  output+="$(text_bar " 5h " "$five_hour")${C_RESET}"
 else
-  output+="${BG_BAR}${FG_DIM}${fh_label}${C_RESET}"
+  output+="${BG_BAR}${FG_DIM} 5h ${C_RESET}"
 fi
 
 # 7-day usage: text-on-bar
-sd_label=" ${seven_day_elapsed:-?}/7d "
 if [ -n "$seven_day" ]; then
-  output+="$(text_bar "$sd_label" "$seven_day")${C_RESET}"
+  output+="$(text_bar " 7d " "$seven_day")${C_RESET}"
 else
-  output+="${BG_BAR}${FG_DIM}${sd_label}${C_RESET}"
+  output+="${BG_BAR}${FG_DIM} 7d ${C_RESET}"
 fi
 
 printf '%s\n' "$output"
