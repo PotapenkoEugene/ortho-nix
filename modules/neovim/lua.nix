@@ -19,19 +19,49 @@
       return path
     end
 
+    local function hi_file_for(path)
+      return path .. ".hl"
+    end
+
+    -- Check if .hl file has actual highlights (more than 2-line header)
+    local function hi_file_has_data(hlpath)
+      local f = io.open(hlpath, "r")
+      if not f then return false end
+      local count = 0
+      for _ in f:lines() do
+        count = count + 1
+        if count > 2 then f:close(); return true end
+      end
+      f:close()
+      return false
+    end
+
     local hi_group = vim.api.nvim_create_augroup("HiAutoSave", { clear = true })
     vim.api.nvim_create_autocmd({ "BufLeave", "VimLeave" }, {
       group = hi_group,
       callback = function()
         local path = hi_filepath()
-        if path then pcall(vim.cmd, "silent! Hi save " .. vim.fn.fnameescape(path)) end
+        if not path then return end
+        local hlpath = hi_file_for(path)
+        pcall(vim.cmd, "silent! Hi save " .. vim.fn.fnameescape(path))
+        -- Delete .hl file if it only has the 2-line header (no highlights)
+        if not hi_file_has_data(hlpath) then
+          os.remove(hlpath)
+          -- Also remove backup file if it exists
+          os.remove(hlpath .. ".o")
+        end
       end,
     })
     vim.api.nvim_create_autocmd("BufReadPost", {
       group = hi_group,
       callback = function()
         local path = hi_filepath()
-        if path then pcall(vim.cmd, "silent! Hi load " .. vim.fn.fnameescape(path)) end
+        if not path then return end
+        local hlpath = hi_file_for(path)
+        -- Only load if .hl file exists and has data
+        if hi_file_has_data(hlpath) then
+          pcall(vim.cmd, "silent! Hi load " .. vim.fn.fnameescape(path))
+        end
       end,
     })
 
