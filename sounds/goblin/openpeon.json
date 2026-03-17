@@ -1,0 +1,147 @@
+{
+  "cesp_version": "1.0",
+  "name": "goblin",
+  "display_name": "Goblin Merchant",
+  "version": "1.0.0",
+  "author": {
+    "name": "PeonPing",
+    "github": "PeonPing"
+  },
+  "license": "CC-BY-NC-4.0",
+  "language": "en",
+  "categories": {
+    "session.start": {
+      "sounds": [
+        {
+          "file": "sounds/GruffGreeting01.wav",
+          "label": "Time is money, friend.",
+          "sha256": "aa3694f46b46496c230006c9b3c5d02b3084b6f546dab783b3a806593331dafc"
+        },
+        {
+          "file": "sounds/GruffGreeting04.wav",
+          "label": "Hey, how you doin'?",
+          "sha256": "19366c6f613c4ba9cf0c4271b416ef98f2d36c5da60f182038f383c97f268874"
+        },
+        {
+          "file": "sounds/GruffGreeting03.wav",
+          "label": "Do I have a deal for you.",
+          "sha256": "af2c1c38473198d5d27a1c488345e182175671b424ac28c7d00e722b44f0861e"
+        },
+        {
+          "file": "sounds/GruffGreeting05.wav",
+          "label": "Ah, potential customer.",
+          "sha256": "ab2f6256018fc44711b4aef4497078ec488d5738b74b6937285e01db557c5f23"
+        }
+      ]
+    },
+    "task.acknowledge": {
+      "sounds": [
+        {
+          "file": "sounds/GruffGreeting02.wav",
+          "label": "What's up?",
+          "sha256": "fc619194ce1a4c2f0a4bd2dd5586e96876ca0995d7a678228b07aa0664701ced"
+        },
+        {
+          "file": "sounds/GruffGreeting06.wav",
+          "label": "Yo.",
+          "sha256": "5b46a255b98d93df8fd0cb28c0a66ccfad7142750c097645b9af8e9a13f4136c"
+        },
+        {
+          "file": "sounds/GruffVendor01.wav",
+          "label": "I got what you need.",
+          "sha256": "e3cc40f66f7fb0a340e07c5ddbeed8a6f54ffa4bdf14530aa3c1e60cd4a3b7f5"
+        }
+      ]
+    },
+    "task.complete": {
+      "sounds": [
+        {
+          "file": "sounds/GruffFarewell01.wav",
+          "label": "Keep it real.",
+          "sha256": "17622507b5630065983221b69aa1679e3bdeb012761f06fb374d06990f4bda50"
+        },
+        {
+          "file": "sounds/GruffFarewell02.wav",
+          "label": "Have a good one.",
+          "sha256": "0e6ad39949f2e55cc1e0a962b2bda9e451b7ca939f53bc387b2d76e85a10faeb"
+        },
+        {
+          "file": "sounds/GruffFarewell04.wav",
+          "label": "Be good.",
+          "sha256": "2a35ea8ac6d7b14ac5b47d44577046315e4961213cb193dbc514486f64e2c7d2"
+        }
+      ]
+    },
+    "task.error": {
+      "sounds": [
+        {
+          "file": "sounds/GruffPissed01.wav",
+          "label": "Yeah, very funny.",
+          "sha256": "1af79650b644ac5bbc3f3b9dd74fbd1db45e93918a8357977fe87a52fb0a34f1"
+        },
+        {
+          "file": "sounds/GruffPissed04.wav",
+          "label": "Will you knock it off?",
+          "sha256": "9a38e6b91f26b63adad70fd88b31cf3eb1f2ecd8afa2021582504d2b061a17e0"
+        }
+      ]
+    },
+    "input.required": {
+      "sounds": [
+        {
+          "file": "sounds/GruffGreeting01.wav",
+          "label": "Time is money, friend.",
+          "sha256": "aa3694f46b46496c230006c9b3c5d02b3084b6f546dab783b3a806593331dafc"
+        },
+        {
+          "file": "sounds/GruffGreeting04.wav",
+          "label": "Hey, how you doin'?",
+          "sha256": "19366c6f613c4ba9cf0c4271b416ef98f2d36c5da60f182038f383c97f268874"
+        },
+        {
+          "file": "sounds/GruffVendor02.wav",
+          "label": "I got the best deals anywhere.",
+          "sha256": "385e2e7c0c4a1e696504634f2c01dd9455710ec2f5836ec893aacaaa392f1d88"
+        },
+        {
+          "file": "sounds/GruffGreeting06.wav",
+          "label": "Yo.",
+          "sha256": "5b46a255b98d93df8fd0cb28c0a66ccfad7142750c097645b9af8e9a13f4136c"
+        }
+      ]
+    },
+    "resource.limit": {
+      "sounds": [
+        {
+          "file": "sounds/GruffPissed05.wav",
+          "label": "Amateur.",
+          "sha256": "ad5ed374f316af10394998b99ac835211370be639a960e2dc6ee766eca3fbf43"
+        }
+      ]
+    },
+    "user.spam": {
+      "sounds": [
+        {
+          "file": "sounds/GruffPissed01.wav",
+          "label": "Yeah, very funny.",
+          "sha256": "1af79650b644ac5bbc3f3b9dd74fbd1db45e93918a8357977fe87a52fb0a34f1"
+        },
+        {
+          "file": "sounds/GruffPissed02.wav",
+          "label": "I got a long day, kid.",
+          "sha256": "6d7cc45bc37d2804abc20563498b61ae43ed2e9b8a1976067235554bc83795f2"
+        },
+        {
+          "file": "sounds/GruffPissed04.wav",
+          "label": "Will you knock it off?",
+          "sha256": "9a38e6b91f26b63adad70fd88b31cf3eb1f2ecd8afa2021582504d2b061a17e0"
+        },
+        {
+          "file": "sounds/GruffPissed05.wav",
+          "label": "Amateur.",
+          "sha256": "ad5ed374f316af10394998b99ac835211370be639a960e2dc6ee766eca3fbf43"
+        }
+      ]
+    }
+  }
+}

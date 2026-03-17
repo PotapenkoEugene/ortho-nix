@@ -15,9 +15,7 @@ echo "${PANE}|${SESSION}" >> "$QUEUE"
 # Play sound + desktop notification (always, regardless of popup)
 (
     /usr/bin/notify-send "Claude Code" "${SESSION}: needs attention" -t 5000 -u normal
-    /home/ortho/.nix-profile/bin/pw-play \
-        $(/usr/bin/shuf -n1 -e /home/ortho/.config/home-manager/sounds/peasant/PeasantWhat{1,2,3,4}.wav) \
-        2>>/tmp/peon-debug.log
+    /home/ortho/.config/home-manager/scripts/peon-sound.sh input.required
 ) &
 
 # Try to become the popup manager (PID-based lock)
