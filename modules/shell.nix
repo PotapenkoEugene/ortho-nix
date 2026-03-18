@@ -47,6 +47,7 @@
       export PATH=~/.local/bin/:$PATH
       export CFLAGS="-I/usr/include"
       export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
+      export MAMBA_ROOT_PREFIX="$HOME/micromamba"
       export RSTUDIO_WHICH_R="/home/ortho/micromamba/envs/R42/bin/R"
       set -o vi
       cc() {
