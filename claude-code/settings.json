@@ -64,6 +64,17 @@
       }
     ]
   },
+  "extraKnownMarketplaces": {
+    "atomic": {
+      "source": {
+        "source": "github",
+        "repo": "GreyBoxed/atomic"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "atomic@atomic": true
+  },
   "permissions": {
     "defaultMode": "acceptEdits",
     "additionalDirectories": ["~/Orthidian"],
