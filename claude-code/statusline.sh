@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Claude Code Status Line - Powerline with gradient bars
-# Shows: user | dir | git | model | vim | agent | [ctx bar] | [compactions] | [duration] | [5h bar] | [7d bar]
+# Shows: user | dir | git | model | vim | agent | [compactions] | [ctx bar]
 
 input=$(cat)
 
@@ -86,109 +86,6 @@ if [ -n "$cwd" ] && git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
 fi
 
 now=$(date +%s)
-
-# --- API usage (cached, background fetch) ---
-USAGE_CACHE="/tmp/claude-usage-cache"
-USAGE_BACKOFF="/tmp/claude-usage-backoff"
-USAGE_TTL=900  # 15 min between fetches
-USAGE_STALE=3600  # 1 hour — show "?" if older
-five_hour=""
-seven_day=""
-five_hour_resets=""
-seven_day_resets=""
-
-fetch_usage() {
-  local creds="$HOME/.claude/.credentials.json"
-  [ -f "$creds" ] || return 1
-  local token
-  token=$(jq -r '.claudeAiOauth.accessToken // empty' "$creds" 2>/dev/null)
-  [ -n "$token" ] || return 1
-  # Exponential backoff: skip if last failure was recent
-  if [ -f "$USAGE_BACKOFF" ]; then
-    local backoff_until
-    read -r backoff_until < "$USAGE_BACKOFF" 2>/dev/null
-    if (( $(date +%s) < backoff_until )); then
-      return 1
-    fi
-    rm -f "$USAGE_BACKOFF"
-  fi
-  local tmpbody="/tmp/claude-usage-resp.$$"
-  local http_code
-  http_code=$(curl -s --max-time 5 -o "$tmpbody" -w '%{http_code}' \
-    -H "Authorization: Bearer $token" \
-    -H "anthropic-beta: oauth-2025-04-20" \
-    "https://api.anthropic.com/api/oauth/usage" 2>/dev/null)
-  if [[ "$http_code" == "429" ]]; then
-    # Back off for 10 minutes on rate limit
-    echo $(( $(date +%s) + 600 )) > "$USAGE_BACKOFF"
-    rm -f "$tmpbody"
-    return 1
-  fi
-  if [[ "$http_code" != "200" ]]; then
-    rm -f "$tmpbody"
-    return 1
-  fi
-  local resp
-  resp=$(cat "$tmpbody")
-  rm -f "$tmpbody"
-  [ -n "$resp" ] || return 1
-  local f5 f7 r5 r7
-  IFS=$'\t' read -r f5 f7 r5 r7 < <(echo "$resp" | jq -r '[
-    (.five_hour.utilization // 0 | floor),
-    (.seven_day.utilization // 0 | floor),
-    (.five_hour.resets_at // "_"),
-    (.seven_day.resets_at // "_")
-  ] | @tsv')
-  # Convert ISO timestamps to epoch
-  local r5e=0 r7e=0
-  [[ "$r5" != "_" ]] && r5e=$(date -d "$r5" +%s 2>/dev/null || echo 0)
-  [[ "$r7" != "_" ]] && r7e=$(date -d "$r7" +%s 2>/dev/null || echo 0)
-  local tmpf="${USAGE_CACHE}.tmp"
-  echo "$(date +%s) $f5 $f7 $r5e $r7e" > "$tmpf" && mv "$tmpf" "$USAGE_CACHE"
-}
-
-if [ -f "$USAGE_CACHE" ]; then
-  read -r cache_ts five_hour seven_day five_hour_resets seven_day_resets < "$USAGE_CACHE" 2>/dev/null
-  five_hour=${five_hour%.*}
-  seven_day=${seven_day%.*}
-  five_hour_resets=${five_hour_resets:-0}
-  seven_day_resets=${seven_day_resets:-0}
-  age=$(( now - cache_ts ))
-  # Invalidate stale data
-  if (( age > USAGE_STALE )); then
-    five_hour=""
-    seven_day=""
-  fi
-  if (( age > USAGE_TTL )); then
-    fetch_usage &
-  fi
-else
-  fetch_usage &
-fi
-
-# Compute elapsed time in each window (rolling: elapsed = window - remaining)
-five_hour_elapsed=""
-seven_day_elapsed=""
-if (( five_hour_resets > 0 )); then
-  remaining_5h=$(( five_hour_resets - now ))
-  (( remaining_5h < 0 )) && remaining_5h=0
-  elapsed_5h=$(( 18000 - remaining_5h ))  # 5h = 18000s
-  (( elapsed_5h < 0 )) && elapsed_5h=0
-  # Format as X.Xh (tenths of hours)
-  eh=$(( elapsed_5h / 3600 ))
-  em=$(( (elapsed_5h % 3600) / 360 ))  # tenths of hour
-  five_hour_elapsed="${eh}.${em}"
-fi
-if (( seven_day_resets > 0 )); then
-  remaining_7d=$(( seven_day_resets - now ))
-  (( remaining_7d < 0 )) && remaining_7d=0
-  elapsed_7d=$(( 604800 - remaining_7d ))  # 7d = 604800s
-  (( elapsed_7d < 0 )) && elapsed_7d=0
-  # Format as Xd (whole days, with tenths)
-  ed=$(( elapsed_7d / 86400 ))
-  et=$(( (elapsed_7d % 86400) / 8640 ))  # tenths of day
-  seven_day_elapsed="${ed}.${et}"
-fi
 
 # --- ANSI codes (pre-rendered via $'...' for immediate use) ---
 C_RESET=$'\033[0m'
@@ -364,19 +261,5 @@ output+="$(block "$cmp_bg" "$cmp_fg" "${CHAR_CYCLE}${compact_count}")"
 # Context: text-on-bar (static label, API percentage for fill)
 ctx_pct=${used_pct:-0}
 output+="$(text_bar " 1M " "$ctx_pct")${C_RESET}"
-
-# 5-hour usage: text-on-bar
-if [ -n "$five_hour" ]; then
-  output+="$(text_bar " 5h " "$five_hour")${C_RESET}"
-else
-  output+="${BG_BAR}${FG_DIM} 5h ${C_RESET}"
-fi
-
-# 7-day usage: text-on-bar
-if [ -n "$seven_day" ]; then
-  output+="$(text_bar " 7d " "$seven_day")${C_RESET}"
-else
-  output+="${BG_BAR}${FG_DIM} 7d ${C_RESET}"
-fi
 
 printf '%s\n' "$output"
