@@ -89,7 +89,9 @@ now=$(date +%s)
 
 # --- API usage (cached, background fetch) ---
 USAGE_CACHE="/tmp/claude-usage-cache"
-USAGE_TTL=300
+USAGE_BACKOFF="/tmp/claude-usage-backoff"
+USAGE_TTL=900  # 15 min between fetches
+USAGE_STALE=3600  # 1 hour — show "?" if older
 five_hour=""
 seven_day=""
 five_hour_resets=""
@@ -101,11 +103,34 @@ fetch_usage() {
   local token
   token=$(jq -r '.claudeAiOauth.accessToken // empty' "$creds" 2>/dev/null)
   [ -n "$token" ] || return 1
-  local resp
-  resp=$(curl -sf --max-time 5 \
+  # Exponential backoff: skip if last failure was recent
+  if [ -f "$USAGE_BACKOFF" ]; then
+    local backoff_until
+    read -r backoff_until < "$USAGE_BACKOFF" 2>/dev/null
+    if (( $(date +%s) < backoff_until )); then
+      return 1
+    fi
+    rm -f "$USAGE_BACKOFF"
+  fi
+  local tmpbody="/tmp/claude-usage-resp.$$"
+  local http_code
+  http_code=$(curl -s --max-time 5 -o "$tmpbody" -w '%{http_code}' \
     -H "Authorization: Bearer $token" \
     -H "anthropic-beta: oauth-2025-04-20" \
     "https://api.anthropic.com/api/oauth/usage" 2>/dev/null)
+  if [[ "$http_code" == "429" ]]; then
+    # Back off for 10 minutes on rate limit
+    echo $(( $(date +%s) + 600 )) > "$USAGE_BACKOFF"
+    rm -f "$tmpbody"
+    return 1
+  fi
+  if [[ "$http_code" != "200" ]]; then
+    rm -f "$tmpbody"
+    return 1
+  fi
+  local resp
+  resp=$(cat "$tmpbody")
+  rm -f "$tmpbody"
   [ -n "$resp" ] || return 1
   local f5 f7 r5 r7
   IFS=$'\t' read -r f5 f7 r5 r7 < <(echo "$resp" | jq -r '[
@@ -129,6 +154,11 @@ if [ -f "$USAGE_CACHE" ]; then
   five_hour_resets=${five_hour_resets:-0}
   seven_day_resets=${seven_day_resets:-0}
   age=$(( now - cache_ts ))
+  # Invalidate stale data
+  if (( age > USAGE_STALE )); then
+    five_hour=""
+    seven_day=""
+  fi
   if (( age > USAGE_TTL )); then
     fetch_usage &
   fi
