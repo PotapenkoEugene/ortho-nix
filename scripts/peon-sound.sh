@@ -56,4 +56,4 @@ PACK="${PACKS[$((RANDOM % ${#PACKS[@]}))]}"
 SOUND=$(/usr/bin/jq -r ".categories.\"$CATEGORY\".sounds[].file" "$PACK/openpeon.json" | /usr/bin/shuf -n1)
 
 # Play it
-/home/ortho/.nix-profile/bin/pw-play "$PACK/$SOUND" 2>>/tmp/peon-debug.log
+/home/ortho/.nix-profile/bin/pw-play --volume=2.0 "$PACK/$SOUND" 2>>/tmp/peon-debug.log
