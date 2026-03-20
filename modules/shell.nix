@@ -31,6 +31,7 @@
       llm = "llama-cli -m ~/llm-models/qwen2.5-3b-instruct-q4_k_m.gguf --threads 12 --ctx-size 8192 -ngl 99 --no-display-prompt --log-disable -cnv";
 
       # WORKAROUND: tmux 3.6a has "open terminal failed: not a terminal" bug with xterm-kitty
+      presenterm = "presenterm -x";
       tmux = "/nix/store/msrldc9bfz6piaa0704m0djjm14mq151-tmux-3.5a/bin/tmux";
       tb = "tmux attach -t base";
 
