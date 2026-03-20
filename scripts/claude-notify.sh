@@ -2,7 +2,7 @@
 # Claude Code notification hook handler.
 # Opens popup in user's active tmux client. Queues multiple notifications.
 QUEUE="/tmp/claude-popup-queue"
-LOCK="/tmp/claude-popup.pid"
+LOCK="/tmp/claude-popup.lock"
 
 # Get Claude's pane identity (inherited from Claude Code's environment)
 PANE="${TMUX_PANE}"
@@ -18,15 +18,9 @@ echo "${PANE}|${SESSION}" >> "$QUEUE"
     /home/ortho/.config/home-manager/scripts/peon-sound.sh input.required
 ) &
 
-# Try to become the popup manager (PID-based lock)
-if [ -f "$LOCK" ]; then
-    OLD_PID=$(cat "$LOCK" 2>/dev/null)
-    if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
-        exit 0  # Another instance is managing popups
-    fi
-fi
-echo $$ > "$LOCK"
-trap 'rm -f "$LOCK"' EXIT
+# Try to become the popup manager using flock (atomic, immune to PID reuse)
+exec 9>"$LOCK"
+flock -n 9 || exit 0  # Another instance is already managing popups
 
 # Process queue
 while [ -s "$QUEUE" ]; do
@@ -39,7 +33,7 @@ while [ -s "$QUEUE" ]; do
     # Find the most recently active tmux client
     CLIENT=$(tmux list-clients -F '#{client_activity} #{client_name}' \
         | sort -rn | head -1 | awk '{print $2}')
-    [ -z "$CLIENT" ] && break
+    [ -z "$CLIENT" ] && continue  # no clients attached, skip item
 
     # Skip popup if the active client is already viewing Claude's session
     CLIENT_SESSION=$(tmux display-message -p -c "$CLIENT" '#{session_name}' 2>/dev/null)
@@ -52,3 +46,4 @@ while [ -s "$QUEUE" ]; do
         -E "bash /home/ortho/.config/home-manager/scripts/claude-popup.sh '${ITEM_PANE}' '${ITEM_SESSION}'" \
         2>/dev/null || true
 done
+# flock released automatically when fd 9 closes on exit
