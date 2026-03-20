@@ -635,27 +635,28 @@ function Tasks.sync_from_daily(prev_personal_lines, ref_date)
 
   local entries, existing = Tasks.read()
   local changed = false
-  local last_new = nil
+  local last_entry = nil
 
   for _, line in ipairs(prev_personal_lines) do
     local trimmed = Utils.trim(line)
     local indent = Utils.get_indent_level(line)
 
     if indent == 0 and trimmed:match("^%- %[.%]") then
-      last_new = nil
+      last_entry = nil
       local marker = trimmed:match("^%- (%[.%])")
       local text = Utils.strip_age(trimmed:match("^%- %[.%]%s*(.*)") or "")
       if text == "" then goto continue end
 
       local idx = existing[text:lower()]
       if idx then
-        -- Existing task: sync done status
+        -- Existing task: sync done status, track for note merging
         if Utils.is_done(marker) and not entries[idx].done then
           entries[idx].marker = marker
           entries[idx].done = true
           changed = true
           Debug.log("Task marked done: %s", text)
         end
+        last_entry = entries[idx]
       else
         -- New task from daily note: add to file
         local entry = {
@@ -667,15 +668,23 @@ function Tasks.sync_from_daily(prev_personal_lines, ref_date)
         }
         table.insert(entries, entry)
         existing[text:lower()] = #entries
-        last_new = entry
+        last_entry = entry
         changed = true
         Debug.log("Task added from daily note: %s", text)
       end
-    elseif indent >= 1 and last_new and trimmed:match("^%-") then
-      -- Indented note line under a newly added task
-      table.insert(last_new.notes, line)
+    elseif indent >= 1 and last_entry and trimmed:match("^%-") then
+      -- Indented note under task: merge if not already present
+      local already = false
+      for _, n in ipairs(last_entry.notes) do
+        if Utils.trim(n) == trimmed then already = true; break end
+      end
+      if not already then
+        table.insert(last_entry.notes, line)
+        changed = true
+        Debug.log("Note merged into task: %s", trimmed)
+      end
     else
-      last_new = nil
+      last_entry = nil
     end
 
     ::continue::
