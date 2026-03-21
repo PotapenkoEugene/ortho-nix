@@ -51,6 +51,10 @@
       export MAMBA_ROOT_PREFIX="$HOME/micromamba"
       export RSTUDIO_WHICH_R="/home/ortho/micromamba/envs/R42/bin/R"
       set -o vi
+      eval "$(tv init bash)"
+      bind -r '"\C-T"'
+      bind -x '"\C-F": tv_smart_autocomplete'
+      bind -x '"\C-H": tv_shell_history'
       cc() {
         local content
         content=$(base64 | tr -d '\n')

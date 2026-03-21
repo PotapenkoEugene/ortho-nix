@@ -120,9 +120,10 @@
       bind Escape copy-mode
       bind-key -T copy-mode-vi v send-keys -X begin-selection
 
-      # Open selection in nvim popup (V in copy mode)
-      bind-key -T copy-mode-vi V send-keys -X copy-pipe-and-cancel \
-        "~/.config/home-manager/scripts/tmux-nvim-scratch.sh"
+      # Space: start selection if nothing selected, open nvim popup if selection active
+      bind-key -T copy-mode-vi Space if-shell -F "#{selection_active}" \
+        "send-keys -X copy-pipe-and-cancel '~/.config/home-manager/scripts/tmux-nvim-scratch.sh'" \
+        "send-keys -X begin-selection"
 
       # Copy mode visual indicator — turns entire status bar red
       set-hook -g pane-mode-changed 'if-shell -F "#{pane_in_mode}" \

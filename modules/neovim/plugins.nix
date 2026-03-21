@@ -230,6 +230,7 @@
   }; # plugins
 
   programs.nixvim.extraPlugins = [
+    pkgs.vimPlugins.tv-nvim
     (pkgs.vimUtils.buildVimPlugin {
       name = "vim-translator";
       src = pkgs.fetchFromGitHub {

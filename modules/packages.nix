@@ -25,6 +25,7 @@
     # file managers
     ripgrep # Often used with fzf
     fd # Modern find alternative, works well with fzf
+    television # Fuzzy finder TUI (tv command)
     eza # color alternative for ls
     bat # cat with syntax highlight
     # clipboard

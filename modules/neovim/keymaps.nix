@@ -32,22 +32,14 @@
       key = "jk";
       action = "<Esc>";
     }
-    # telescope
+    # tv.nvim
     {
-      action = "<cmd>Telescope find_files<CR>";
+      action = "<cmd>Tv files<CR>";
       key = "<leader>ff";
     }
     {
-      action = "<cmd>Telescope live_grep<CR>";
+      action = "<cmd>Tv text<CR>";
       key = "<leader>fg";
-    }
-    {
-      action = "<cmd>Telescope buffers<CR>";
-      key = "<leader>fb";
-    }
-    {
-      action = "<cmd>Telescope help_tags<CR>";
-      key = "<leader>fh";
     }
 
     #-- Copy :messages to system clipboard
