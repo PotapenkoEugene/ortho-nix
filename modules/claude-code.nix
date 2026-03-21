@@ -49,6 +49,14 @@
       source = ../claude-code/skills/peon-ping-toggle/SKILL.md;
     };
 
+    ".claude/skills/frontend-design/SKILL.md" = {
+      source = ../claude-code/skills/frontend-design/SKILL.md;
+    };
+
+    ".claude/skills/ux-design-principles/SKILL.md" = {
+      source = ../claude-code/skills/ux-design-principles/SKILL.md;
+    };
+
     ".claude/skills/shiny-bslib" = {
       source = ../claude-code/skills/shiny-bslib;
       recursive = true;
