@@ -35,10 +35,6 @@ while [ -s "$QUEUE" ]; do
         | sort -rn | head -1 | awk '{print $2}')
     [ -z "$CLIENT" ] && continue  # no clients attached, skip item
 
-    # Skip popup if the active client is already viewing Claude's session
-    CLIENT_SESSION=$(tmux display-message -p -c "$CLIENT" '#{session_name}' 2>/dev/null)
-    [ "$CLIENT_SESSION" = "$ITEM_SESSION" ] && continue
-
     # Open popup (blocks until popup closes)
     tmux display-popup -c "$CLIENT" \
         -w 80% -h 60% \
