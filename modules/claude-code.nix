@@ -48,6 +48,16 @@
     ".claude/skills/peon-ping-toggle/SKILL.md" = {
       source = ../claude-code/skills/peon-ping-toggle/SKILL.md;
     };
+
+    ".claude/skills/shiny-bslib" = {
+      source = ../claude-code/skills/shiny-bslib;
+      recursive = true;
+    };
+
+    ".claude/skills/shiny-bslib-theming" = {
+      source = ../claude-code/skills/shiny-bslib-theming;
+      recursive = true;
+    };
   };
 
   # Create directory for processed transcripts
