@@ -242,5 +242,12 @@
       "Bash(git push *)",
       "Bash(git commit *)"
     ]
+  },
+  "mcpServers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "mcp-server-playwright",
+      "args": []
+    }
   }
 }

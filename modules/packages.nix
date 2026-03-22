@@ -40,6 +40,7 @@
     mermaid-cli # diagram generation from text
     wego # terminal weather
     ctop # container top
+    playwright-mcp # Playwright MCP server for browser automation in Claude Code
     brightnessctl
     cmatrix
     git
