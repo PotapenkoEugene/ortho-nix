@@ -33,6 +33,8 @@
       # WORKAROUND: tmux 3.6a has "open terminal failed: not a terminal" bug with xterm-kitty
       presenterm = "presenterm -x";
       tmux = "/nix/store/msrldc9bfz6piaa0704m0djjm14mq151-tmux-3.5a/bin/tmux";
+      claude = "claude --enable-auto-mode \"What to do next /note\"";
+      claude_he = "claude --enable-auto-mode --effort high \"What to do next /note\"";
       tb = "tmux attach -t base";
 
       vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
