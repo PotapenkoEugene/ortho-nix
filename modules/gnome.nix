@@ -18,6 +18,13 @@
   dconf = {
     enable = true;
     settings = {
+      "org/gnome/settings-daemon/plugins/power" = {
+        sleep-inactive-ac-type = "nothing";
+        sleep-inactive-battery-type = "nothing";
+      };
+      "org/gnome/desktop/session" = {
+        idle-delay = lib.hm.gvariant.mkUint32 0;
+      };
       "org/gnome/desktop/wm/keybindings" = {
         # Next input source
         "switch-input-source" = ["<Alt>Shift_L"];
