@@ -33,6 +33,11 @@
     system = "x86_64-linux";
     pkgs = import nixpkgs {
       inherit system;
+      overlays = [
+        (final: prev: {
+          playwright-cli = final.callPackage ./packages/playwright-cli/package.nix {};
+        })
+      ];
     };
   in {
     homeConfigurations."ortho" = home-manager.lib.homeManagerConfiguration {

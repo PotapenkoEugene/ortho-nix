@@ -40,7 +40,8 @@
     mermaid-cli # diagram generation from text
     wego # terminal weather
     ctop # container top
-    playwright-mcp # Playwright MCP server for browser automation in Claude Code
+    playwright-cli # Playwright CLI for browser automation in Claude Code (token-efficient vs MCP)
+    # playwright-mcp # (disabled — migrated to playwright-cli)
     brightnessctl
     cmatrix
     git
@@ -124,6 +125,7 @@
     bowtie2
     igv
     macs2
+    kent # UCSC Kent utilities (bedGraphToBigWig, etc.)
     fuse # for installing mendeley from appimage file
     # Speech-to-text (Vulkan iGPU accelerated)
     # lowPrio: llama-cpp-vulkan has newer libggml.so.0 (0.9.7 vs 0.9.5)
@@ -143,18 +145,17 @@
     presenterm # terminal presentations in markdown
 
     # R
-    #	(rWrapper.override { # works strangely for now, install by hand
-    #	  R = pkgs.R;
-    #	  packages = with rPackages; [
-    #	    tidyverse
-    #	    gt
-    #	    ggpubr
-    #	    svglite
-    #	    data_table
-    #	    IRkernel
-    #	    ggplot2
-    #	    dplyr
-    #	  ];
-    #	})
+    (rWrapper.override {
+      packages = with rPackages; [
+        tidyverse
+        gt
+        ggpubr
+        svglite
+        data_table
+        IRkernel
+        ggplot2
+        dplyr
+      ];
+    })
   ];
 }

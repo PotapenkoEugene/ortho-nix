@@ -2,8 +2,6 @@
   lib,
   buildNpmPackage,
   fetchFromGitHub,
-  playwright-driver,
-  playwright-test,
 }:
 buildNpmPackage rec {
   pname = "playwright-cli";
@@ -13,24 +11,18 @@ buildNpmPackage rec {
     owner = "microsoft";
     repo = "playwright-cli";
     tag = "v${version}";
-    hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    hash = "sha256-Ao3phIPinliFDK04u/V3ouuOfwMDVf/qBUpQPESziFQ=";
   };
 
-  npmDepsHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  npmDepsHash = "sha256-4x3ozVrST6LtLoHl9KtmaOKrkYwCK84fwEREaoNaESc=";
 
   dontNpmBuild = true;
 
-  postInstall = ''
-    rm -rf "$out/lib/node_modules/@playwright/cli/node_modules/playwright"
-    rm -rf "$out/lib/node_modules/@playwright/cli/node_modules/playwright-core"
-    ln -s ${playwright-test}/lib/node_modules/playwright \
-      "$out/lib/node_modules/@playwright/cli/node_modules/playwright"
-    ln -s ${playwright-test}/lib/node_modules/playwright-core \
-      "$out/lib/node_modules/@playwright/cli/node_modules/playwright-core"
+  # Prevent playwright from downloading browsers during npm install (sandbox has no network)
+  env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
 
-    wrapProgram $out/bin/playwright-cli \
-      --set PLAYWRIGHT_BROWSERS_PATH ${playwright-driver.browsers}
-  '';
+  # Browsers are downloaded separately via activation script (playwright-cli install-browser)
+  # because the CLI needs chromium rev 1212 which differs from nixpkgs playwright-driver rev 1200
 
   meta = {
     description = "Playwright CLI for browser automation";

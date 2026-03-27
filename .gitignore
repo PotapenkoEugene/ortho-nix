@@ -1,3 +1,6 @@
 result
 /CLAUDE.md
+# playwright-cli generated dirs (per-workspace)
+.playwright/
+.playwright-cli/
 
