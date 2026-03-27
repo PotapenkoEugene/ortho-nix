@@ -66,10 +66,27 @@
       source = ../claude-code/skills/shiny-bslib-theming;
       recursive = true;
     };
+
+    ".claude/skills/worktree/SKILL.md" = {
+      source = ../claude-code/skills/worktree/SKILL.md;
+    };
+
+    ".claude/skills/commit/SKILL.md" = {
+      source = ../claude-code/skills/commit/SKILL.md;
+    };
   };
 
   # Create directory for processed transcripts
   home.activation.createTranscriptDirs = lib.hm.dag.entryAfter ["writeBoundary"] ''
     mkdir -p "${config.home.homeDirectory}/Orthidian/processed-transcripts"
+  '';
+
+  # Install playwright-cli browsers (chromium rev 1212, not in nixpkgs playwright-driver)
+  # Idempotent: skipped if chromium-1212 already in cache
+  home.activation.installPlaywrightBrowsers = lib.hm.dag.entryAfter ["installPackages"] ''
+    if command -v playwright-cli &>/dev/null && \
+       [ ! -d "${config.home.homeDirectory}/.cache/ms-playwright/chromium-1212" ]; then
+      cd "${config.home.homeDirectory}" && playwright-cli install 2>/dev/null || true
+    fi
   '';
 }
