@@ -74,6 +74,14 @@
     ".claude/skills/commit/SKILL.md" = {
       source = ../claude-code/skills/commit/SKILL.md;
     };
+
+    ".claude/skills/knowledge/SKILL.md" = {
+      source = ../claude-code/skills/knowledge/SKILL.md;
+    };
+
+    ".claude/skills/obsidian-markdown/SKILL.md" = {
+      source = ../claude-code/skills/obsidian-markdown/SKILL.md;
+    };
   };
 
   # Create directory for processed transcripts

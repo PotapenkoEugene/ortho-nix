@@ -104,3 +104,19 @@ These rules apply to ALL projects and sessions. Project-level CLAUDE.md files ad
   - Add new subtasks discovered during work
   - Never delete tasks
 - **Daily notes (`~/Orthidian/daily/`) are read-only views.** Never modify them.
+
+### Knowledge Base
+
+- Knowledge notes live in `~/Orthidian/knowledge/`. Two subdirectory types:
+  - **Project knowledge** (`knowledge/soloLTRs/`, `knowledge/ADAPTOGENE/`): deep-dive notes for a specific project, numbered files + `00-index.md`
+  - **Domain knowledge** (`knowledge/_technical/`, `knowledge/_biology/`, `knowledge/_bioinformatics/`, `knowledge/_personal/`): cross-project reference material, underscore-prefixed dirs
+- **Knowledge states** — every note has a `status` field, read it to calibrate explanations:
+  - `seedling` 🌱 — want to know / unexplored / just a question. Give foundational context.
+  - `budding` 🌿 — actively learning / partially understood. Build on what's there.
+  - `evergreen` 🌳 — well understood / confident. Skip basics, go deep.
+- **Auto-capture** — when research, debugging, or analysis yields significant insights, facts, or methods: save them to the knowledge base via `/knowledge save` without asking. Set status to `budding`. This is how shared memory grows.
+- **Project memory** — when knowledge is linked to a project, add a backlink in the project file's `## Notes` section: `- Knowledge: [[knowledge/PATH|Title]]`
+- **Before creating knowledge**: search existing notes to avoid duplication (`/knowledge search` or mcpvault `search_notes`).
+- **Use `/knowledge build`** for deliberate, interactive learning sessions — structuring what you know, filling gaps, confirming status.
+- All knowledge notes use frontmatter: `status`, `domain`, `created`, `updated`, `tags`, `projects`.
+- Cross-link everything: knowledge notes link to projects and to each other via `[[wikilinks]]`.

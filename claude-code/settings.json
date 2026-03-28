@@ -74,6 +74,13 @@
       }
     ]
   },
+  "mcpServers": {
+    "mcpvault": {
+      "command": "npx",
+      "args": ["@bitbonsai/mcpvault@latest", "/home/ortho/Orthidian"],
+      "env": {}
+    }
+  },
   "permissions": {
     "defaultMode": "acceptEdits",
     "additionalDirectories": ["~/Orthidian"],
