@@ -93,7 +93,7 @@
 
       # Pane management
       bind | split-window
-      bind s split-window -v -c "#{pane_current_path}"
+      bind s display-popup -w 80% -h 60% -E "tv tmux-sessions | xargs -r tmux switch-client -t"
       bind v split-window -h -c "#{pane_current_path}"
       bind '"' choose-window
       bind h select-pane -L
@@ -113,7 +113,6 @@
       bind P set pane-border-status
       bind c kill-pane
       bind x swap-pane -D
-      bind S choose-session
       bind K send-keys "clear"\; send-keys "Enter"
 
       # Copy mode

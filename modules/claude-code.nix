@@ -147,4 +147,15 @@ in {
       cd "${config.home.homeDirectory}" && playwright-cli install 2>/dev/null || true
     fi
   '';
+
+  # Install tv cable channels and patch tmux-sessions to use switch-client (works inside tmux)
+  home.activation.tvUpdateChannels = lib.hm.dag.entryAfter ["installPackages"] ''
+    if command -v tv &>/dev/null; then
+      tv update-channels 2>/dev/null || true
+      TMUX_SESSIONS="${config.home.homeDirectory}/.config/television/cable/tmux-sessions.toml"
+      if [ -f "$TMUX_SESSIONS" ]; then
+        sed -i 's/tmux attach-session -t/tmux switch-client -t/g' "$TMUX_SESSIONS"
+      fi
+    fi
+  '';
 }
