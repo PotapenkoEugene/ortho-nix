@@ -56,7 +56,7 @@
     openfortivpn # VPN
     imagemagick
     pkg-config
-    (python312.withPackages (ps:
+    (python313.withPackages (ps:
       with ps; [
         openpyxl
         pandas
@@ -108,13 +108,14 @@
     # These help kitty run under X11
     egl-wayland
     kitty-themes
-    #python312Full
-    #python312Packages.jupyter-client
-    #python312Packages.ipykernel
-    #python312Packages.pynvim
+    #python313Full
+    #python313Packages.jupyter-client
+    #python313Packages.ipykernel
+    #python313Packages.pynvim
     #pkgs.gnome-tweaks
     nodejs_24
     # BIOINF
+    minimap2 # pairwise sequence aligner (pipeline phase)
     seqkit
     qgis
     multiqc
