@@ -87,6 +87,29 @@ These rules apply to ALL projects and sessions. Project-level CLAUDE.md files ad
 - Switch accounts via `GOOGLE_WORKSPACE_CLI_CONFIG_DIR=~/.config/gws/accounts/<account>`.
 - Calendar: `gws calendar +agenda --today` for events; Google Tasks synced to `~/Orthidian/personal/tasks.md`.
 
+## R Analysis
+
+- **Use `/tidy-r` skill** when writing R scripts — covers tidyverse style, ggplot2 patterns, data.table, project structure.
+- Use `Rscript` via nix rWrapper (already in `modules/packages.nix`). Never use system R.
+- Prefer tidyverse idioms; data.table for large datasets (>1M rows).
+- All plots: ggplot2 with consistent theming. Publication-ready by default.
+- File paths: always `here::here()`, never `setwd()` or relative paths.
+
+## Bioinformatics & Scientific Analysis
+
+- **Scientific skills installed** from [K-Dense-AI/claude-scientific-skills](https://github.com/K-Dense-AI/claude-scientific-skills): `scanpy`, `biopython`, `pydeseq2`, `deeptools`, `scikit-bio`, `anndata`, `statistical-analysis`, `statsmodels`, `scikit-learn`, `scikit-survival`, `pymc`, `shap`, plus database skills (gene, ensembl, clinvar, gnomad, gwas, pubmed, kegg).
+- Use the relevant skill when the task matches: DEG analysis → `pydeseq2`, single-cell → `scanpy`, statistics → `statistical-analysis`, survival → `scikit-survival`, etc.
+- **New analysis type not covered by installed skills?** Browse the full repo (177 skills, MIT) for the right skill — microbiology, proteomics, metabolomics, clinical trials, cheminformatics, and more. Fetch the SKILL.md directly from raw.githubusercontent.com as a reference when needed.
+- CLI tools available via nix: samtools, bcftools, bedtools, fastqc, bowtie2, minimap2, seqkit, macs2, multiqc, igv, kent.
+- R Bioconductor packages (DESeq2, GenomicRanges, etc.) via micromamba, not nix.
+- Both R and Python are valid — use whichever fits the task.
+
+## Transcript Processing
+
+- **Use `/process-transcript`** for new whisper recordings in `~/Orthidian/transcripts/`.
+- Prefer polished files (`*-polished.txt`) over raw or clean versions.
+- Output goes to `~/Orthidian/processed-transcripts/`.
+
 ## Presentations
 
 - **Use `/presenterm` skill** for any terminal-based presentation from markdown.
