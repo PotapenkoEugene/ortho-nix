@@ -62,6 +62,12 @@
         content=$(base64 | tr -d '\n')
         printf '\033]52;c;%s\a' "$content"
       }
+      playwright-cli() {
+        if [ ! -f ".playwright/cli.config.json" ] && [ "$1" != "install" ]; then
+          command playwright-cli install >/dev/null 2>&1
+        fi
+        command playwright-cli "$@"
+      }
     '';
   };
 
