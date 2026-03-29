@@ -4,6 +4,15 @@
   lib,
   ...
 }: let
+  # notebooklm-py upstream — SKILL.md pinned to same version as the package
+  # https://github.com/teng-lin/notebooklm-py
+  notebooklmPySrc = pkgs.fetchFromGitHub {
+    owner = "teng-lin";
+    repo = "notebooklm-py";
+    rev = "v0.3.4";
+    hash = "sha256-vrCgOYQngSmsv4rnl6CTNk26DB+BxgplwkVfznVbBZo=";
+  };
+
   # K-Dense-AI scientific skills — 177 skills, MIT licensed
   # https://github.com/K-Dense-AI/claude-scientific-skills
   scientificSkills = pkgs.fetchFromGitHub {
@@ -106,6 +115,16 @@ in {
         source = ../claude-code/skills/tidy-r;
         recursive = true;
       };
+
+      # NotebookLM upstream skill — full CLI knowledge from notebooklm-py v0.3.4
+      ".claude/skills/notebooklm/SKILL.md" = {
+        source = "${notebooklmPySrc}/SKILL.md";
+      };
+
+      # Custom /notebook workflow skill — session prep, research synthesis, knowledge base integration
+      ".claude/skills/notebook/SKILL.md" = {
+        source = ../claude-code/skills/notebook/SKILL.md;
+      };
     }
 
     # K-Dense-AI scientific skills — core bioinformatics
@@ -145,17 +164,6 @@ in {
     if command -v playwright-cli &>/dev/null && \
        [ ! -d "${config.home.homeDirectory}/.cache/ms-playwright/chromium-1212" ]; then
       cd "${config.home.homeDirectory}" && playwright-cli install 2>/dev/null || true
-    fi
-  '';
-
-  # Install tv cable channels and patch tmux-sessions to use switch-client (works inside tmux)
-  home.activation.tvUpdateChannels = lib.hm.dag.entryAfter ["installPackages"] ''
-    if command -v tv &>/dev/null; then
-      tv update-channels 2>/dev/null || true
-      TMUX_SESSIONS="${config.home.homeDirectory}/.config/television/cable/tmux-sessions.toml"
-      if [ -f "$TMUX_SESSIONS" ]; then
-        sed -i 's/tmux attach-session -t/tmux switch-client -t/g' "$TMUX_SESSIONS"
-      fi
     fi
   '';
 }

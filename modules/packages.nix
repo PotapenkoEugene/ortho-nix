@@ -41,6 +41,7 @@
     wego # terminal weather
     ctop # container top
     playwright-cli # Playwright CLI for browser automation in Claude Code (token-efficient vs MCP)
+    notebooklm-py # NotebookLM CLI — programmatic access via undocumented RPC API
     # playwright-mcp # (disabled — migrated to playwright-cli)
     brightnessctl
     cmatrix

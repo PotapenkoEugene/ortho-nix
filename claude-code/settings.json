@@ -248,6 +248,7 @@
       "Bash(timeout *)",
 
       "Bash(playwright-cli *)",
+      "Bash(notebooklm *)",
 
       "Bash(docker run *)",
       "Bash(docker exec *)",

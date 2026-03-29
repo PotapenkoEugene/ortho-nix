@@ -104,6 +104,18 @@ These rules apply to ALL projects and sessions. Project-level CLAUDE.md files ad
 - R Bioconductor packages (DESeq2, GenomicRanges, etc.) via micromamba, not nix.
 - Both R and Python are valid — use whichever fits the task.
 
+## Document Grounding (NotebookLM)
+
+- **Use `/notebook` skill** for digesting documentation, papers, or web pages through NotebookLM before coding/research sessions.
+- Answers are strictly grounded in uploaded sources — citations included, no hallucinations.
+- **Pre-session prep:** `/notebook prep <topic>` — add URLs/PDFs, wait for processing, extract key concepts, API patterns, and gotchas.
+- **Research synthesis:** `/notebook research <topic>` — multi-doc comparison, method differences, literature gaps.
+- **Quick query:** `/notebook ask <question>` — grounded Q&A against an existing notebook.
+- Supports: URLs, YouTube, PDFs, Google Docs/Drive. Can generate audio overviews, slides, quizzes, mind maps.
+- First-time setup: `notebooklm login` (browser OAuth, one-time). Credentials at `~/.notebooklm/`.
+- Save summaries to knowledge base via `/knowledge save` for reuse across sessions.
+- Consult `/notebooklm` for the full CLI reference (all commands and flags).
+
 ## Transcript Processing
 
 - **Use `/process-transcript`** for new whisper recordings in `~/Orthidian/transcripts/`.

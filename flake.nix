@@ -36,6 +36,7 @@
       overlays = [
         (final: prev: {
           playwright-cli = final.callPackage ./packages/playwright-cli/package.nix {};
+          notebooklm-py = final.callPackage ./packages/notebooklm-py/package.nix {};
         })
       ];
     };
