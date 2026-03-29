@@ -15,6 +15,7 @@
     ./modules/packages.nix
     ./modules/neovim
     ./modules/claude-code.nix
+    ./modules/television.nix
     ./modules/piper.nix
     ./modules/llm.nix
     ./modules/obsidian-backup.nix

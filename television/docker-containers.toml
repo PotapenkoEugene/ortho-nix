@@ -1,0 +1,59 @@
+[metadata]
+name = "docker-containers"
+description = "List and manage Docker containers with resource stats"
+requirements = ["docker"]
+
+[source]
+command = [
+  "docker ps --format '{{.Names}} ({{.Status}})'",
+  "docker ps -a --format '{{.Names}} ({{.Status}})'",
+]
+output = "{}"
+watch = 3.0
+
+[preview]
+command = "bash -c 'N=\"${1%% *}\"; docker inspect --format \"Image:  {{.Config.Image}}\" \"$N\"; docker inspect --format \"Status: {{.State.Status}}\" \"$N\"; docker inspect --format \"IP:     {{.NetworkSettings.IPAddress}}\" \"$N\"; docker inspect --format \"Ports:  {{.NetworkSettings.Ports}}\" \"$N\"; docker inspect --format \"Cmd:    {{.Config.Cmd}}\" \"$N\"; echo; docker inspect --format \"{{range .Config.Env}}{{println .}}{{end}}\" \"$N\"' _ '{}'"
+
+[ui]
+layout = "landscape"
+[ui.preview_panel]
+size = 55
+
+[keybindings]
+q = "quit"
+ctrl-s = "actions:start"
+f2 = "actions:stop"
+ctrl-r = "actions:restart"
+ctrl-l = "actions:logs"
+ctrl-e = "actions:exec"
+ctrl-d = "actions:remove"
+
+[actions.start]
+description = "Start the selected container"
+command = "bash -c 'docker start \"${1%% *}\"' _ '{}'"
+mode = "fork"
+
+[actions.stop]
+description = "Stop the selected container"
+command = "bash -c 'docker stop \"${1%% *}\"' _ '{}'"
+mode = "fork"
+
+[actions.restart]
+description = "Restart the selected container"
+command = "bash -c 'docker restart \"${1%% *}\"' _ '{}'"
+mode = "fork"
+
+[actions.logs]
+description = "Follow logs of the selected container"
+command = "bash -c 'docker logs -f \"${1%% *}\"' _ '{}'"
+mode = "execute"
+
+[actions.exec]
+description = "Execute shell in the selected container"
+command = "bash -c 'docker exec -it \"${1%% *}\" /bin/sh' _ '{}'"
+mode = "execute"
+
+[actions.remove]
+description = "Remove the selected container"
+command = "bash -c 'docker rm \"${1%% *}\"' _ '{}'"
+mode = "execute"
