@@ -109,6 +109,9 @@
     # These help kitty run under X11
     egl-wayland
     kitty-themes
+    # Fonts
+    jetbrains-mono
+    nerd-fonts.symbols-only
     #python313Full
     #python313Packages.jupyter-client
     #python313Packages.ipykernel
