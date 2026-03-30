@@ -180,11 +180,29 @@
         extraConfig = "";
       }
       {
-        plugin = fuzzback;
+        plugin = fuzzback.overrideAttrs (old: {
+          postInstall =
+            (old.postInstall or "")
+            + ''
+              script=$out/share/tmux-plugins/fuzzback/scripts/.fuzzback.sh-wrapped
+
+              # Inject @fuzzback-query variable after fzf_colors line
+              awk '/fzf_colors=.*@fuzzback-fzf-colors/{print; print "  fuzzback_query=\"$(tmux_get \"@fuzzback-query\" \"\")\""; next}1' "$script" > "$script.tmp"
+              mv "$script.tmp" "$script"
+              chmod +x "$script"
+
+              # Add --query to popup fzf command
+              sed -i 's|  fzf-tmux -p "\$1" \\|  fzf-tmux -p "$1" --query "$fuzzback_query" \\|' "$script"
+
+              # Add --query to split finder command
+              sed -i 's|  "\$finder" \\|  "$finder" --query "$fuzzback_query" \\|' "$script"
+            '';
+        });
         extraConfig = ''
           set -g @fuzzback-bind 'f'
           set -g @fuzzback-popup 1
           set -g @fuzzback-popup-size '80%'
+          set -g @fuzzback-query 'Ready to code?'
         '';
       }
       {
