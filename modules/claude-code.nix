@@ -166,4 +166,17 @@ in {
       cd "${config.home.homeDirectory}" && playwright-cli install 2>/dev/null || true
     fi
   '';
+
+  # Install Python playwright's chromium for notebooklm login flow
+  # Uses playwright binary from the notebooklm-py closure (rev 1200, separate from playwright-cli's rev 1212)
+  # Idempotent: skipped if chromium-1200 already present
+  home.activation.installNotebooklmBrowsers = lib.hm.dag.entryAfter ["installPackages"] ''
+    NOTEBOOKLM_BIN=$(readlink -f "${config.home.homeDirectory}/.nix-profile/bin/notebooklm" 2>/dev/null || true)
+    if [ -n "$NOTEBOOKLM_BIN" ]; then
+      PLAYWRIGHT_BIN=$(dirname "$NOTEBOOKLM_BIN" | sed 's|/bin$||' | xargs -I{} find {} -name playwright -path "*/playwright-1*/bin/playwright" 2>/dev/null | head -1)
+      if [ -n "$PLAYWRIGHT_BIN" ] && [ ! -d "${config.home.homeDirectory}/.cache/ms-playwright/chromium-1200" ]; then
+        PLAYWRIGHT_BROWSERS_PATH="${config.home.homeDirectory}/.cache/ms-playwright" "$PLAYWRIGHT_BIN" install chromium 2>/dev/null || true
+      fi
+    fi
+  '';
 }

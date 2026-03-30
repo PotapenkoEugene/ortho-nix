@@ -51,6 +51,7 @@
       export CFLAGS="-I/usr/include"
       export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
       export MAMBA_ROOT_PREFIX="$HOME/micromamba"
+      export PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/ms-playwright"
       export RSTUDIO_WHICH_R="/home/ortho/micromamba/envs/R42/bin/R"
       set -o vi
       eval "$(tv init bash)"

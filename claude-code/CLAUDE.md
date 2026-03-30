@@ -106,15 +106,38 @@ These rules apply to ALL projects and sessions. Project-level CLAUDE.md files ad
 
 ## Document Grounding (NotebookLM)
 
-- **Use `/notebook` skill** for digesting documentation, papers, or web pages through NotebookLM before coding/research sessions.
-- Answers are strictly grounded in uploaded sources — citations included, no hallucinations.
-- **Pre-session prep:** `/notebook prep <topic>` — add URLs/PDFs, wait for processing, extract key concepts, API patterns, and gotchas.
-- **Research synthesis:** `/notebook research <topic>` — multi-doc comparison, method differences, literature gaps.
-- **Quick query:** `/notebook ask <question>` — grounded Q&A against an existing notebook.
-- Supports: URLs, YouTube, PDFs, Google Docs/Drive. Can generate audio overviews, slides, quizzes, mind maps.
-- First-time setup: `notebooklm login` (browser OAuth, one-time). Credentials at `~/.notebooklm/`.
-- Save summaries to knowledge base via `/knowledge save` for reuse across sessions.
-- Consult `/notebooklm` for the full CLI reference (all commands and flags).
+NotebookLM provides source-grounded AI — answers come strictly from uploaded documents with citations. Two modes: always-on collection during exploration, and direct investigation on request.
+
+### Always-On: Source Collection During Exploration
+
+During any exploration, planning, or research work — when you encounter valuable documentation URLs, papers, tutorials, or references — **automatically** add them to NotebookLM without asking:
+
+1. **Categorize** into `{Project}_{topic}` notebook (e.g., `ADAPTOGENE_gwas`, `Desktop_nix`, `soloLTRs_transposable-elements`)
+2. **Auto-create** notebook if new topic (`notebooklm create "{Project}_{topic}"`), or add to existing (ID from project file `## Notes`)
+3. **Add task** to task list: "Extract knowledge from {notebook} → knowledge base"
+4. **After exploration**: query notebook for key concepts, save grounded notes to `~/Orthidian/knowledge/` — check mcpvault for duplicates first
+5. **At >5 sources**: mention to user once — "want a Russian podcast for {notebook}?"
+6. **Track association** in project file `## Notes`: `- NotebookLM: {Project}_{topic} ({notebook_id})`
+
+**Never ask permission to create notebooks or add sources. Do ask before generating podcasts.**
+
+### Direct Investigation
+
+When user asks to investigate a topic: use `/notebook investigate <topic>` — full pipeline from research to knowledge base, with podcast offer at the end.
+
+### Naming Convention
+
+`{Project}_{topic}` always:
+- `Desktop_nix`, `Desktop_nvim`, `Desktop_tmux`, `Desktop_claude-code`
+- `ADAPTOGENE_gwas`, `ADAPTOGENE_populationGenomics`, `ADAPTOGENE_pipeline`
+- `soloLTRs_transposable-elements`, `soloLTRs_bioinformatics-tools`
+
+### Conventions
+
+- Knowledge notes: English, `status: budding`, frontmatter `source-type: notebooklm-grounded`, `notebooklm-notebook: <id>`
+- Podcasts: Russian (`--language ru`), `~/podcasts/{Project}_{topic}_ru.mp3`
+- Auth: `notebooklm login` (browser OAuth, one-time). Credentials at `~/.notebooklm/`.
+- Full CLI reference: `/notebooklm` skill
 
 ## Transcript Processing
 

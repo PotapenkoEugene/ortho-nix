@@ -24,6 +24,7 @@ python313Packages.buildPythonPackage rec {
     httpx
     click
     rich
+    playwright # required for notebooklm login browser flow
   ];
 
   # Tests require live Google auth + network

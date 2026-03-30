@@ -1,96 +1,155 @@
 ---
 name: notebook
-description: Pre-session documentation digest and research synthesis via Google NotebookLM. Grounds AI answers in uploaded sources with citations. Use before coding with unfamiliar tools or synthesizing research papers.
-argument-hint: "[prep|research|ask] [topic/question]"
+description: NotebookLM knowledge pipeline — source-grounded document processing, knowledge base extraction, and podcast generation. Runs autonomously during exploration work and on direct user request.
+argument-hint: "[project|investigate|prep|research|ask] [topic/question]"
 ---
 
 # notebook
 
-NotebookLM workflow skill — source-grounded document processing for coding and research sessions.
+NotebookLM workflow skill. Source-grounded AI: answers come strictly from uploaded documents with citations — no hallucinations.
 
-Uses the `notebooklm` CLI (`notebooklm-py` package). Consult the `/notebooklm` skill for the full CLI reference (notebook management, source upload, artifact generation).
+Uses the `notebooklm` CLI. Consult `/notebooklm` for the full CLI reference.
 
 ## Authentication
 
-One-time setup:
+One-time setup (runs a browser OAuth flow):
 ```bash
 notebooklm login
 ```
-Opens a browser for Google OAuth. Credentials stored at `~/.notebooklm/`. Re-run if auth expires.
+Credentials stored at `~/.notebooklm/`. Re-run if auth expires.
 
-## Modes
+---
 
-### `/notebook prep <topic>`
+## Autonomous Source Collection (always-on during exploration)
 
-Pre-session documentation digest — feeds docs into NotebookLM and extracts a grounded summary as coding context.
+**This is the primary behavior.** During any exploration, planning, or research work — when you encounter valuable documentation URLs, papers, tutorials, GitHub READMEs, or references — process them into NotebookLM without asking permission.
 
-**Workflow:**
-1. Ask user for documentation sources (URLs, PDFs, YouTube tutorials)
-2. Find or create a notebook for the topic:
+### Workflow
+
+1. **Identify** sources found during research (documentation URLs, papers, tutorials)
+2. **Categorize** into a topic group using `{Project}_{topic}` naming:
+   - `ADAPTOGENE_gwas`, `ADAPTOGENE_populationGenomics`, `ADAPTOGENE_pipeline`
+   - `Desktop_nix`, `Desktop_nvim`, `Desktop_tmux`, `Desktop_claude-code`
+   - `soloLTRs_transposable-elements`, `soloLTRs_bioinformatics-tools`
+3. **Find or create notebook**:
    ```bash
-   notebooklm list --json  # look for existing notebook
-   notebooklm create "<topic>" --json  # or create new
+   # Check project file for existing association
+   # NotebookLM: {Project}_{topic} ({notebook_id})
+
+   # If none exists — create silently:
+   notebooklm create "{Project}_{topic}" --json
+   # Save the returned notebook_id to the project file ## Notes
+
+   # If exists — use the ID from ## Notes
    ```
-3. Add sources (run in parallel when multiple):
+4. **Add sources**:
    ```bash
    notebooklm source add "<url>" -n <notebook_id>
    ```
-4. Wait for processing:
-   ```bash
-   notebooklm status -n <notebook_id>
-   # Wait until sources show "ready" (poll every 30s, up to 5 min)
+5. **Add task** to current task list: "Extract knowledge from {notebook} → knowledge base"
+6. **Update project file** `## Notes` section with notebook association:
    ```
-5. Ask targeted grounded questions:
-   ```bash
-   notebooklm ask "What are the key concepts and main abstractions?" -n <notebook_id>
-   notebooklm ask "What are the most important functions/APIs with usage examples?" -n <notebook_id>
-   notebooklm ask "What are the common gotchas, limitations, or caveats?" -n <notebook_id>
+   - NotebookLM: {Project}_{topic} ({notebook_id})
    ```
-6. Present the grounded summary with citations to the user
-7. Offer to save to knowledge base (see below)
 
-**Output structure:**
-```markdown
-# <Topic> — NotebookLM Summary
+### After adding sources (knowledge extraction)
 
-## Key Concepts
-...
+Wait for processing, then run grounded queries and save to knowledge base:
 
-## API / Usage Patterns
-...
+```bash
+# Wait for sources to be ready
+notebooklm source list -n <notebook_id> --json
+# Poll until all sources show status "ready"
 
-## Gotchas & Limitations
-...
-
-## Sources Used
-- [source title] — <url>
+# Query for knowledge
+notebooklm ask "<targeted question>" -n <notebook_id>
 ```
+
+Before creating any knowledge note, search existing notes to avoid redundancy:
+```
+mcpvault search_notes query="<topic keywords>"
+```
+
+Save new knowledge to `~/Orthidian/knowledge/`:
+- Project-specific: `knowledge/{project}/`
+- Domain reference: `knowledge/_technical/`, `_biology/`, `_bioinformatics/`
+
+### Podcast threshold
+
+When a notebook reaches **>5 sources**, mention to the user:
+> "{Project}_{topic} now has N sources — want me to generate a Russian podcast overview?"
+
+Only ask once per session, don't nag.
+
+---
+
+## Modes
+
+### `/notebook project [PROJECTNAME]`
+
+Show and manage all NotebookLM notebooks for a project.
+
+1. Read project file `## Notes` for `NotebookLM:` entries
+2. For each notebook: show name, source count (`notebooklm source list -n <id>`), associated knowledge notes
+3. Offer actions: query an existing notebook, add new sources, generate artifacts
+
+```bash
+notebooklm list --json  # all notebooks
+notebooklm source list -n <notebook_id> --json  # sources for a specific notebook
+```
+
+---
+
+### `/notebook investigate <topic>`
+
+**Direct investigation mode** — user-initiated deep dive with full pipeline.
+
+1. **Research** the topic: web search, find documentation URLs, papers, tutorials (3-10 sources)
+2. **Create notebook** `{Project}_{topic}` automatically
+3. **Add all sources**:
+   ```bash
+   notebooklm source add "<url>" -n <notebook_id>
+   # repeat for each source
+   ```
+4. **Wait** for processing (poll `notebooklm source list`, takes 1-5 min per source)
+5. **Extract knowledge** via grounded queries:
+   - Core concepts and abstractions
+   - Key methods/APIs with examples
+   - Gotchas, limitations, failure modes
+   - (For research topics): method comparison, common findings, open questions
+6. **Save to knowledge base** — check for redundancy first
+7. **Update project file** `## Notes` with notebook association
+8. **Ask once** about podcast generation (>5 sources threshold)
+
+---
+
+### `/notebook prep <topic>`
+
+Pre-session documentation digest. User provides sources explicitly.
+
+1. Ask user for documentation sources (URLs, PDFs)
+2. Find or create `{Project}_{topic}` notebook
+3. Add sources, wait for processing
+4. Ask targeted summary questions (key concepts, API patterns, gotchas)
+5. Present grounded summary with citations
+6. Offer to save to knowledge base
 
 ---
 
 ### `/notebook research <topic>`
 
-Multi-document research synthesis — compare papers, extract methods, identify gaps.
+Multi-document research synthesis.
 
-**Workflow:**
 1. Ask user for papers/documents to compare
-2. Create or reuse a research notebook
-3. Add all sources
-4. Wait for processing
-5. Ask synthesis questions:
+2. Create or reuse notebook
+3. Add sources, wait for processing
+4. Synthesis questions:
    ```bash
-   notebooklm ask "What methods does each paper use? Compare them." -n <notebook_id>
-   notebooklm ask "What are the common findings across these papers?" -n <notebook_id>
-   notebooklm ask "What gaps or contradictions exist between these sources?" -n <notebook_id>
+   notebooklm ask "What methods does each paper use? Compare approaches." -n <id>
+   notebooklm ask "What are the common findings across these sources?" -n <id>
+   notebooklm ask "What gaps or contradictions exist?" -n <id>
    ```
-6. Optionally generate an audio overview for offline listening:
-   ```bash
-   # Ask user first — generation takes 5-10 min
-   notebooklm generate audio -n <notebook_id>
-   notebooklm artifact wait -n <notebook_id>
-   notebooklm download audio -n <notebook_id>
-   ```
-7. Present synthesis and offer to save to knowledge base
+5. Present synthesis, offer knowledge save and podcast
 
 ---
 
@@ -98,73 +157,73 @@ Multi-document research synthesis — compare papers, extract methods, identify 
 
 Quick grounded Q&A against an existing notebook.
 
-**Workflow:**
-1. List notebooks to identify the relevant one:
+1. List notebooks to find the relevant one:
    ```bash
    notebooklm list --json
    ```
-2. Ask the question:
+2. Ask:
    ```bash
    notebooklm ask "<question>" -n <notebook_id>
    ```
-3. Present the grounded answer with citations
 
 ---
 
 ### `/notebook` (no args)
 
-Interactive mode:
-1. `notebooklm list` — show existing notebooks
-2. Ask user: select notebook or create new
-3. Ask user: what action (prep/research/ask/generate)?
-4. Proceed accordingly
+Interactive: `notebooklm list` → user selects notebook → choose action.
 
 ---
 
-## Saving to Knowledge Base
+## Podcast Generation
 
-After generating any summary, offer to save it:
+Always generate in Russian. Ask before generating (it takes 5-15 min and uses daily quota):
 
+```bash
+notebooklm generate audio -n <notebook_id> --language ru
+# then poll for completion:
+notebooklm artifact list -n <notebook_id> --json  # check status
+
+# download:
+notebooklm download audio ~/podcasts/{Project}_{topic}_ru.mp3 -n <notebook_id> -a <artifact_id>
 ```
-Save this to your knowledge base?
-- /knowledge save _technical/<topic>  (for tool docs)
-- /knowledge save _bioinformatics/<topic>  (for bio/bioinformatics)
-- /knowledge save knowledge/<project>/<topic>  (for project-specific)
-```
 
-When saving, add this frontmatter:
+Save to: `~/podcasts/{Project}_{topic}_ru.mp3`
+
+---
+
+## Knowledge Note Frontmatter
+
+Every note from NotebookLM sources must include:
+
 ```yaml
 source-type: notebooklm-grounded
 notebooklm-notebook: <notebook_id>
 ```
 
+Plus standard fields: `status: budding`, `domain`, `created`, `updated`, `tags`, `projects`.
+
 ---
 
 ## Key Rules
 
-- Always use explicit notebook IDs (`-n <notebook_id>`) — never rely on implicit context
-- Poll `notebooklm status` before querying — sources must be "ready"
-- For long-running generations (audio/video), warn user of expected wait time (5-45 min) and ask confirmation first
-- Default to text artifacts; only generate audio/video when user explicitly asks
-- Rate limit: if you get a 429 error, wait 5-10 min before retrying
-- If auth fails, run `notebooklm login` to refresh credentials
-- `--json` flag available on most commands for machine-readable output
+- **Auto-create notebooks** during exploration — never ask permission
+- **Auto-add sources** when discovered — never ask permission
+- **Do ask** before generating podcasts (time + quota cost)
+- Always use explicit notebook IDs (`-n <id>`)
+- Poll `notebooklm source list` before querying — sources must be ready
+- Check mcpvault before creating knowledge notes (avoid duplicates)
+- Rate limit: if 429 error, wait 5-10 min
+- Auth failure: run `notebooklm login`
+- `--json` flag on all commands for reliable output
 
 ## Supported Source Types
 
-- URLs (web pages, documentation sites)
-- YouTube videos (auto-transcribed by NotebookLM)
-- PDFs (local files or URLs)
-- Google Docs / Google Drive files
-- Plain text files
+URLs, YouTube videos (auto-transcribed), PDFs, Google Docs/Drive files, plain text files
 
 ## Generation Capabilities
 
-Available via `notebooklm generate <type>`:
-- `audio` — podcast-style overview (5-15 min, MP3)
-- `video` — visual overview (MP4)
-- `slides` — slide deck (PDF or PPTX)
-- `quiz` — quiz questions (JSON/Markdown)
-- `flashcards` — study flashcards
-- `mindmap` — concept map (JSON)
-- `report` — written report
+`notebooklm generate <type> -n <id>`:
+- `audio` — podcast MP3 (5-15 min generation)
+- `video` — visual overview MP4
+- `slides` — slide deck PDF/PPTX
+- `quiz`, `flashcards`, `mindmap`, `report`
