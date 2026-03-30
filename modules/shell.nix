@@ -30,12 +30,13 @@
       # Local LLM (Qwen2.5-3B) — interactive chat
       llm = "llama-cli -m ~/llm-models/qwen2.5-3b-instruct-q4_k_m.gguf --threads 12 --ctx-size 8192 -ngl 99 --no-display-prompt --log-disable -cnv";
 
-      # WORKAROUND: tmux 3.6a has "open terminal failed: not a terminal" bug with xterm-kitty
       presenterm = "presenterm -x";
-      tmux = "/nix/store/msrldc9bfz6piaa0704m0djjm14mq151-tmux-3.5a/bin/tmux";
       claude = "claude --enable-auto-mode \"What to do next /note\"";
       claude_he = "claude --enable-auto-mode --effort high \"What to do next /note\"";
       tb = "tmux attach -t base";
+
+      # kitten ssh: auto-copies kitty terminfo to remote hosts (fixes xterm-kitty unknown terminal)
+      kssh = "kitten ssh";
 
       vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
       vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";

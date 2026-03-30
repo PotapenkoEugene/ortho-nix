@@ -143,6 +143,10 @@
       set -g @continuum-save-interval '0'
       %endif
 
+      # Keep kitty session.conf current whenever sessions change (no waiting for 5-min timer)
+      set-hook -g client-session-changed 'run-shell "~/.config/home-manager/scripts/save-kitty-session.sh"'
+      set-hook -g session-closed 'run-shell "~/.config/home-manager/scripts/save-kitty-session.sh"'
+
       # Catppuccin status bar composition (must be after catppuccin plugin loads)
       set -g status-left-length 120
       set -g status-right-length 100

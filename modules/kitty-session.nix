@@ -33,4 +33,16 @@
     };
     Install.WantedBy = ["timers.target"];
   };
+
+  # Clear stale coordinator lock/done files from kitty-tab-launch.sh on login
+  systemd.user.services.tmux-restore-cleanup = {
+    Unit.Description = "Clean stale tmux restore coordinator files";
+    Service = {
+      Type = "oneshot";
+      ExecStart = toString (pkgs.writeShellScript "tmux-restore-cleanup" ''
+        rm -rf /tmp/tmux-restore-"$(id -u)".lock /tmp/tmux-restore-"$(id -u)".done
+      '');
+    };
+    Install.WantedBy = ["default.target"];
+  };
 }
