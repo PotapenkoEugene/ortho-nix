@@ -39,7 +39,7 @@
       tab_bar_edge = "top";
       tab_bar_style = "powerline";
       tab_powerline_style = "slanted";
-      tab_title_template = "{fmt.fg.red}{bell_symbol}{activity_symbol}{fmt.fg.tab}{index}:{title}";
+      tab_title_template = "{fmt.fg.red}{bell_symbol}{activity_symbol}{fmt.fg.tab}{title}";
       active_tab_font_style = "bold";
 
       # Tab bar colors — Catppuccin Mocha (matches GNOME + tmux theme)

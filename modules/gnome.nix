@@ -13,6 +13,7 @@
       {package = pkgs.gnomeExtensions.clipboard-indicator;}
       {package = pkgs.gnomeExtensions.astra-monitor;}
       {package = pkgs.gnomeExtensions.user-themes;}
+      {package = pkgs.gnomeExtensions.just-perfection;}
     ];
   };
 
@@ -21,6 +22,9 @@
     settings = {
       "org/gnome/shell/extensions/user-theme" = {
         name = "Catppuccin-GTK-Dark";
+      };
+      "org/gnome/shell/extensions/just-perfection" = {
+        activities-button = false;
       };
       "org/gnome/settings-daemon/plugins/power" = {
         sleep-inactive-ac-type = "nothing";
