@@ -42,6 +42,13 @@
       tab_title_template = "{fmt.fg.red}{bell_symbol}{activity_symbol}{fmt.fg.tab}{index}:{title}";
       active_tab_font_style = "bold";
 
+      # Tab bar colors — Catppuccin Mocha (matches GNOME + tmux theme)
+      active_tab_foreground = "#11111b"; # crust
+      active_tab_background = "#cba6f7"; # mauve (distinct from tmux peach)
+      inactive_tab_foreground = "#cdd6f4"; # text
+      inactive_tab_background = "#181825"; # mantle (same as tmux status bg)
+      tab_bar_background = "#11111b"; # crust
+
       # UI / UX
       confirm_os_window_close = -1; # Always confirm close when processes are running
       mouse_hide_wait = "-1.0"; # Hide cursor immediately when typing
