@@ -1,0 +1,30 @@
+[metadata]
+name = "docker-images"
+description = "Browse Docker images — drill into containers with Enter"
+requirements = ["docker", "jq"]
+
+[source]
+command = "docker images --format '{{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.Size}}\t{{.CreatedSince}}' | grep -v '<none>'"
+display = "{split:\t:0}  {split:\t:2}  {split:\t:3}"
+output = "{split:\t:0}"
+
+[preview]
+command = [
+  "bash -c 'docker ps -a --filter ancestor=\"$1\" --format \"table {{.Names}}\\t{{.Status}}\\t{{.Ports}}\"' _ '{split:\t:0}'",
+  "docker image inspect '{split:\t:0}' | jq -C '.[0] | {Id: .Id[7:19], Created, Architecture, Os, Size, RootFS: .RootFS.Layers | length}'",
+  "docker image history '{split:\t:0}'",
+]
+
+[ui]
+layout = "landscape"
+[ui.preview_panel]
+size = 55
+
+[keybindings]
+q = "quit"
+enter = "actions:containers"
+
+[actions.containers]
+description = "Drill into containers for this image"
+command = "tv docker-containers --exact -i '{split:\t:0}'"
+mode = "execute"

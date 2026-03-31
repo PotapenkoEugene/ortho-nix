@@ -40,8 +40,8 @@
       # notes popup (persistent nvim session in Orthidian vault)
       bind n display-popup -w 90% -h 90% -E "~/.config/home-manager/scripts/notes-popup.sh"
 
-      # docker containers browser (tv)
-      bind d display-popup -w 90% -h 85% -E "tv docker-containers | awk '{print \$1}' | xargs -r docker logs -f"
+      # docker browser (tv): images -> drill into containers
+      bind d display-popup -w 90% -h 85% -E "tv docker-images"
 
       # cmatrix screensaver popup
       bind e display-popup -w 100% -h 100% -E "cmatrix -ab"

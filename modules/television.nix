@@ -7,10 +7,15 @@
   # Television (tv) fuzzy finder — cable channels and custom overrides
 
   home.file = {
-    # Custom docker-containers channel: status in display, inspect in preview
+    # Custom docker-images channel: size/age stats, drill-down to containers
+    ".config/television/cable/docker-images.toml" = {
+      source = ../television/docker-images.toml;
+      force = true;
+    };
+    # Custom docker-containers channel: image in display for drill-down filtering, cycling previews
     ".config/television/cable/docker-containers.toml" = {
       source = ../television/docker-containers.toml;
-      force = true; # Override built-in channel installed by tv update-channels
+      force = true;
     };
   };
 
