@@ -47,7 +47,8 @@
       mouse_hide_wait = "-1.0"; # Hide cursor immediately when typing
       cursor_shape = "beam"; # Beam cursor (kitty shell integration changes it at prompt)
       cursor_blink_interval = 0; # No blinking
-      window_padding_width = 4; # Padding for readability
+      window_padding_width = "0 4 4"; # top=0 (no gap under tab bar), sides+bottom=4
+      hide_window_decorations = "yes"; # Remove OS title bar (no useful info, saves space)
       notify_on_cmd_finish = "invisible 15"; # Desktop alert for commands >15s in background tabs
     };
 
