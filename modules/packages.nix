@@ -119,6 +119,9 @@
     #pkgs.gnome-tweaks
     nodejs_24
     # BIOINF
+    bwa
+    bwa-mem2
+    blast
     minimap2 # pairwise sequence aligner (pipeline phase)
     seqkit
     qgis
