@@ -21,8 +21,8 @@
     enable = true;
 
     theme = {
-      name = "Orchis-Dark";
-      package = pkgs.orchis-theme;
+      name = "Catppuccin-GTK-Dark";
+      package = pkgs.magnetic-catppuccin-gtk;
     };
 
     iconTheme = {
@@ -31,8 +31,8 @@
     };
 
     cursorTheme = {
-      name = "Bibata-Modern-Classic";
-      package = pkgs.bibata-cursors;
+      name = "catppuccin-mocha-peach-cursors";
+      package = pkgs.catppuccin-cursors.mochaPeach;
     };
   };
 }

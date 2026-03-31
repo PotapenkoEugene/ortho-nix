@@ -12,12 +12,16 @@
       #	    { package = pkgs.gnomeExtensions.caffeine; }
       {package = pkgs.gnomeExtensions.clipboard-indicator;}
       {package = pkgs.gnomeExtensions.astra-monitor;}
+      {package = pkgs.gnomeExtensions.user-themes;}
     ];
   };
 
   dconf = {
     enable = true;
     settings = {
+      "org/gnome/shell/extensions/user-theme" = {
+        name = "Catppuccin-GTK-Dark";
+      };
       "org/gnome/settings-daemon/plugins/power" = {
         sleep-inactive-ac-type = "nothing";
         sleep-inactive-battery-type = "nothing";
