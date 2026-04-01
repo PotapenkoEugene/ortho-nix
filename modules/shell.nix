@@ -21,8 +21,8 @@
       #	    clip="xclip -selection clipboard";
       fzfp = "fzf --preview='cat {}'";
 
-      # Whisper speech-to-text (using compiled version from ~/Tools)
-      whisper = "whisper-cli -m ~/whisper-models/ggml-medium.en.bin";
+      # Whisper speech-to-text via Groq API (ad-hoc file transcription)
+      whisper = "bash -c 'source ~/.secrets/env; flac=$(mktemp /tmp/whisper-XXXXXX.flac); ffmpeg -y -i \"$1\" -ar 16000 -ac 1 \"$flac\" 2>/dev/null && curl -s https://api.groq.com/openai/v1/audio/transcriptions -H \"Authorization: Bearer $GROQ_API_KEY\" -F \"file=@$flac\" -F \"model=whisper-large-v3-turbo\" -F \"response_format=text\"; rm -f \"$flac\"' _ ";
 
       # Piper text-to-speech with pre-downloaded model
       piper-tts = "piper --model ~/piper-models/en_US-lessac-medium.onnx";

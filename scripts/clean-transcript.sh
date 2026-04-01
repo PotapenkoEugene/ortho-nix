@@ -5,10 +5,10 @@
 #
 # Input format (from whisper-stream-toggle.sh):
 #   [System Audio]
-#   [00:00:00.000 --> 00:00:05.000]  Hello, how are you?
+#   [0.0s --> 5.12s] Hello, how are you?
 #   ...
 #   [Mic]
-#   [00:00:00.000 --> 00:00:03.000]  I'm good thanks.
+#   [0.0s --> 3.44s] I'm good thanks.
 #   ...
 #
 # Parses timestamps, labels speakers, sorts chronologically,
@@ -35,11 +35,11 @@ RAW_LINES=$(wc -l < "$INPUT")
 RESULT=$(awk '
 /^\[System Audio\]/ { speaker = "Other"; next }
 /^\[Mic\]/ { speaker = "Me"; next }
-/^\[([0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+) --> / {
-    match($0, /^\[([0-9]{2}):([0-9]{2}):([0-9]{2})\.([0-9]+)/, t)
-    ms = (t[1]*3600 + t[2]*60 + t[3]) * 1000 + int(t[4])
+/^\[([0-9]+\.?[0-9]*)s --> / {
+    match($0, /^\[([0-9]+\.?[0-9]*)s -->/, t)
+    ms = int(t[1] * 1000)
     text = $0
-    sub(/^\[[0-9:. >-]+\] */, "", text)
+    sub(/^\[[^\]]+\] */, "", text)
     if (text == "" || text == "[BLANK_AUDIO]") next
     if (text == "[Inaudible]") next
     if (text ~ /^\(speaking in foreign language\)$/) next
