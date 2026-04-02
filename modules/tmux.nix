@@ -13,7 +13,7 @@
     historyLimit = 1000000;
     keyMode = "vi";
     mouse = false;
-    terminal = "screen-256color";
+    terminal = "tmux-256color";
 
     # Prefix key
     prefix = "C-a";
@@ -56,8 +56,10 @@
       set -gq allow-passthrough on
       set -g visual-activity off
 
-      # Terminal overrides
-      set-option -g terminal-overrides ',xterm-256color:RGB'
+      # Terminal overrides — true color + undercurl (colored squiggly underlines for Neovim LSP)
+      set -as terminal-overrides ',xterm-kitty:RGB'
+      set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'
+      set -as terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m'
 
       # Session and window management
       set -g detach-on-destroy off     # don't exit from tmux when closing a session
