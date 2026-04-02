@@ -99,6 +99,8 @@
       "WebSearch",
       "WebFetch",
 
+      "Bash(*)",
+
       "Bash(grep *)",
       "Bash(awk *)",
       "Bash(sed *)",
