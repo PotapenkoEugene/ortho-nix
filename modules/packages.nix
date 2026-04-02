@@ -119,6 +119,7 @@
     #pkgs.gnome-tweaks
     nodejs_24
     # BIOINF
+    sratoolkit
     bwa
     bwa-mem2
     blast
