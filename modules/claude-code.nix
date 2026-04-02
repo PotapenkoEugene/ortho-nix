@@ -106,6 +106,10 @@ in {
         source = ../claude-code/skills/knowledge/SKILL.md;
       };
 
+      ".claude/skills/done/SKILL.md" = {
+        source = ../claude-code/skills/done/SKILL.md;
+      };
+
       ".claude/skills/obsidian-markdown/SKILL.md" = {
         source = ../claude-code/skills/obsidian-markdown/SKILL.md;
       };

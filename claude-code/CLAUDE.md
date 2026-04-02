@@ -30,22 +30,35 @@ These rules apply to ALL projects and sessions. Project-level CLAUDE.md files ad
 
 - **Never modify raw data.** Treat anything in `data/`, `raw/`, or input directories as read-only. Always create new output files rather than overwriting source data.
 
+## MANDATORY: After Every Feature or Logical Chunk
+
+**After completing any meaningful implementation** (a new feature, a fix, a config change, a skill, a script — anything that "works" as a unit), always ask:
+
+> "Finished [X]. Run `/done`? (y/n)"
+
+Wait for yes or no. One line, no elaboration. If yes, run `/done`. If no, continue.
+
+**What counts as a trigger:**
+- A feature or subtask reaches a working state
+- A bug is fixed and verified
+- A config change is applied and tested (e.g., after `/hm-switch`)
+- A skill or script is written and ready
+- The user says something like "ok", "done", "looks good", "great", "perfect"
+
+**What does NOT trigger it:**
+- Mid-implementation (still in the middle of a multi-step task)
+- Pure research/exploration with no code changes
+- Small clarifications or follow-up questions
+
+This is a default reflex — the user should never have to remember to ask for it.
+
 ## Git
 
-- **Use `/commit` for all commits.** Never commit without the skill — it handles staging, gitignore hygiene, commit message, and push in one flow.
+- **Use `/done` for wrap-up** — notes + knowledge + commit + push, no confirmation prompts.
+- **Use `/commit` when you need manual control** over grouping or want to review before pushing.
 - **Use `/worktree` for parallel work.** Create worktrees for large features; merge back with squash when done.
-- **In worktrees:** suggest `/commit` proactively after completing a logical chunk of work.
-- **In main:** only commit when user explicitly asks.
 - **Never force push.** Never rewrite published history.
-- **Repo hygiene:** before staging, check for files that should be gitignored (large files >1MB, secrets, build artifacts, tool caches). Propose `.gitignore` additions. When unsure, ask.
-
-## Task Completion
-
-- After finishing a task or logical chunk of work:
-  - Ask if user wants to commit the changes (suggest `/commit`)
-  - Update the active project file via `/note` (mark subtasks done, add completion notes)
-- In worktrees: suggest both proactively after each completed chunk.
-- In main: only suggest when explicitly relevant (don't nag after every small edit).
+- **Repo hygiene:** `/done` and `/commit` both scan for gitignore candidates before staging.
 
 ## Academic Writing
 
@@ -154,8 +167,9 @@ When user asks to investigate a topic: use `/notebook investigate <topic>` — f
 ## Obsidian Integration
 
 - Note system at `~/Orthidian/`. Project files in `projects/` and `personal/` are append-only archives.
-- **Use `/note PROJECTNAME` at session start** when working on a tracked project.
-- After `/note`, autonomously manage the project file:
+- `/note` runs automatically at session start via the CLI alias — no need to invoke it manually.
+- **`/done` is the wrap-up trigger** (see MANDATORY section above) — marks subtasks, captures knowledge, commits, pushes.
+- Between start and wrap-up, autonomously manage the project file as work progresses:
   - Mark subtasks `[x]` when completed, add `- Done YYYY-MM-DD: description` notes
   - **Always ask before marking top-level objectives `[x]`** — user decides when an objective is done
   - Create top-level objectives only when user suggests it
@@ -172,7 +186,7 @@ When user asks to investigate a topic: use `/notebook investigate <topic>` — f
   - `seedling` 🌱 — want to know / unexplored / just a question. Give foundational context.
   - `budding` 🌿 — actively learning / partially understood. Build on what's there.
   - `evergreen` 🌳 — well understood / confident. Skip basics, go deep.
-- **Auto-capture** — when research, debugging, or analysis yields significant insights, facts, or methods: save them to the knowledge base via `/knowledge save` without asking. Set status to `budding`. This is how shared memory grows.
+- **Auto-capture** — when research, debugging, or analysis yields significant insights, facts, or methods: these are saved automatically by `/done` (Phase 2). Set status to `budding`. This is how shared memory grows.
 - **Project memory** — when knowledge is linked to a project, add a backlink in the project file's `## Notes` section: `- Knowledge: [[knowledge/PATH|Title]]`
 - **Before creating knowledge**: search existing notes to avoid duplication (`/knowledge search` or mcpvault `search_notes`).
 - **Use `/knowledge build`** for deliberate, interactive learning sessions — structuring what you know, filling gaps, confirming status.
