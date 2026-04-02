@@ -38,6 +38,7 @@
       # kitten ssh: auto-copies kitty terminfo to remote hosts (fixes xterm-kitty unknown terminal)
       kssh = "kitten ssh";
 
+      dolphin = "dolphin $PWD";
       vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
       vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";
       aws = "ssh evgenip@172.31.186.68";
