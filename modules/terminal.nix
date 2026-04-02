@@ -65,6 +65,9 @@
       "ctrl+shift+minus" = "change_font_size all -1.0";
       "ctrl+shift+0" = "change_font_size all 0";
 
+      # Tab management
+      "ctrl+shift+r" = "set_tab_title"; # Rename current tab
+
       # Kittens
       "ctrl+shift+u" = "kitten unicode_input"; # Unicode character picker
       "ctrl+shift+e" = "kitten hints"; # Keyboard-driven URL/path/hash selection
