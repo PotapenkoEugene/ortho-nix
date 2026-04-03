@@ -16,6 +16,7 @@
     xan # CSV Swiss Army knife
     # Music
     mpd
+    mpc
     yt-dlp
     ffmpeg
     # Remote Connect

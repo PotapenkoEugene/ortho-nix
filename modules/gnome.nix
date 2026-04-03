@@ -95,11 +95,12 @@ in {
         binding = "<Super>b";
       };
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5" = {
-        name = "Toggle Lofi Radio";
+        name = "Toggle Lofi";
         command = "/home/ortho/.config/home-manager/scripts/lofi-toggle.sh";
-        binding = "<Super>m";
+        binding = "<Super>l";
       };
       "org/gnome/settings-daemon/plugins/media-keys" = {
+        screensaver = [""]; # disable default Super+L lock screen
         custom-keybindings = [
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
