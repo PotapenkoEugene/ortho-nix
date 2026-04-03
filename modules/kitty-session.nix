@@ -5,6 +5,9 @@
       Type = "oneshot";
       ExecStart = toString (pkgs.writeShellScript "kitty-session-save" ''
         SESSION_FILE="$HOME/.config/kitty/session.conf"
+        # Don't overwrite during first 3 minutes after boot (restore may be in progress)
+        UPTIME_SECS=$(awk '{print int($1)}' /proc/uptime)
+        [ "$UPTIME_SECS" -lt 180 ] && exit 0
         SESSIONS=$(${pkgs.tmux}/bin/tmux list-clients -F '#{client_created} #{session_name}' 2>/dev/null \
             | sort -n | ${pkgs.gawk}/bin/awk '{print $2}' | ${pkgs.gawk}/bin/awk '!seen[$0]++')
         [ -z "$SESSIONS" ] && exit 0

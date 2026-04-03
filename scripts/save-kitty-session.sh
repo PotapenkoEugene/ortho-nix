@@ -6,6 +6,14 @@
 #============================================================================
 SESSION_FILE="$HOME/.config/kitty/session.conf"
 
+# Don't overwrite session.conf during the first 3 minutes after boot.
+# Resurrect restore may still be in progress — overwriting now would lock in
+# a degraded state (only tabs that opened before restore completed).
+UPTIME_SECS=$(awk '{print int($1)}' /proc/uptime)
+if [ "$UPTIME_SECS" -lt 180 ]; then
+    exit 0
+fi
+
 # Get attached tmux sessions ordered by client creation time (preserves tab order)
 SESSIONS=$(tmux list-clients -F '#{client_created} #{session_name}' 2>/dev/null \
     | sort -n | awk '{print $2}' | awk '!seen[$0]++')

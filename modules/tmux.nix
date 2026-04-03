@@ -141,6 +141,7 @@
       # Prevents secondary sockets (-L notes, -L vpn) from restoring all sessions.
       %if #{m:*/default,#{socket_path}}
       set -g @continuum-restore 'on'
+      set -g @continuum-save-interval '15'
       %else
       set -g @continuum-save-interval '0'
       %endif
