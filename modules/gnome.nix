@@ -3,7 +3,29 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  catppuccinGtk = pkgs.magnetic-catppuccin-gtk;
+  catppuccinShell = "${catppuccinGtk}/share/themes/Catppuccin-GTK-Dark/gnome-shell";
+in {
+  # Wrapper GNOME Shell theme — imports Catppuccin-GTK-Dark and overrides panel bg to #181825 (mantle)
+  # to match Kitty tab bar and tmux status bar. Only gnome-shell.css is overridden; assets symlinked.
+  home.file = {
+    ".local/share/themes/Catppuccin-Custom/gnome-shell/gnome-shell.css".text = ''
+      @import url("file://${catppuccinShell}/gnome-shell.css");
+
+      #panel {
+        background-color: #181825;
+      }
+      #panel .panel-corner {
+        -panel-corner-background-color: #181825;
+      }
+    '';
+    ".local/share/themes/Catppuccin-Custom/gnome-shell/pad-osd.css".source = "${catppuccinShell}/pad-osd.css";
+    ".local/share/themes/Catppuccin-Custom/gnome-shell/no-events.svg".source = "${catppuccinShell}/no-events.svg";
+    ".local/share/themes/Catppuccin-Custom/gnome-shell/no-notifications.svg".source = "${catppuccinShell}/no-notifications.svg";
+    ".local/share/themes/Catppuccin-Custom/gnome-shell/process-working.svg".source = "${catppuccinShell}/process-working.svg";
+    ".local/share/themes/Catppuccin-Custom/gnome-shell/assets".source = "${catppuccinShell}/assets";
+  };
   programs.gnome-shell = {
     enable = true;
     extensions = [
@@ -21,10 +43,11 @@
     enable = true;
     settings = {
       "org/gnome/shell/extensions/user-theme" = {
-        name = "Catppuccin-GTK-Dark";
+        name = "Catppuccin-Custom";
       };
       "org/gnome/shell/extensions/just-perfection" = {
         activities-button = false;
+        notification-banner-position = 2; # top-right (default 1 = center)
       };
       "org/gnome/settings-daemon/plugins/power" = {
         sleep-inactive-ac-type = "nothing";

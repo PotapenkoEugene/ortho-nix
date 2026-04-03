@@ -47,7 +47,8 @@
       active_tab_background = "#cba6f7"; # mauve (distinct from tmux peach)
       inactive_tab_foreground = "#cdd6f4"; # text
       inactive_tab_background = "#181825"; # mantle (same as tmux status bg)
-      tab_bar_background = "#11111b"; # crust
+      tab_bar_background = "#181825"; # mantle (matches tmux status bar bg)
+      tab_bar_margin_color = "#181825"; # mantle (hides 1px separator between tab bar and content)
 
       # UI / UX
       confirm_os_window_close = -1; # Always confirm close when processes are running
