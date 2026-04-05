@@ -30,7 +30,6 @@
       # Local LLM (Qwen2.5-3B) — interactive chat
       llm = "llama-cli -m ~/llm-models/qwen2.5-3b-instruct-q4_k_m.gguf --threads 12 --ctx-size 8192 -ngl 99 --no-display-prompt --log-disable -cnv";
 
-      presenterm = "presenterm -x";
       claude = "claude \"What to do next /note\"";
       claude_he = "claude --effort high \"What to do next /note\"";
       tb = "tmux attach -t base";
@@ -64,6 +63,12 @@
         local content
         content=$(base64 | tr -d '\n')
         printf '\033]52;c;%s\a' "$content"
+      }
+      pterm() {
+        command presenterm -x "$1" --publish-speaker-notes
+      }
+      pterm-notes() {
+        command presenterm -x "$1" --listen-speaker-notes
       }
       playwright-cli() {
         if [ ! -f ".playwright/cli.config.json" ] && [ "$1" != "install" ]; then
