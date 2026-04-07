@@ -5,8 +5,8 @@ requirements = ["docker", "jq"]
 
 [source]
 command = [
-  "docker ps --format '{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'",
-  "docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'",
+  "docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}' | awk -F'\\t' -v OFS='\\t' '{n=split($2,a,\"/\"); if(a[n]!~/:/) $2=$2\":latest\"; print}'",
+  "docker ps --format '{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}' | awk -F'\\t' -v OFS='\\t' '{n=split($2,a,\"/\"); if(a[n]!~/:/) $2=$2\":latest\"; print}'",
 ]
 display = "{split:\t:0}  {split:\t:1}  {split:\t:2}  {split:\t:3}"
 output = "{split:\t:0}"
@@ -27,8 +27,32 @@ size = 55
 [keybindings]
 q = "quit"
 ctrl-b = "actions:images"
+ctrl-s = "actions:toggle"
+ctrl-r = "actions:restart"
+ctrl-l = "actions:logs"
+ctrl-d = "actions:rm"
 
 [actions.images]
 description = "Back to images view"
 command = "tv docker-images"
+mode = "execute"
+
+[actions.toggle]
+description = "Start / Stop container"
+command = "bash -c 'if docker ps -q --filter status=running --filter name=\"^{split:\t:0}$\" | grep -q .; then docker stop \"{split:\t:0}\"; else docker start \"{split:\t:0}\"; fi'"
+mode = "execute"
+
+[actions.restart]
+description = "Restart container"
+command = "docker restart '{split:\t:0}'"
+mode = "execute"
+
+[actions.logs]
+description = "Follow logs (Ctrl+L)"
+command = "docker logs -f --tail 100 '{split:\t:0}'"
+mode = "execute"
+
+[actions.rm]
+description = "Remove container (confirm)"
+command = "bash -c 'read -rp \"Remove container {split:\t:0}? [y/N] \" yn && [[ \"$yn\" =~ ^[Yy]$ ]] && docker rm -f \"{split:\t:0}\"'"
 mode = "execute"

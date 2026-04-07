@@ -10,7 +10,7 @@ output = "{split:\t:0}"
 
 [preview]
 command = [
-  "bash -c 'docker ps -a --filter ancestor=\"$1\" --format \"table {{.Names}}\\t{{.Status}}\\t{{.Ports}}\"' _ '{split:\t:0}'",
+  "docker ps -a --filter ancestor='{split:\t:0}' --format json | jq -r '\"\\(.Names)  \\(.Status)  \\(.Ports)\"'",
   "docker image inspect '{split:\t:0}' | jq -C '.[0] | {Id: .Id[7:19], Created, Architecture, Os, Size, RootFS: .RootFS.Layers | length}'",
   "docker image history '{split:\t:0}'",
 ]
@@ -23,8 +23,20 @@ size = 55
 [keybindings]
 q = "quit"
 enter = "actions:containers"
+ctrl-d = "actions:rmi"
+ctrl-p = "actions:prune"
 
 [actions.containers]
 description = "Drill into containers for this image"
 command = "tv docker-containers --exact -i '{split:\t:0}'"
+mode = "execute"
+
+[actions.rmi]
+description = "Remove image (confirm)"
+command = "bash -c 'read -rp \"Remove image {split:\t:0}? [y/N] \" yn && [[ \"$yn\" =~ ^[Yy]$ ]] && docker rmi \"{split:\t:0}\"'"
+mode = "execute"
+
+[actions.prune]
+description = "Remove all stopped containers for image (confirm)"
+command = "bash -c 'read -rp \"Remove stopped containers for {split:\t:0}? [y/N] \" yn && [[ \"$yn\" =~ ^[Yy]$ ]] && docker ps -a --filter ancestor=\"{split:\t:0}\" --filter status=exited -q | xargs -r docker rm'"
 mode = "execute"
