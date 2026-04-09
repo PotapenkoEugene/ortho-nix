@@ -44,7 +44,10 @@
       bind d display-popup -w 90% -h 85% -E "tv docker-images"
 
       # cmatrix screensaver popup
-      bind e display-popup -w 100% -h 100% -E "cmatrix -ab"
+      bind '`' display-popup -w 100% -h 100% -E "cmatrix -ab"
+
+      # nvim editor popup — alias for Claude Code's Ctrl+G (chat:externalEditor)
+      bind e send-keys C-g
 
       # rmpc (music player) popup
       bind m display-popup -w 80% -h 75% -E "rmpc"

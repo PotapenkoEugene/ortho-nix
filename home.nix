@@ -36,6 +36,8 @@
     #	QT_QPA_PLATFORMTHEME = "qt6ct";
     KITTY_DISABLE_WAYLAND = "1";
     NPM_CONFIG_PREFIX = "${config.home.homeDirectory}/.npm-global";
+    EDITOR = "${config.home.homeDirectory}/.config/home-manager/scripts/nvim-editor-popup.sh";
+    VISUAL = "${config.home.homeDirectory}/.config/home-manager/scripts/nvim-editor-popup.sh";
   };
 
   nixpkgs.config.allowUnfree = true;

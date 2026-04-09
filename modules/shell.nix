@@ -51,6 +51,8 @@
       export PATH=~/.local/bin/:$PATH
       export CFLAGS="-I/usr/include"
       export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
+      export EDITOR="$HOME/.config/home-manager/scripts/nvim-editor-popup.sh"
+      export VISUAL="$HOME/.config/home-manager/scripts/nvim-editor-popup.sh"
       export MAMBA_ROOT_PREFIX="$HOME/micromamba"
       export PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/ms-playwright"
       export RSTUDIO_WHICH_R="/home/ortho/micromamba/envs/R42/bin/R"
