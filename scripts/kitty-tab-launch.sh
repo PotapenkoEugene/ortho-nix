@@ -7,13 +7,15 @@
 # an existing one. Only create if the session genuinely wasn't in the
 # resurrect snapshot (i.e., restore completed and it's still missing).
 #
-# Coordinator (first tab): boots tmux server, waits for resurrect to finish.
+# Coordinator (first tab): boots tmux server, triggers resurrect, waits.
 # Followers: wait for coordinator to signal, then attach.
+#
+# NOTE: tmux-resurrect does NOT update the 'last' symlink during restore
+# (only during save). Detection is based on session appearance only.
 #============================================================================
 SESSION="${1:?Usage: kitty-tab-launch.sh SESSION_NAME}"
 LOCK_DIR="/tmp/tmux-restore-$(id -u).lock"
 DONE_FILE="/tmp/tmux-restore-$(id -u).done"
-RESURRECT_DIR="$HOME/.tmux/resurrect"
 
 # Fast path: tmux server already running and session exists
 tmux has-session -t "$SESSION" 2>/dev/null && exec tmux attach -t "$SESSION"
@@ -30,30 +32,28 @@ fi
 # and waiting for resurrect to finish restoring all sessions.
 if mkdir "$LOCK_DIR" 2>/dev/null; then
 
-    # Note the current 'last' snapshot before restore so we can detect when
-    # resurrect updates it (it rewrites the symlink on restore completion).
-    BEFORE_RESTORE=$(readlink "$RESURRECT_DIR/last" 2>/dev/null)
-
     # Boot the tmux server with a throwaway session so continuum fires restore
     tmux new-session -d -s "__restore_wait" 2>/dev/null
 
-    # Wait up to 120s for resurrect restore to complete.
-    # Detect completion two ways:
-    #   1. The 'last' symlink changes (resurrect rewrites it on restore)
-    #   2. Our target session appears (it was restored)
-    RESTORED=false
-    for _ in $(seq 1 240); do
-        sleep 0.5
+    # Give continuum ~3s to auto-trigger restore on server start.
+    # Continuum hooks into session-created to fire its restore on first boot.
+    sleep 3
 
-        # Check if our session appeared
-        if tmux has-session -t "$SESSION" 2>/dev/null; then
-            RESTORED=true
-            break
+    # If continuum didn't restore our session, manually invoke the restore script.
+    # This handles abrupt shutdowns and cases where the auto-restore hook misfires.
+    if ! tmux has-session -t "$SESSION" 2>/dev/null; then
+        RESTORE_SCRIPT=$(tmux show-option -gv @resurrect-restore-script-path 2>/dev/null)
+        if [ -n "$RESTORE_SCRIPT" ] && [ -f "$RESTORE_SCRIPT" ]; then
+            tmux run-shell "$RESTORE_SCRIPT"
         fi
+    fi
 
-        # Check if the resurrect 'last' symlink changed (restore completed)
-        CURRENT=$(readlink "$RESURRECT_DIR/last" 2>/dev/null)
-        if [ -n "$CURRENT" ] && [ "$CURRENT" != "$BEFORE_RESTORE" ]; then
+    # Wait up to 30s for the target session to appear.
+    # Resurrect restore is local tmux commands only — typically takes <3s.
+    RESTORED=false
+    for _ in $(seq 1 60); do
+        sleep 0.5
+        if tmux has-session -t "$SESSION" 2>/dev/null; then
             RESTORED=true
             break
         fi
@@ -62,7 +62,7 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
     # Clean up the throwaway bootstrap session
     tmux kill-session -t "__restore_wait" 2>/dev/null
 
-    # Signal followers that restore is done (or timed out after 120s)
+    # Signal followers that restore is done (or timed out)
     touch "$DONE_FILE"
 
     if tmux has-session -t "$SESSION" 2>/dev/null; then
@@ -73,11 +73,12 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         # Restore ran but this session wasn't in the snapshot (new since last save)
         exec tmux new -s "$SESSION"
     else
-        # Restore timed out — do NOT create a bare session, just attach to whatever exists
-        # or open a rescue shell so the user can investigate
-        echo "WARNING: tmux-resurrect restore did not complete within 120s."
-        echo "Sessions may still be restoring. Try: tmux ls"
-        echo "To attach manually: tmux attach -t $SESSION"
+        # Restore failed — do NOT create a bare session
+        echo "WARNING: tmux-resurrect restore did not complete."
+        echo "Snapshot: $HOME/.tmux/resurrect/last"
+        echo "Sessions available: $(tmux ls 2>/dev/null | awk -F: '{print $1}' | tr '\n' ' ')"
+        echo ""
+        echo "To restore manually: tmux attach -t __restore_wait, then Ctrl-A Ctrl-R"
         echo "Press Enter to retry attach, Ctrl-C to exit."
         read -r
         exec tmux attach -t "$SESSION" 2>/dev/null || exec tmux new -s "$SESSION"
@@ -85,8 +86,8 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
 fi
 
 # --- Follower ---
-# Wait for coordinator to finish (up to 125s)
-for _ in $(seq 1 250); do
+# Wait for coordinator to finish (up to 40s: 3s continuum + 30s restore + buffer)
+for _ in $(seq 1 80); do
     sleep 0.5
     [ -f "$DONE_FILE" ] && break
 done
