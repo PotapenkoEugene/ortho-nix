@@ -26,6 +26,17 @@
       };
     }
 
+    # Scroll so cursor line is at top of window
+    {
+      mode = ["n"];
+      key = "<leader>d";
+      action = "zt";
+      options = {
+        desc = "Scroll cursor to top of window";
+        silent = true;
+      };
+    }
+
     # Rebind Tab to Esc in Normal, Insert, and Visual modes
     {
       mode = ["i"]; # Added 'v' for Visual mode
