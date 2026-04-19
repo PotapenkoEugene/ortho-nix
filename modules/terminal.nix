@@ -69,6 +69,13 @@
       # Tab management
       "ctrl+shift+r" = "set_tab_title"; # Rename current tab
 
+      # Tab navigation — scoped to visible (non-frozen) tabs via tab_bar_filter
+      "ctrl+tab" = "next_tab";
+      "ctrl+shift+tab" = "previous_tab";
+
+      # Freeze/unfreeze current tab (toggle) — script detects focused tab via kitten @ ls
+      "ctrl+shift+f" = "launch --type=background kitty-workspace.sh toggle";
+
       # Kittens
       "ctrl+shift+u" = "kitten unicode_input"; # Unicode character picker
       "ctrl+shift+e" = "kitten hints"; # Keyboard-driven URL/path/hash selection

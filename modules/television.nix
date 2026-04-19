@@ -17,6 +17,11 @@
       source = ../television/docker-containers.toml;
       force = true;
     };
+    # Kitty tab workspace manager — freeze/unfreeze tabs for project focus
+    ".config/television/cable/kitty-tabs.toml" = {
+      source = ../television/kitty-tabs.toml;
+      force = true;
+    };
   };
 
   # Install cable channels on every switch; patch tmux-sessions to use switch-client

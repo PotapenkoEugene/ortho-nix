@@ -99,6 +99,7 @@
       # Pane management
       bind | split-window
       bind s display-popup -w 80% -h 60% -E "tv tmux-sessions | xargs -r tmux switch-client -t"
+      bind w display-popup -w 80% -h 60% -E "tv kitty-tabs | xargs -r kitty-workspace.sh toggle"
       bind v split-window -h -c "#{pane_current_path}"
       bind '"' choose-window
       bind h select-pane -L

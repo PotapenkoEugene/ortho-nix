@@ -1,0 +1,12 @@
+[metadata]
+name = "kitty-tabs"
+description = "Freeze/unfreeze Kitty tabs — toggle visibility without closing sessions"
+requirements = ["kitten"]
+
+[source]
+command = "kitty-workspace.sh list"
+display = "{split:\t:0}"
+output = "{split:\t:1}"
+
+[preview]
+command = "tmux capture-pane -t '{split:\t:1}' -p 2>/dev/null || echo 'No preview (session not attached)'"
