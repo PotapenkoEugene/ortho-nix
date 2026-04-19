@@ -30,7 +30,7 @@
       # Local LLM (Qwen2.5-3B) — interactive chat
       llm = "llama-cli -m ~/llm-models/qwen2.5-3b-instruct-q4_k_m.gguf --threads 12 --ctx-size 8192 -ngl 99 --no-display-prompt --log-disable -cnv";
 
-      claude = "claude \"What to do next /note\"";
+      claude = "claude --effort xhigh --enable-auto-mode \"What to do next /note\"";
       claude_he = "claude --effort high \"What to do next /note\"";
       tb = "tmux attach -t base";
 
