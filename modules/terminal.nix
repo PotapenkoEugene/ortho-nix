@@ -69,12 +69,20 @@
       # Tab management
       "ctrl+shift+r" = "set_tab_title"; # Rename current tab
 
-      # Tab navigation — scoped to visible (non-frozen) tabs via tab_bar_filter
+      # Tab navigation — vim-style HJKL (H/J = previous, K/L = next)
+      "ctrl+shift+h" = "previous_tab";
+      "ctrl+shift+j" = "previous_tab";
+      "ctrl+shift+k" = "next_tab";
+      "ctrl+shift+l" = "next_tab";
       "ctrl+tab" = "next_tab";
       "ctrl+shift+tab" = "previous_tab";
 
       # Freeze/unfreeze current tab (toggle) — script detects focused tab via kitten @ ls
       "ctrl+shift+f" = "launch --type=background kitty-workspace.sh toggle";
+
+      # Tab reordering — snap to first/last position
+      "ctrl+shift+left" = "launch --type=background kitty-move-tab-first.sh";
+      "ctrl+shift+right" = "launch --type=background kitty-move-tab-last.sh";
 
       # Kittens
       "ctrl+shift+u" = "kitten unicode_input"; # Unicode character picker

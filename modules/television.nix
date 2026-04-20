@@ -17,14 +17,10 @@
       source = ../television/docker-containers.toml;
       force = true;
     };
-    # Kitty tab workspace manager — freeze/unfreeze tabs for project focus
-    ".config/television/cable/kitty-tabs.toml" = {
-      source = ../television/kitty-tabs.toml;
-      force = true;
-    };
   };
 
   # Install cable channels on every switch; patch tmux-sessions to use switch-client
+  # (so Enter inside the popup switches the current client instead of attaching a new one)
   home.activation.tvUpdateChannels = lib.hm.dag.entryAfter ["installPackages"] ''
     if command -v tv &>/dev/null; then
       tv update-channels 2>/dev/null || true

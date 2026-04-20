@@ -69,7 +69,11 @@ _apply() {
     frozen_count=$(grep -c . "$FROZEN_FILE" 2>/dev/null) || frozen_count=0
 
     if [ "$frozen_count" -eq 0 ]; then
-        kitten @ load-config -o "tab_bar_filter=" 2>/dev/null
+        # --ignore-overrides wipes accumulated runtime overrides. Using
+        # `-o "tab_bar_filter="` alone adds an empty override on top of any
+        # prior filter instead of replacing it, which leaves move_tab_forward
+        # still operating on a stale filtered tab list.
+        kitten @ load-config --ignore-overrides 2>/dev/null
         return
     fi
 
@@ -88,7 +92,7 @@ _apply() {
         expr="not ($joined)"
     fi
 
-    kitten @ load-config -o "tab_bar_filter=$expr" 2>/dev/null
+    kitten @ load-config --ignore-overrides -o "tab_bar_filter=$expr" 2>/dev/null
 }
 
 # ── list ─────────────────────────────────────────────────────────────────────

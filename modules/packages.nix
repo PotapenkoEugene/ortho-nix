@@ -76,7 +76,7 @@
         mutagen # required for rmpc
         pip
         fpdf
-        pypdf2 # read/write pdf for editing pdf
+        pypdf # read/write pdf for editing pdf (replaced deprecated pypdf2)
         python-docx
         scipy
         geopandas
