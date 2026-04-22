@@ -39,7 +39,8 @@
       tab_bar_edge = "top";
       tab_bar_style = "powerline";
       tab_powerline_style = "slanted";
-      tab_title_template = "{fmt.fg.red}{bell_symbol}{activity_symbol}{fmt.fg.tab}{title}";
+      tab_title_template = "{fmt.fg.red}{bell_symbol}{activity_symbol}{fmt.fg.tab}{custom}{sup.index}";
+      watcher = "tab_bar.py";
       active_tab_font_style = "bold";
 
       # Tab bar colors — Catppuccin Mocha (matches GNOME + tmux theme)
@@ -69,11 +70,11 @@
       # Tab management
       "ctrl+shift+r" = "set_tab_title"; # Rename current tab
 
-      # Tab navigation — vim-style HJKL (H/J = previous, K/L = next)
+      # Tab navigation — vim-style HJKL (H = previous, L = next, J = first, K = last)
       "ctrl+shift+h" = "previous_tab";
-      "ctrl+shift+j" = "previous_tab";
-      "ctrl+shift+k" = "next_tab";
       "ctrl+shift+l" = "next_tab";
+      "ctrl+shift+j" = "goto_tab 1";
+      "ctrl+shift+k" = "launch --type=background kitty-jump-tab-last.sh";
       "ctrl+tab" = "next_tab";
       "ctrl+shift+tab" = "previous_tab";
 
@@ -84,9 +85,25 @@
       "ctrl+shift+left" = "launch --type=background kitty-move-tab-first.sh";
       "ctrl+shift+right" = "launch --type=background kitty-move-tab-last.sh";
 
+      # Tab navigation by number — tmux-style (prefix 1..9)
+      "ctrl+shift+1" = "goto_tab 1";
+      "ctrl+shift+2" = "goto_tab 2";
+      "ctrl+shift+3" = "goto_tab 3";
+      "ctrl+shift+4" = "goto_tab 4";
+      "ctrl+shift+5" = "goto_tab 5";
+      "ctrl+shift+6" = "goto_tab 6";
+      "ctrl+shift+7" = "goto_tab 7";
+      "ctrl+shift+8" = "goto_tab 8";
+      "ctrl+shift+9" = "goto_tab 9";
+
+      # Last-active tab toggle — tmux-style (prefix C-a); overrides Kitty's default select_all
+      "ctrl+shift+a" = "goto_tab 0";
+
       # Kittens
       "ctrl+shift+u" = "kitten unicode_input"; # Unicode character picker
       "ctrl+shift+e" = "kitten hints"; # Keyboard-driven URL/path/hash selection
     };
   };
+
+  home.file.".config/kitty/tab_bar.py".source = ../scripts/kitty-tab-bar.py;
 }
