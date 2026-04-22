@@ -13,5 +13,6 @@
 
   programs.nixvim = {
     enable = true;
+    extraLuaPackages = ps: [ps.magick];
   };
 }
