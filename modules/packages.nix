@@ -144,6 +144,11 @@
     # Conda
     micromamba
     uv # Python package manager (provides uvx)
+    # TODO: graphifyy (knowledge-graph Claude skill) installed imperatively:
+    #   `uv tool install graphifyy && graphify install`
+    #   Migrate to a proper nix derivation once graphifyy or its heavy deps
+    #   (graspologic, tree-sitter-*) land in nixpkgs.
+    #   Upgrade: `uv tool upgrade graphifyy`
     gws # Google Workspace CLI
     yad # GUI dialogs (used for REC indicator in whisper-stream)
     dos2unix
