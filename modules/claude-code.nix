@@ -13,6 +13,15 @@
     hash = "sha256-vrCgOYQngSmsv4rnl6CTNk26DB+BxgplwkVfznVbBZo=";
   };
 
+  # Understand-Anything plugin — LLM-powered codebase knowledge graphs
+  # https://github.com/Lum1104/Understand-Anything
+  understandAnythingSrc = pkgs.fetchFromGitHub {
+    owner = "Lum1104";
+    repo = "Understand-Anything";
+    rev = "822b20d9bf1d499234ff8584b427028cadff523b";
+    hash = "sha256-vLlVn0FDrsQ3Ghme/0UVUCI6G3fGEHTyqIbcPvo1u34=";
+  };
+
   # K-Dense-AI scientific skills — 177 skills, MIT licensed
   # https://github.com/K-Dense-AI/claude-scientific-skills
   scientificSkills = pkgs.fetchFromGitHub {
@@ -129,6 +138,33 @@ in {
       ".claude/skills/notebook/SKILL.md" = {
         source = ../claude-code/skills/notebook/SKILL.md;
       };
+
+      # Understand-Anything skills — LLM-powered codebase knowledge graphs
+      ".claude/skills/understand" = {
+        source = "${understandAnythingSrc}/understand-anything-plugin/skills/understand";
+        recursive = true;
+      };
+      ".claude/skills/understand-chat/SKILL.md" = {
+        source = "${understandAnythingSrc}/understand-anything-plugin/skills/understand-chat/SKILL.md";
+      };
+      ".claude/skills/understand-dashboard/SKILL.md" = {
+        source = "${understandAnythingSrc}/understand-anything-plugin/skills/understand-dashboard/SKILL.md";
+      };
+      ".claude/skills/understand-diff/SKILL.md" = {
+        source = "${understandAnythingSrc}/understand-anything-plugin/skills/understand-diff/SKILL.md";
+      };
+      ".claude/skills/understand-domain/SKILL.md" = {
+        source = "${understandAnythingSrc}/understand-anything-plugin/skills/understand-domain/SKILL.md";
+      };
+      ".claude/skills/understand-explain/SKILL.md" = {
+        source = "${understandAnythingSrc}/understand-anything-plugin/skills/understand-explain/SKILL.md";
+      };
+      ".claude/skills/understand-knowledge/SKILL.md" = {
+        source = "${understandAnythingSrc}/understand-anything-plugin/skills/understand-knowledge/SKILL.md";
+      };
+      ".claude/skills/understand-onboard/SKILL.md" = {
+        source = "${understandAnythingSrc}/understand-anything-plugin/skills/understand-onboard/SKILL.md";
+      };
     }
 
     # K-Dense-AI scientific skills — core bioinformatics
@@ -169,6 +205,38 @@ in {
        [ ! -d "${config.home.homeDirectory}/.cache/ms-playwright/chromium-1212" ]; then
       cd "${config.home.homeDirectory}" && playwright-cli install 2>/dev/null || true
     fi
+  '';
+
+  # Install understand-anything plugin into Claude Code's plugin cache.
+  # Uses mutable copy (not symlink) so pnpm can write node_modules on first use.
+  # The plugin's SKILL.md handles `pnpm build` automatically on first invocation.
+  home.activation.installUnderstandAnything = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    PLUGIN_CACHE="$HOME/.claude/plugins/cache/understand-anything/understand-anything/2.3.1"
+    INSTALLED_JSON="$HOME/.claude/plugins/installed_plugins.json"
+
+    if [ ! -d "$PLUGIN_CACHE" ]; then
+      mkdir -p "$(dirname "$PLUGIN_CACHE")"
+      cp -r "${understandAnythingSrc}/understand-anything-plugin" "$PLUGIN_CACHE"
+      chmod -R u+w "$PLUGIN_CACHE"
+    fi
+
+    if [ ! -f "$INSTALLED_JSON" ] || ! ${pkgs.jq}/bin/jq empty "$INSTALLED_JSON" 2>/dev/null; then
+      printf '{"version": 2, "plugins": {}}' > "$INSTALLED_JSON"
+    fi
+
+    ${pkgs.jq}/bin/jq \
+      --arg path "$PLUGIN_CACHE" \
+      '.plugins["understand-anything@understand-anything"] //= [
+        {
+          "scope": "user",
+          "installPath": $path,
+          "version": "2.3.1",
+          "installedAt": "2026-04-22T00:00:00.000Z",
+          "lastUpdated": "2026-04-22T00:00:00.000Z",
+          "gitCommitSha": "822b20d9bf1d499234ff8584b427028cadff523b"
+        }
+      ]' "$INSTALLED_JSON" > "$INSTALLED_JSON.tmp" && \
+      mv "$INSTALLED_JSON.tmp" "$INSTALLED_JSON"
   '';
 
   # Install Python playwright's chromium for notebooklm login flow
