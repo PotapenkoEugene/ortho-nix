@@ -1,16 +1,17 @@
 ---
 name: done
-description: End-of-task wrap-up — update project notes, capture knowledge, commit and push all changes without confirmation prompts.
+description: End-of-task wrap-up — note → knowledge → commit+push (local repo only) → understand-graph update (if graph exists).
 argument-hint: "[optional commit message override]"
-allowed-tools: Bash(git *), Bash(find *), Bash(stat *), Bash(ls *), Bash(du *), Read, Edit, Glob, Grep
+allowed-tools: Bash(git *), Bash(find *), Bash(stat *), Bash(ls *), Bash(du *), Bash(jq *), Read, Edit, Glob, Grep
 ---
 
 # Done Skill
 
-End-of-task wrap-up that runs three phases in sequence:
+End-of-task wrap-up that runs up to four phases in sequence:
 1. **Note** — update the active project file with completions
 2. **Knowledge** — capture any non-obvious insights to the knowledge base
-3. **Commit** — stage, commit, and push all changes **without asking for confirmation**
+3. **Commit** — stage, commit, and push all changes **without asking for confirmation** (skipped if CWD is not inside a git repo)
+4. **Understand Graph** — incrementally update the knowledge graph (skipped if no graph exists in CWD)
 
 ## Usage
 
@@ -69,6 +70,17 @@ Report: "Saved knowledge: [N note(s) created/updated]" or "No new knowledge to c
 ---
 
 ## Phase 3: Commit + Push (No Confirmation)
+
+### CWD Git Guard
+
+First, check whether the current working directory is inside a git repo:
+
+```bash
+git -C "$PWD" rev-parse --is-inside-work-tree 2>/dev/null
+```
+
+- **Exit code != 0** → print "Phase 3 skipped: not inside a git repo." and jump to Phase 4. Do not `cd` anywhere else.
+- **Exit code == 0** → proceed below.
 
 ### Gitignore Hygiene
 
@@ -149,11 +161,48 @@ Done: 2 commits pushed
 
 ---
 
+## Phase 4: Understand Graph Update
+
+Runs after push so the graph diffs against the committed HEAD.
+
+### Pre-conditions (check in order — skip silently on any miss)
+
+1. CWD is inside a git repo (`git -C "$PWD" rev-parse --is-inside-work-tree 2>/dev/null` succeeds).
+2. `.understand-anything/knowledge-graph.json` exists in CWD — if not, skip silently (no graph means user hasn't opted in to this project).
+3. `.understand-anything/meta.json` exists in CWD with a readable `gitCommitHash` field.
+
+### Short-circuit: graph already up to date
+
+```bash
+CURRENT_HASH=$(git rev-parse HEAD)
+LAST_HASH=$(jq -r .gitCommitHash .understand-anything/meta.json)
+```
+
+If `CURRENT_HASH == LAST_HASH` → report "Phase 4: graph already up to date." and finish. Zero tokens spent.
+
+### Incremental update
+
+Locate and read the plugin's auto-update prompt:
+
+```bash
+HOOK=$(find ~/.claude/plugins/cache/understand-anything -name auto-update-prompt.md 2>/dev/null | head -1)
+```
+
+Read `$HOOK` with the Read tool and follow its Phase 0 → Phase 3 instructions verbatim, anchoring `$PROJECT_ROOT` to the current working directory (`$PWD`). Do **not** inline or paraphrase the logic — execute the prompt file as-is so future plugin version upgrades flow through automatically.
+
+If `$HOOK` is empty (plugin not installed), print "Phase 4 skipped: understand-anything plugin not found." and finish.
+
+Phase 4 is **non-fatal** — if the update errors mid-run, report the error in one line and finish. The existing graph stays intact.
+
+---
+
 ## Rules
 
 - Never `git add -A` or `git add .`
 - Never `--no-verify`
 - Never `git push --force`
 - Never commit secrets — always gitignore them and warn
-- Phase 1 and 2 failures are non-fatal — report the issue and continue to Phase 3
-- Phase 3 is the only phase that must succeed; if git state is clean (nothing to commit), report that and finish
+- Phase 3 operates **only** on the git repo whose work tree contains `$PWD`. Never `cd` elsewhere for git commands. `~/Orthidian/*` edits from Phase 2 stay uncommitted on disk — they are handled by Orthidian's own backup timer.
+- Phase 3 skips silently when CWD is not inside a git repo.
+- Phase 4 skips silently when CWD has no `.understand-anything/knowledge-graph.json` — graph maintenance is opt-in per project.
+- Phase 1, 2, and 4 failures are non-fatal — report the issue and continue. Phase 3 is the only phase that must succeed; if git state is clean (nothing to commit), report that and finish.
