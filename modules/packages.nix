@@ -119,6 +119,7 @@
     #python313Packages.pynvim
     #pkgs.gnome-tweaks
     nodejs_24
+    pnpm
     # BIOINF
     sratoolkit
     bwa
