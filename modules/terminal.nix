@@ -7,7 +7,10 @@
   programs.kitty = {
     enable = true;
     themeFile = "Dark_Pastel";
-    package = config.lib.nixGL.wrap pkgs.kitty;
+    package =
+      if pkgs.stdenv.isLinux
+      then config.lib.nixGL.wrap pkgs.kitty
+      else pkgs.kitty;
 
     font = {
       name = "JetBrains Mono";

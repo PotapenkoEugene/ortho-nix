@@ -71,7 +71,11 @@
       set -g status-position top       # macOS / darwin style
 
       # Clipboard config
-      set -g @override_copy_command 'xclip -selection clipboard'
+      set -g @override_copy_command '${
+        if pkgs.stdenv.isDarwin
+        then "pbcopy"
+        else "xclip -selection clipboard"
+      }'
 
       # Pane styling
       set -g pane-active-border-style 'fg=magenta,bg=default'

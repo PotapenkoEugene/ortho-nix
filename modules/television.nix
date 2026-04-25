@@ -26,7 +26,11 @@
       tv update-channels 2>/dev/null || true
       CABLE="${config.home.homeDirectory}/.config/television/cable"
       if [ -f "$CABLE/tmux-sessions.toml" ]; then
-        sed -i 's/tmux attach-session -t/tmux switch-client -t/g' "$CABLE/tmux-sessions.toml"
+        ${
+      if pkgs.stdenv.isDarwin
+      then "sed -i '' 's/tmux attach-session -t/tmux switch-client -t/g'"
+      else "sed -i 's/tmux attach-session -t/tmux switch-client -t/g'"
+    } "$CABLE/tmux-sessions.toml"
       fi
     fi
   '';

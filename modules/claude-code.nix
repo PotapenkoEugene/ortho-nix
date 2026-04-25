@@ -44,9 +44,12 @@ in {
 
   home.file = lib.mkMerge [
     {
-      # Claude Code settings with hooks and permissions
+      # Claude Code settings — generated from Nix with platform guards
+      # (hooks + permissions differ between Linux and darwin)
       ".claude/settings.json" = {
-        source = ../claude-code/settings.json;
+        text = builtins.toJSON (import ../claude-code/settings.nix {
+          inherit pkgs lib config;
+        });
       };
 
       # Global Claude Code instructions (applies to all projects)

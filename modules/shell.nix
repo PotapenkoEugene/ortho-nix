@@ -4,11 +4,14 @@
   lib,
   ...
 }: {
-  home.sessionPath = [
-    "/home/ortho/Tools/Bioscripts"
-    "$HOME/.npm-global/bin"
-    "$HOME/.config/home-manager/scripts"
-  ];
+  home.sessionPath =
+    [
+      "$HOME/.npm-global/bin"
+      "$HOME/.config/home-manager/scripts"
+    ]
+    ++ lib.optionals pkgs.stdenv.isLinux [
+      "/home/ortho/Tools/Bioscripts"
+    ];
 
   programs.bash = {
     enable = true;
@@ -17,8 +20,6 @@
       ls = "eza --color=always --group-directories-first";
       ll = "eza -la --color=always --group-directories-first --sort new";
       "..." = "cd ../../";
-      #rstudio = "rstudio --no-sandbox"; # for installation  via nix (not worked properly)
-      #	    clip="xclip -selection clipboard";
       fzfp = "fzf --preview='cat {}'";
 
       # Whisper speech-to-text via Groq API (ad-hoc file transcription)
@@ -45,40 +46,43 @@
       migal_8484 = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -L 8484:localhost:8484 potapgene@172.16.11.55";
       migal_8585 = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -L 8585:localhost:8585 potapgene@172.16.11.55";
     };
-    initExtra = ''
-      [ -f ~/.secrets/env ] && source ~/.secrets/env
-      export PKG_CONFIG_PATH="${pkgs.imagemagick.dev}/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig"
-      export PATH=~/.local/bin/:$PATH
-      export CFLAGS="-I/usr/include"
-      export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
-      export EDITOR="$HOME/.config/home-manager/scripts/nvim-editor-popup.sh"
-      export VISUAL="$HOME/.config/home-manager/scripts/nvim-editor-popup.sh"
-      export MAMBA_ROOT_PREFIX="$HOME/micromamba"
-      export PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/ms-playwright"
-      export RSTUDIO_WHICH_R="/home/ortho/micromamba/envs/R42/bin/R"
-      set -o vi
-      eval "$(tv init bash)"
-      bind -r '"\C-T"'
-      bind -x '"\C-F": tv_smart_autocomplete'
-      bind -x '"\C-H": tv_shell_history'
-      cc() {
-        local content
-        content=$(base64 | tr -d '\n')
-        printf '\033]52;c;%s\a' "$content"
-      }
-      pterm() {
-        command presenterm -x "$1" --publish-speaker-notes
-      }
-      pterm-notes() {
-        command presenterm -x "$1" --listen-speaker-notes
-      }
-      playwright-cli() {
-        if [ ! -f ".playwright/cli.config.json" ] && [ "$1" != "install" ]; then
-          command playwright-cli install >/dev/null 2>&1
-        fi
-        command playwright-cli "$@"
-      }
-    '';
+    initExtra =
+      ''
+        [ -f ~/.secrets/env ] && source ~/.secrets/env
+        export PATH=~/.local/bin/:$PATH
+        export EDITOR="$HOME/.config/home-manager/scripts/nvim-editor-popup.sh"
+        export VISUAL="$HOME/.config/home-manager/scripts/nvim-editor-popup.sh"
+        export MAMBA_ROOT_PREFIX="$HOME/micromamba"
+        export PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/ms-playwright"
+        set -o vi
+        eval "$(tv init bash)"
+        bind -r '"\C-T"'
+        bind -x '"\C-F": tv_smart_autocomplete'
+        bind -x '"\C-H": tv_shell_history'
+        cc() {
+          local content
+          content=$(base64 | tr -d '\n')
+          printf '\033]52;c;%s\a' "$content"
+        }
+        pterm() {
+          command presenterm -x "$1" --publish-speaker-notes
+        }
+        pterm-notes() {
+          command presenterm -x "$1" --listen-speaker-notes
+        }
+        playwright-cli() {
+          if [ ! -f ".playwright/cli.config.json" ] && [ "$1" != "install" ]; then
+            command playwright-cli install >/dev/null 2>&1
+          fi
+          command playwright-cli "$@"
+        }
+      ''
+      + lib.optionalString pkgs.stdenv.isLinux ''
+        export PKG_CONFIG_PATH="${pkgs.imagemagick.dev}/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig"
+        export CFLAGS="-I/usr/include"
+        export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
+        export RSTUDIO_WHICH_R="/home/ortho/micromamba/envs/R42/bin/R"
+      '';
   };
 
   programs.fzf = {
