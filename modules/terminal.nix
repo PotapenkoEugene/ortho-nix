@@ -81,8 +81,8 @@
       "ctrl+tab" = "next_tab";
       "ctrl+shift+tab" = "previous_tab";
 
-      # Freeze/unfreeze current tab (toggle) — script detects focused tab via kitten @ ls
-      "ctrl+shift+f" = "launch --type=background kitty-workspace.sh toggle";
+      # Disable dangerous defaults — Kitty's close_window closes the tab (tmux session survives but tab disappears)
+      "ctrl+shift+w" = "no_op";
 
       # Tab reordering — snap to first/last position
       "ctrl+shift+left" = "launch --type=background kitty-move-tab-first.sh";

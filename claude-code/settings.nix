@@ -299,7 +299,6 @@ in {
         "Bash(wego *)"
         "Bash(timeout *)"
         "Bash(playwright-cli *)"
-        "Bash(kitty-workspace.sh *)"
         "Bash(notebooklm *)"
 
         "mcp__mcpvault__search_notes"
