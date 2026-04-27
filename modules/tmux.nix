@@ -84,7 +84,7 @@
 
       # Window and session management
       bind ^X lock-server
-      bind ^C new-window -c "$HOME"
+      bind c new-window -c "$HOME"
       bind ^D detach
       bind * list-clients
 
@@ -120,7 +120,7 @@
       bind : command-prompt
       bind * setw synchronize-panes
       bind P set pane-border-status
-      bind c kill-pane
+      bind ^C kill-pane
       bind x swap-pane -D
       bind K send-keys "clear"\; send-keys "Enter"
 
