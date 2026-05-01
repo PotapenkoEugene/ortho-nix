@@ -273,8 +273,8 @@
           src = pkgs.fetchFromGitHub {
             owner = "omerxx";
             repo = "tmux-sessionx";
-            rev = "main";
-            sha256 = "sha256-a/wI6UMQayOfQswIm690ypyT/Lxfbz0Uja21ZbqN3Xk=";
+            rev = "c9aaa1d309791871b5e8c1f9bfb91ecc5fa7da3a";
+            sha256 = "sha256-ve1nZslZil30yWfrlzYGEMY9hRH2lJjoPuEBjwHvBz4=";
           };
         };
         extraConfig = ''
