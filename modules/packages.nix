@@ -59,6 +59,7 @@
       # Python environment
       (python313.withPackages (ps:
         with ps; [
+          weasyprint # for presenterm rendering
           openpyxl
           pandas
           ipykernel
@@ -83,6 +84,7 @@
           rasterio
           fiona
           requests
+          playwright # for excalidraw-diagram render script
         ]))
 
       # Desktop / communication

@@ -19,12 +19,12 @@ These rules apply to ALL projects and sessions. Project-level CLAUDE.md files ad
 ## Communication
 
 - **Always English.** All communication in English regardless of context.
-- **Concise and technical.** Prefer precise language, avoid filler. Cite specific file paths, line numbers, version numbers. Bullet points over paragraphs.
 - **No emoji** unless I explicitly ask.
 
 ## Error Handling
 
 - **Diagnose and fix autonomously.** When hitting build failures, test failures, or unexpected output — investigate root cause and attempt a fix. Only ask me if stuck after 2-3 attempts.
+- **Never silently substitute a proxy or alternative method when an external data source is unreachable.** Stop, report the failure, and ask the user — they may be able to fetch the file manually, point at a cache, or change the design. A "fallback" that changes the scientific meaning of the analysis is not error handling, it is a different analysis and requires explicit user approval.
 
 ## Data Safety
 
@@ -78,6 +78,12 @@ This is a default reflex — the user should never have to remember to ask for i
 - **Local Shiny apps:** pair with `options(shiny.autoreload = TRUE)` — edit code, then snapshot/screenshot to verify changes without restarting.
 - **Run `playwright-cli install` once per new working directory** to initialize the workspace config and download browsers if missing.
 - **Browsers stored at:** `~/.cache/ms-playwright/chromium-1212/`
+
+## Diagrams
+
+- **For visual diagrams** (architectures, workflows, mental models, data flows) — prefer `/excalidraw-diagram` over ASCII art or mermaid. It produces `.excalidraw` JSON (editable at excalidraw.com) + a PNG rendered for self-validation.
+- Render command: `python3 ~/.claude/skills/excalidraw-diagram/references/render_excalidraw.py <file.excalidraw>`
+- First-time Chromium install (if render fails): `python3 -m playwright install chromium`
 
 ## Home Manager
 

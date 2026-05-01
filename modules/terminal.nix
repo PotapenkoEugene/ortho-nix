@@ -17,6 +17,10 @@
       size = 12;
     };
 
+    extraConfig = ''
+      bold_font JetBrains Mono Bold
+    '';
+
     settings = {
       # Session / remote control (existing)
       startup_session = "~/.config/kitty/session.conf";
