@@ -13,6 +13,15 @@
     hash = "sha256-vrCgOYQngSmsv4rnl6CTNk26DB+BxgplwkVfznVbBZo=";
   };
 
+  # Caveman skill — ultra-compressed communication mode (~75% fewer tokens)
+  # https://github.com/juliusbrussee/caveman
+  cavemanSrc = pkgs.fetchFromGitHub {
+    owner = "juliusbrussee";
+    repo = "caveman";
+    rev = "ef6050c5e1848b6880ff47c32ade1a608a64f85e";
+    hash = "sha256-LlyBlFsKUHKzsOXEwENoVSsZHtKENVY4vFMRf08vzoU=";
+  };
+
   # Understand-Anything plugin — LLM-powered codebase knowledge graphs
   # https://github.com/Lum1104/Understand-Anything
   understandAnythingSrc = pkgs.fetchFromGitHub {
@@ -132,6 +141,12 @@ in {
         recursive = true;
       };
 
+      # Excalidraw diagram skill — generates .excalidraw JSON + renders to PNG via uv+playwright
+      ".claude/skills/excalidraw-diagram" = {
+        source = ../claude-code/skills/excalidraw-diagram;
+        recursive = true;
+      };
+
       # NotebookLM upstream skill — full CLI knowledge from notebooklm-py v0.3.4
       ".claude/skills/notebooklm/SKILL.md" = {
         source = "${notebooklmPySrc}/SKILL.md";
@@ -140,6 +155,20 @@ in {
       # Custom /notebook workflow skill — session prep, research synthesis, knowledge base integration
       ".claude/skills/notebook/SKILL.md" = {
         source = ../claude-code/skills/notebook/SKILL.md;
+      };
+
+      # Caveman skills — ultra-compressed communication mode
+      ".claude/skills/caveman/SKILL.md" = {
+        source = "${cavemanSrc}/skills/caveman/SKILL.md";
+      };
+      ".claude/skills/caveman-commit/SKILL.md" = {
+        source = "${cavemanSrc}/skills/caveman-commit/SKILL.md";
+      };
+      ".claude/skills/caveman-review/SKILL.md" = {
+        source = "${cavemanSrc}/skills/caveman-review/SKILL.md";
+      };
+      ".claude/skills/caveman-stats/SKILL.md" = {
+        source = "${cavemanSrc}/skills/caveman-stats/SKILL.md";
       };
 
       # Understand-Anything skills — LLM-powered codebase knowledge graphs
@@ -208,6 +237,37 @@ in {
        [ ! -d "${config.home.homeDirectory}/.cache/ms-playwright/chromium-1212" ]; then
       cd "${config.home.homeDirectory}" && playwright-cli install 2>/dev/null || true
     fi
+  '';
+
+  # Install caveman plugin into Claude Code's plugin cache.
+  # Hooks (SessionStart + UserPromptSubmit) are declared in settings.nix and call the JS scripts here.
+  home.activation.installCaveman = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    PLUGIN_CACHE="$HOME/.claude/plugins/cache/caveman/caveman/1.0.0"
+    INSTALLED_JSON="$HOME/.claude/plugins/installed_plugins.json"
+
+    if [ ! -d "$PLUGIN_CACHE" ]; then
+      mkdir -p "$(dirname "$PLUGIN_CACHE")"
+      cp -r "${cavemanSrc}" "$PLUGIN_CACHE"
+      chmod -R u+w "$PLUGIN_CACHE"
+    fi
+
+    if [ ! -f "$INSTALLED_JSON" ] || ! ${pkgs.jq}/bin/jq empty "$INSTALLED_JSON" 2>/dev/null; then
+      printf '{"version": 2, "plugins": {}}' > "$INSTALLED_JSON"
+    fi
+
+    ${pkgs.jq}/bin/jq \
+      --arg path "$PLUGIN_CACHE" \
+      '.plugins["caveman@caveman"] //= [
+        {
+          "scope": "user",
+          "installPath": $path,
+          "version": "1.0.0",
+          "installedAt": "2026-05-01T00:00:00.000Z",
+          "lastUpdated": "2026-05-01T00:00:00.000Z",
+          "gitCommitSha": "ef6050c5e1848b6880ff47c32ade1a608a64f85e"
+        }
+      ]' "$INSTALLED_JSON" > "$INSTALLED_JSON.tmp" && \
+      mv "$INSTALLED_JSON.tmp" "$INSTALLED_JSON"
   '';
 
   # Install understand-anything plugin into Claude Code's plugin cache.

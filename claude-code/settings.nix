@@ -8,9 +8,32 @@
   homeDir = config.home.homeDirectory;
   scriptsDir = "${homeDir}/.config/home-manager/scripts";
 
+  cavemanDir = "${homeDir}/.claude/plugins/cache/caveman/caveman/1.0.0";
+
+  # Caveman hooks — cross-platform (SessionStart injects rules, UserPromptSubmit reinforces per-turn)
+  cavemanSessionStart = {
+    matcher = "*";
+    hooks = [
+      {
+        type = "command";
+        command = "node ${cavemanDir}/hooks/caveman-activate.js";
+      }
+    ];
+  };
+  cavemanUserPrompt = {
+    matcher = "*";
+    hooks = [
+      {
+        type = "command";
+        command = "node ${cavemanDir}/hooks/caveman-mode-tracker.js";
+      }
+    ];
+  };
+
   # Linux-only hooks: peon sounds + notify-send
   linuxHooks = {
     SessionStart = [
+      cavemanSessionStart
       {
         matcher = "*";
         hooks = [
@@ -30,6 +53,7 @@
         ];
       }
     ];
+    UserPromptSubmit = [cavemanUserPrompt];
     Notification = [
       {
         matcher = "*";
@@ -74,9 +98,10 @@
     ];
   };
 
-  # darwin: only the cross-platform SessionStart hook (project context injection)
+  # darwin: caveman + project context injection
   darwinHooks = {
     SessionStart = [
+      cavemanSessionStart
       {
         matcher = "*";
         hooks = [
@@ -87,6 +112,7 @@
         ];
       }
     ];
+    UserPromptSubmit = [cavemanUserPrompt];
   };
 
   # Bash permissions exclusive to Linux (PipeWire, systemd, GNOME, X11, hardware tools)
