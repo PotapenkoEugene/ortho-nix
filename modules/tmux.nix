@@ -300,8 +300,8 @@
           src = pkgs.fetchFromGitHub {
             owner = "omerxx";
             repo = "tmux-floax";
-            rev = "main";
-            sha256 = "sha256-TCY3W0/4c4KIsY55uClrlzu90XcK/mgbD58WWu6sPrU=";
+            rev = "133f526793d90d2caa323c47687dd5544a2c704b";
+            sha256 = "sha256-9Hb9dn2qHF6KcIhtogvycX3Z0MoQrLPLCzZXtjGlPHw=";
           };
         };
         extraConfig = ''
