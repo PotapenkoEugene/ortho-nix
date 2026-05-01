@@ -7,7 +7,7 @@ description: Create Excalidraw diagram JSON files that make visual arguments. Us
 
 Generate `.excalidraw` JSON files that **argue visually**, not just display information.
 
-**Renderer**: Uses `uv` (already installed) + Python `playwright` package. No setup needed for the skill itself — see the **Render & Validate** section for the render command and first-time browser install.
+**Renderer**: Uses system Python (playwright package installed via Nix). Chromium browser downloaded once via `python3 -m playwright install chromium` — see **Render & Validate** section for details.
 
 ## Customization
 
@@ -451,7 +451,7 @@ You cannot judge a diagram from JSON alone. After generating or editing the Exca
 ### How to Render
 
 ```bash
-uv run --no-project --with playwright python ~/.claude/skills/excalidraw-diagram/references/render_excalidraw.py <path-to-file.excalidraw>
+python3 ~/.claude/skills/excalidraw-diagram/references/render_excalidraw.py <path-to-file.excalidraw>
 ```
 
 This outputs a PNG next to the `.excalidraw` file (same name, `.png` extension). Then use the **Read tool** on the PNG to actually view it.
@@ -461,10 +461,10 @@ This outputs a PNG next to the `.excalidraw` file (same name, `.png` extension).
 If the render script fails with "Chromium not installed" or "Executable doesn't exist", run once:
 
 ```bash
-uv run --no-project --with playwright python -m playwright install chromium
+python3 -m playwright install chromium
 ```
 
-This downloads Chromium (~100 MB) to `~/.cache/ms-playwright/`. Subsequent renders use the cached binary.
+This downloads Chromium (~170 MB) to `~/.cache/ms-playwright/`. Subsequent renders use the cached binary.
 
 ### The Loop
 

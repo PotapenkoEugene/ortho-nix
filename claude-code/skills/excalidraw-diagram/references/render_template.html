@@ -12,8 +12,10 @@
 <body>
   <div id="root"></div>
 
-  <script type="module">
-    import { exportToSvg } from "https://esm.sh/@excalidraw/excalidraw?bundle";
+  <!-- excalidraw-bundle.js is served from the same localhost origin as this file -->
+  <script src="./excalidraw-bundle.js"></script>
+  <script>
+    const { exportToSvg } = ExcalidrawLib;
 
     window.renderDiagram = async function(jsonData) {
       try {
@@ -22,7 +24,6 @@
         const appState = data.appState || {};
         const files = data.files || {};
 
-        // Force white background in appState
         appState.viewBackgroundColor = appState.viewBackgroundColor || "#ffffff";
         appState.exportWithDarkMode = false;
 
@@ -35,7 +36,6 @@
           files: files,
         });
 
-        // Clear any previous render
         const root = document.getElementById("root");
         root.innerHTML = "";
         root.appendChild(svg);
@@ -50,7 +50,6 @@
       }
     };
 
-    // Signal that the module is loaded and ready
     window.__moduleReady = true;
   </script>
 </body>
