@@ -115,9 +115,6 @@
       micromamba
       uv # Python package manager (provides uvx)
 
-      # Google Workspace CLI
-      gws
-
       # Utilities
       dos2unix
       tldr
@@ -169,6 +166,7 @@
       qgis
       kent # UCSC Kent utilities (bedGraphToBigWig, etc.)
       # Other Linux-only
+      gws # Google Workspace CLI — undefined in nixpkgs for aarch64-darwin
       fuse # for installing apps from AppImage
       yad # GTK dialogs (used for REC indicator in whisper-stream)
     ]);
