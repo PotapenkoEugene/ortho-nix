@@ -92,19 +92,6 @@
       nodejs_24
       pnpm
 
-      # Bioinformatics
-      sratoolkit
-      bwa
-      minimap2
-      seqkit
-      multiqc
-      samtools
-      bcftools
-      bedtools
-      fastqc
-      bowtie2
-      macs2
-
       # Build tools
       cmake
       gcc
@@ -163,9 +150,21 @@
       igv
       qgis
       kent # UCSC Kent utilities (bedGraphToBigWig, etc.)
+      # Bioinformatics (all Linux — aarch64-darwin builds too patchy)
+      sratoolkit
+      bwa
+      bwa-mem2 # x86_64-only SIMD
+      blast # x86_64-only
+      minimap2
+      seqkit
+      multiqc
+      samtools
+      bcftools
+      bedtools
+      fastqc
+      bowtie2
+      macs2
       # Other Linux-only
-      bwa-mem2 # x86_64-only SIMD (SSE/AVX), not available on aarch64
-      blast # x86_64-only (meta.platforms excludes aarch64-darwin)
       gws # Google Workspace CLI — undefined in nixpkgs for aarch64-darwin
       fuse # for installing apps from AppImage
       yad # GTK dialogs (used for REC indicator in whisper-stream)
