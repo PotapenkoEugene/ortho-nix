@@ -9,16 +9,13 @@
       # System monitoring
       htop
       btop
-      witr # "why is this running?" - process causality chain explorer
 
       # Analytics
       datamash
       tabiew
       xan # CSV Swiss Army knife
 
-      # Music clients (daemon managed per-host)
-      mpd
-      mpc
+      # Music clients — daemon only on Linux (music module disabled on darwin)
       yt-dlp
       ffmpeg
 
@@ -31,9 +28,6 @@
 
       # Documents / office
       aria2
-      zathura
-      libreoffice
-      pdftk
       pandoc
       mermaid-cli # diagram generation from text
       wego # terminal weather
@@ -88,7 +82,6 @@
         ]))
 
       # Desktop / communication
-      telegram-desktop
       kitty-themes
 
       # Fonts
@@ -149,6 +142,15 @@
       })
     ])
     ++ lib.optionals pkgs.stdenv.isLinux (with pkgs; [
+      # Linux-only: GUI office / viewers / desktop apps
+      libreoffice
+      zathura # PDF viewer (GTK)
+      pdftk # PDF toolkit (meta.platforms = linux)
+      telegram-desktop
+      witr # "why is this running?" (reads /proc, Linux only)
+      # Music daemon (managed by music module, disabled on darwin)
+      mpd
+      mpc
       # Linux-only: network tools, clipboard, GUI desktop stacks, hardware tools
       nettools # ifconfig etc.
       xclip
