@@ -22,6 +22,7 @@
   };
 
   outputs = {
+    self,
     nixpkgs,
     home-manager,
     nixvim,
@@ -29,13 +30,34 @@
     nix-darwin,
     ...
   }: let
-    # Local package overlays — same on all platforms.
-    commonOverlays = [
-      (final: prev: {
-        playwright-cli = final.callPackage ./packages/playwright-cli/package.nix {};
-        notebooklm-py = final.callPackage ./packages/notebooklm-py/package.nix {};
-      })
-    ];
+    # Local package overlay — same on all platforms.
+    commonOverlay = final: prev: {
+      playwright-cli = final.callPackage ./packages/playwright-cli/package.nix {};
+      notebooklm-py = final.callPackage ./packages/notebooklm-py/package.nix {};
+    };
+
+    # Reusable HM module for macOS: nixvim + shared home config + ortho user identity.
+    darwinHomeModule = {
+      imports = [
+        nixvim.homeManagerModules.nixvim
+        ./home.nix
+        ./hosts/ortho-mac.nix
+      ];
+    };
+
+    # Reusable darwin system module: overlays + HM submodule wiring + system config.
+    # Exported as darwinModules.default — consumer imports this and gets everything.
+    darwinSystemModule = {
+      nixpkgs.config.allowUnfree = true;
+      nixpkgs.overlays = [commonOverlay];
+      imports = [
+        home-manager.darwinModules.home-manager
+        ./hosts/ortho-mac-system.nix
+      ];
+      home-manager.useGlobalPkgs = true;
+      home-manager.useUserPackages = true;
+      home-manager.users.ortho.imports = [darwinHomeModule];
+    };
 
     # Linux: standalone home-manager with nixgl + genericLinux support.
     mkLinuxHome = {
@@ -44,7 +66,7 @@
     }: let
       pkgs = import nixpkgs {
         inherit system;
-        overlays = commonOverlays;
+        overlays = [commonOverlay];
         config.allowUnfree = true;
       };
     in
@@ -57,37 +79,22 @@
         ];
         extraSpecialArgs = {inherit nixgl;};
       };
-
-    # Darwin: nix-darwin with home-manager loaded as a submodule.
-    mkDarwinSystem = {
-      system,
-      systemModule,
-      hmHostModule,
-    }:
-      nix-darwin.lib.darwinSystem {
-        inherit system;
-        specialArgs = {inherit nixvim home-manager;};
-        modules = [
-          {
-            nixpkgs.config.allowUnfree = true;
-            nixpkgs.overlays = commonOverlays;
-          }
-          home-manager.darwinModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.ortho.imports = [
-              nixvim.homeManagerModules.nixvim
-              ./home.nix
-              hmHostModule
-            ];
-          }
-          systemModule
-        ];
-      };
   in {
+    # Overlay: exposes playwright-cli + notebooklm-py for external consumers.
+    overlays.default = commonOverlay;
+
+    # HM module: the full macOS home-manager config for user ortho.
+    homeModules.darwin = darwinHomeModule;
+
+    # Darwin module: the full nix-darwin system config (includes HM wiring).
+    # Consumer usage:
+    #   darwinConfigurations."hostname" = nix-darwin.lib.darwinSystem {
+    #     modules = [ ortho-config.darwinModules.default { nix.enable = false; } ];
+    #   };
+    darwinModules.default = darwinSystemModule;
+
     homeConfigurations = {
-      # x86_64-linux — standalone home-manager (unchanged activation: `ortho`)
+      # x86_64-linux — standalone home-manager (activation: `home-manager switch --flake .#ortho`)
       "ortho" = mkLinuxHome {
         system = "x86_64-linux";
         hostModule = ./hosts/ortho-linux.nix;
@@ -95,11 +102,9 @@
     };
 
     darwinConfigurations = {
-      # aarch64-darwin — Apple Silicon Mac Studio via nix-darwin
-      "ortho-mac" = mkDarwinSystem {
-        system = "aarch64-darwin";
-        systemModule = ./hosts/ortho-mac-system.nix;
-        hmHostModule = ./hosts/ortho-mac.nix;
+      # aarch64-darwin — Mac Studio via nix-darwin (activation: `darwin-rebuild switch --flake .#ortho-mac`)
+      "ortho-mac" = nix-darwin.lib.darwinSystem {
+        modules = [self.darwinModules.default];
       };
     };
   };

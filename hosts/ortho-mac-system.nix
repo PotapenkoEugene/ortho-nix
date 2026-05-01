@@ -3,6 +3,9 @@
   lib,
   ...
 }: {
+  # Set platform so nix-darwin.lib.darwinSystem doesn't require a `system` arg.
+  nixpkgs.hostPlatform = lib.mkDefault "aarch64-darwin";
+
   # Declare the primary user so home-manager knows where to install files.
   users.users.ortho = {
     name = "ortho";
