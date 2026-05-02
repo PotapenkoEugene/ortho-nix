@@ -41,7 +41,10 @@
       bind n display-popup -w 90% -h 90% -E "~/.config/home-manager/scripts/notes-popup.sh"
 
       # docker browser (tv): images -> drill into containers
-      bind d display-popup -w 90% -h 85% -E "tv docker-images"
+      bind D display-popup -w 90% -h 85% -E "tv docker-images"
+
+      # Dolphin file manager — open in current pane's directory (detached)
+      bind d run-shell "dolphin '#{pane_current_path}' >/dev/null 2>&1 &"
 
       # cmatrix screensaver popup
       bind '`' display-popup -w 100% -h 100% -E "cmatrix -ab"
@@ -263,33 +266,6 @@
       #           set -g @fzf-url-history-limit '2000'
       #         '';
       #       }
-
-      # tmux-sessionx plugin
-      {
-        plugin = pkgs.tmuxPlugins.mkTmuxPlugin {
-          pluginName = "sessionx";
-          rtpFilePath = "sessionx.tmux";
-          version = "unstable-2024-01-01";
-          src = pkgs.fetchFromGitHub {
-            owner = "omerxx";
-            repo = "tmux-sessionx";
-            rev = "c9aaa1d309791871b5e8c1f9bfb91ecc5fa7da3a";
-            sha256 = "sha256-ve1nZslZil30yWfrlzYGEMY9hRH2lJjoPuEBjwHvBz4=";
-          };
-        };
-        extraConfig = ''
-          set -g @sessionx-bind-zo-new-window 'ctrl-y'
-          set -g @sessionx-auto-accept 'off'
-          set -g @sessionx-custom-paths '~/dotfiles'
-          set -g @sessionx-bind 'o'
-          set -g @sessionx-x-path '~/dotfiles'
-          set -g @sessionx-window-height '85%'
-          set -g @sessionx-window-width '75%'
-          set -g @sessionx-zoxide-mode 'on'
-          set -g @sessionx-custom-paths-subdirectories 'false'
-          set -g @sessionx-filter-current 'false'
-        '';
-      }
 
       #      # tmux-floax plugin
       {
