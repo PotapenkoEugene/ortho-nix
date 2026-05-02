@@ -13,6 +13,7 @@
     ../modules/llm.nix
     ../modules/obsidian-backup.nix
     ../modules/kitty-session.nix
+    ../modules/firefox.nix
   ];
 
   home.username = "ortho";

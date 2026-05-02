@@ -129,6 +129,7 @@
       zathura # PDF viewer (GTK)
       pdftk # PDF toolkit (meta.platforms = linux)
       telegram-desktop
+      firefox
       witr # "why is this running?" (reads /proc, Linux only)
       # Music daemon (managed by music module, disabled on darwin)
       mpd
