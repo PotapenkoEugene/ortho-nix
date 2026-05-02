@@ -99,6 +99,11 @@ in {
         command = "/home/ortho/.config/home-manager/scripts/lofi-toggle.sh";
         binding = "<Super>l";
       };
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6" = {
+        name = "Launch Telegram";
+        command = "sh -c 'setsid telegram-desktop &>/dev/null &'";
+        binding = "<Super>t";
+      };
       "org/gnome/settings-daemon/plugins/media-keys" = {
         screensaver = [""]; # disable default Super+L lock screen
         custom-keybindings = [
@@ -108,6 +113,7 @@ in {
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/"
         ];
       };
       # Disable middle-click paste
