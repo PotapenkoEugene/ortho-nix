@@ -101,7 +101,7 @@ in {
       };
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6" = {
         name = "Launch Telegram";
-        command = "sh -c 'setsid telegram-desktop &>/dev/null &'";
+        command = "sh -c 'setsid Telegram &>/dev/null &'";
         binding = "<Super>t";
       };
       "org/gnome/settings-daemon/plugins/media-keys" = {
