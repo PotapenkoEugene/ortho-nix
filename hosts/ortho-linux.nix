@@ -14,6 +14,7 @@
     ../modules/obsidian-backup.nix
     ../modules/kitty-session.nix
     ../modules/firefox.nix
+    ../modules/icon-cache.nix
   ];
 
   home.username = "ortho";
