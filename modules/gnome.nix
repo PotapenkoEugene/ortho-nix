@@ -104,6 +104,11 @@ in {
         command = "sh -c 'setsid Telegram &>/dev/null &'";
         binding = "<Super>t";
       };
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7" = {
+        name = "Launch Firefox";
+        command = "sh -c 'setsid firefox &>/dev/null &'";
+        binding = "<Super>f";
+      };
       "org/gnome/settings-daemon/plugins/media-keys" = {
         screensaver = [""]; # disable default Super+L lock screen
         custom-keybindings = [
@@ -114,6 +119,7 @@ in {
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/"
         ];
       };
       # Disable middle-click paste
