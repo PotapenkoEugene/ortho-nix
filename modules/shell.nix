@@ -4,6 +4,14 @@
   lib,
   ...
 }: {
+  home.sessionVariables =
+    lib.optionalAttrs pkgs.stdenv.isLinux {
+      OLLAMA_API_URL = "http://100.68.68.16:11434";
+    }
+    // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      OLLAMA_API_URL = "http://localhost:11434";
+    };
+
   home.sessionPath =
     [
       "$HOME/.npm-global/bin"

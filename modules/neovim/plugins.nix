@@ -168,6 +168,22 @@
               end
             '';
           };
+          ollama = {
+            __raw = ''
+              function()
+                return require("codecompanion.adapters").extend("ollama", {
+                  env = {
+                    url = os.getenv("OLLAMA_API_URL") or "http://localhost:11434",
+                  },
+                  schema = {
+                    model = {
+                      default = "qwen2.5:14b-instruct",
+                    },
+                  },
+                })
+              end
+            '';
+          };
           acp = {
             claude_code = {
               __raw = ''
@@ -187,10 +203,10 @@
             adapter = "claude_code";
           };
           chat = {
-            adapter = "openai";
+            adapter = "ollama";
           };
           inline = {
-            adapter = "openai";
+            adapter = "ollama";
           };
         };
         display = {

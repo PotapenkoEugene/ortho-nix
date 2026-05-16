@@ -32,7 +32,7 @@
   '';
 
   # Ollama LLM daemon — auto-starts on login, restarts if killed.
-  # Listens on localhost:11434 (OpenAI-compatible API).
+  # Listens on all interfaces (OLLAMA_HOST=0.0.0.0) so Tailscale IP is reachable from Linux.
   launchd.user.agents.ollama = {
     serviceConfig = {
       Label = "com.ortho.ollama";
@@ -43,6 +43,7 @@
       RunAtLoad = true;
       KeepAlive = true;
       EnvironmentVariables = {
+        OLLAMA_HOST = "0.0.0.0:11434";
         OLLAMA_KEEP_ALIVE = "-1";
         OLLAMA_MAX_LOADED_MODELS = "3";
       };
