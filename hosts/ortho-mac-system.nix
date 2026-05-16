@@ -3,6 +3,11 @@
   lib,
   ...
 }: {
+  imports = [
+    ../modules/secrets.nix
+    ../modules/tgbot.nix
+  ];
+
   # Set platform so nix-darwin.lib.darwinSystem doesn't require a `system` arg.
   nixpkgs.hostPlatform = lib.mkDefault "aarch64-darwin";
 

@@ -19,6 +19,10 @@
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -28,6 +32,7 @@
     nixvim,
     nixgl,
     nix-darwin,
+    sops-nix,
     ...
   }: let
     # Local package overlay — same on all platforms.
@@ -52,6 +57,7 @@
       nixpkgs.overlays = [commonOverlay];
       imports = [
         home-manager.darwinModules.home-manager
+        sops-nix.darwinModules.sops
         ./hosts/ortho-mac-system.nix
       ];
       home-manager.useGlobalPkgs = true;
