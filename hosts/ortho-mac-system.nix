@@ -27,4 +27,24 @@
   security.sudo.extraConfig = ''
     ortho ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/darwin-rebuild
   '';
+
+  # Ollama LLM daemon — auto-starts on login, restarts if killed.
+  # Listens on localhost:11434 (OpenAI-compatible API).
+  launchd.user.agents.ollama = {
+    serviceConfig = {
+      Label = "com.ortho.ollama";
+      ProgramArguments = [
+        "${pkgs.ollama}/bin/ollama"
+        "serve"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      EnvironmentVariables = {
+        OLLAMA_KEEP_ALIVE = "-1";
+        OLLAMA_MAX_LOADED_MODELS = "3";
+      };
+      StandardOutPath = "/Users/ortho/Library/Logs/ollama.log";
+      StandardErrorPath = "/Users/ortho/Library/Logs/ollama.log";
+    };
+  };
 }

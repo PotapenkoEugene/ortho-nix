@@ -29,9 +29,6 @@
         # Piper text-to-speech with pre-downloaded model
         piper-tts = "piper --model ~/piper-models/en_US-lessac-medium.onnx";
 
-        # Local LLM (Qwen2.5-3B) — interactive chat
-        llm = "llama-cli -m ~/llm-models/qwen2.5-3b-instruct-q4_k_m.gguf --threads 12 --ctx-size 8192 -ngl 99 --no-display-prompt --log-disable -cnv";
-
         claude = "claude --effort xhigh --enable-auto-mode \"What to do next /note\"";
         claude_he = "claude --effort high \"What to do next /note\"";
         tb = "tmux attach -t base";
@@ -49,6 +46,12 @@
         dolphin = "dolphin $PWD";
         vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
         vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";
+        # Local LLM (Qwen2.5-3B via llama-cpp-vulkan, iGPU-accelerated)
+        llm = "llama-cli -m ~/llm-models/qwen2.5-3b-instruct-q4_k_m.gguf --threads 12 --ctx-size 8192 -ngl 99 --no-display-prompt --log-disable -cnv";
+      }
+      // lib.optionalAttrs pkgs.stdenv.isDarwin {
+        # Local LLM (Qwen2.5-14B via Ollama MLX backend)
+        llm = "ollama run qwen2.5:14b-instruct";
       };
     initExtra =
       ''
