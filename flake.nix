@@ -39,7 +39,7 @@
     # Reusable HM module for macOS: nixvim + shared home config + ortho user identity.
     darwinHomeModule = {
       imports = [
-        nixvim.homeManagerModules.nixvim
+        nixvim.homeModules.nixvim
         ./home.nix
         ./hosts/ortho-mac.nix
       ];
@@ -56,6 +56,7 @@
       ];
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
+      home-manager.backupFileExtension = "backup";
       home-manager.users.ortho.imports = [darwinHomeModule];
     };
 
@@ -73,7 +74,7 @@
       home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [
-          nixvim.homeManagerModules.nixvim
+          nixvim.homeModules.nixvim
           ./home.nix
           hostModule
         ];

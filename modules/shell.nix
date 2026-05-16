@@ -91,7 +91,14 @@
 
   programs.ssh = {
     enable = true;
+    enableDefaultConfig = false;
     matchBlocks = {
+      "*" = {
+        addKeysToAgent = "no";
+        userKnownHostsFile = "~/.ssh/known_hosts";
+        hashKnownHosts = false;
+        serverAliveInterval = 60;
+      };
       "mac-studio" = {
         hostname = "100.68.68.16";
         user = "ortho";
