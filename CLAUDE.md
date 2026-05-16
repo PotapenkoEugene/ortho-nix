@@ -228,7 +228,7 @@ Telegram bot (`TGbotMessageToHebrew`) runs as `com.ortho.tgbot` launchd user age
 
 - **Repo**: `~/Projects/TGbotMessageToHebrew` — manual clone + `uv sync --frozen`, not nix-managed. Must be outside iCloud Drive (`~/Documents/` forbidden — causes launchd hang).
 - **Secrets**: `secrets/mac.yaml` (sops/age-encrypted in git). Age private key at `~/.config/sops/age/keys.txt` on the mac (out of repo, never commit).
-- **Model**: `qwen2.5:14b-instruct` (already pulled by `modules/ollama.nix`).
+- **Model**: `qwen3:32b` (already pulled by `modules/ollama.nix`).
 - **DB**: `~/Library/Application Support/tgbot/tgbot.db`.
 - **Logs**: `~/Library/Logs/tgbot.{log,err}`.
 - **Modules**: `modules/secrets.nix` + `modules/tgbot.nix` — both are no-ops until `secrets/mac.yaml` is committed to git.

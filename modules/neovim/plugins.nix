@@ -183,7 +183,7 @@
                     },
                     schema = {
                       model = {
-                        default = "qwen2.5:14b-instruct",
+                        default = "qwen3:32b",
                       },
                     },
                   })

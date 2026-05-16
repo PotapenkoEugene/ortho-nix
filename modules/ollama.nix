@@ -15,8 +15,8 @@ lib.mkIf pkgs.stdenv.isDarwin {
   # Pull models on switch — idempotent (skips if already present).
   # ollama pull starts its own server if the daemon isn't up yet.
   home.activation.pullOllamaModels = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    if ! ${pkgs.ollama}/bin/ollama list 2>/dev/null | grep -q "qwen2.5:14b"; then
-      $DRY_RUN_CMD ${pkgs.ollama}/bin/ollama pull qwen2.5:14b-instruct || true
+    if ! ${pkgs.ollama}/bin/ollama list 2>/dev/null | grep -q "qwen3:32b"; then
+      $DRY_RUN_CMD ${pkgs.ollama}/bin/ollama pull qwen3:32b || true
     fi
     if ! ${pkgs.ollama}/bin/ollama list 2>/dev/null | grep -q "bge-m3"; then
       $DRY_RUN_CMD ${pkgs.ollama}/bin/ollama pull bge-m3 || true
