@@ -244,9 +244,9 @@ age-keygen -y ~/.config/sops/age/keys.txt    # copy the age1… pubkey
 # Then create encrypted secrets:
 SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt sops secrets/mac.yaml
 
-# Clone bot repo + install deps
-mkdir -p ~/Documents/Projects && git clone git@github.com:PotapenkoEugene/TGbotMessageToHebrew.git ~/Documents/Projects/TGbotMessageToHebrew
-cd ~/Documents/Projects/TGbotMessageToHebrew && uv sync --frozen
+# Clone bot repo + install deps (~/Projects = local, not iCloud)
+mkdir -p ~/Projects && GIT_SSH_COMMAND='ssh -i ~/.ssh/id_github_ed25519 -o IdentitiesOnly=yes' git clone git@github.com:PotapenkoEugene/TGbotMessageToHebrew.git ~/Projects/TGbotMessageToHebrew
+cd ~/Projects/TGbotMessageToHebrew && uv sync --frozen
 
 # Commit secrets + apply
 git add .sops.yaml secrets/mac.yaml && git commit -m "feat: add tgbot secrets" && git push
