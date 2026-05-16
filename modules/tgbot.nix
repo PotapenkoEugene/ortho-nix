@@ -21,6 +21,7 @@
       mkdir -p "${dbDir}"
       cd "${repoDir}"
       export PYTHONPATH="${repoDir}/src"
+      export PYTHONUNBUFFERED=1
       exec uv run --frozen python -m tgbot.main
     '';
   };
@@ -46,6 +47,9 @@ in
         Label = "com.ortho.tgbot";
         ProgramArguments = ["${tgbotRun}/bin/tgbot-run"];
         WorkingDirectory = repoDir;
+        EnvironmentVariables = {
+          HOME = "/Users/ortho";
+        };
         RunAtLoad = true;
         KeepAlive = {
           SuccessfulExit = false;
