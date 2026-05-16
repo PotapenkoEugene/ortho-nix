@@ -10,7 +10,7 @@
 
   tgbotRun = pkgs.writeShellApplication {
     name = "tgbot-run";
-    runtimeInputs = [pkgs.uv pkgs.coreutils];
+    runtimeInputs = [pkgs.coreutils];
     text = ''
       set -euo pipefail
       BOT_TOKEN="$(cat /run/secrets/tgbot/bot_token)"
@@ -22,7 +22,7 @@
       cd "${repoDir}"
       export PYTHONPATH="${repoDir}/src"
       export PYTHONUNBUFFERED=1
-      exec uv run --frozen python -m tgbot.main
+      exec "${repoDir}/.venv/bin/python" -m tgbot.main
     '';
   };
 
