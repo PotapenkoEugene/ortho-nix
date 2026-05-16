@@ -27,15 +27,7 @@
   programs.bash.enable = true;
 
   # Allow ortho to run darwin-rebuild without password (required for remote SSH automation).
-  security.sudo.extraRules = [
-    {
-      users = ["ortho"];
-      commands = [
-        {
-          command = "/run/current-system/sw/bin/darwin-rebuild";
-          options = ["NOPASSWD"];
-        }
-      ];
-    }
-  ];
+  security.sudo.extraConfig = ''
+    ortho ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/darwin-rebuild
+  '';
 }
