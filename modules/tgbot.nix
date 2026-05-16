@@ -20,6 +20,7 @@
       export DB_PATH="${dbDir}/tgbot.db"
       mkdir -p "${dbDir}"
       cd "${repoDir}"
+      export PYTHONPATH="${repoDir}/src"
       exec uv run --frozen python -m tgbot.main
     '';
   };
