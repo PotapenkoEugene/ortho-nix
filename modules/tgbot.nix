@@ -4,7 +4,7 @@
   lib,
   ...
 }: let
-  repoDir = "/Users/ortho/Documents/Projects/TGbotMessageToHebrew";
+  repoDir = "/Users/ortho/tgbot";
   dbDir = "/Users/ortho/Library/Application Support/tgbot";
   logDir = "/Users/ortho/Library/Logs";
 
