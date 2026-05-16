@@ -157,37 +157,39 @@
           };
         };
         adapters = {
-          openai = {
-            __raw = ''
-              function()
-                return require("codecompanion.adapters").extend("openai", {
-                  env = {
-                    api_key = os.getenv("OPENAI_API_KEY"),
-                  }
-                })
-              end
-            '';
-          };
-          ollama = let
-            ollamaUrl =
-              if pkgs.stdenv.isDarwin
-              then "http://localhost:11434"
-              else "http://100.68.68.16:11434";
-          in {
-            __raw = ''
-              function()
-                return require("codecompanion.adapters").extend("ollama", {
-                  env = {
-                    url = "${ollamaUrl}",
-                  },
-                  schema = {
-                    model = {
-                      default = "qwen2.5:14b-instruct",
+          http = {
+            openai = {
+              __raw = ''
+                function()
+                  return require("codecompanion.adapters").extend("openai", {
+                    env = {
+                      api_key = os.getenv("OPENAI_API_KEY"),
+                    }
+                  })
+                end
+              '';
+            };
+            ollama = let
+              ollamaUrl =
+                if pkgs.stdenv.isDarwin
+                then "http://localhost:11434"
+                else "http://100.68.68.16:11434";
+            in {
+              __raw = ''
+                function()
+                  return require("codecompanion.adapters").extend("ollama", {
+                    env = {
+                      url = "${ollamaUrl}",
                     },
-                  },
-                })
-              end
-            '';
+                    schema = {
+                      model = {
+                        default = "qwen2.5:14b-instruct",
+                      },
+                    },
+                  })
+                end
+              '';
+            };
           };
           acp = {
             claude_code = {
