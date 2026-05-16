@@ -13,7 +13,9 @@
     runtimeInputs = [pkgs.coreutils];
     text = ''
       set -euo pipefail
+      echo "step1: script started" >> /tmp/tgbot-debug.txt
       read -r BOT_TOKEN < /run/secrets/tgbot/bot_token
+      echo "step2: token read" >> /tmp/tgbot-debug.txt
       export BOT_TOKEN
       export OLLAMA_URL="http://localhost:11434"
       export OLLAMA_MODEL="qwen2.5:14b-instruct"
