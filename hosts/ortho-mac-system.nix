@@ -10,6 +10,7 @@
   users.users.ortho = {
     name = "ortho";
     home = "/Users/ortho";
+    shell = pkgs.bash;
   };
 
   # Enable flakes for `darwin-rebuild` itself.

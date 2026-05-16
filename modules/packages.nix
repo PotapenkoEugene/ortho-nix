@@ -81,8 +81,10 @@
           playwright # for excalidraw-diagram render script
         ]))
 
-      # Desktop / communication
+      # Desktop / communication / automation
       kitty-themes
+      tdl # Telegram CLI — automation pipelines (download/upload/forward, MTProto)
+      gws # Google Workspace CLI (gmail, calendar)
 
       # Fonts
       jetbrains-mono
@@ -166,7 +168,6 @@
       bowtie2
       macs2
       # Other Linux-only
-      gws # Google Workspace CLI — undefined in nixpkgs for aarch64-darwin
       fuse # for installing apps from AppImage
       yad # GTK dialogs (used for REC indicator in whisper-stream)
     ]);

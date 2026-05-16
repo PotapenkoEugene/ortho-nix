@@ -212,7 +212,7 @@
         workspaces = [
           {
             name = "Personal";
-            path = "/home/ortho/Orthidian/";
+            path = "${config.home.homeDirectory}/Orthidian/";
           }
         ];
         daily_notes = {

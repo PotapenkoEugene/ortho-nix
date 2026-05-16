@@ -15,37 +15,41 @@
 
   programs.bash = {
     enable = true;
-    shellAliases = {
-      bat = "bat --color=always";
-      ls = "eza --color=always --group-directories-first";
-      ll = "eza -la --color=always --group-directories-first --sort new";
-      "..." = "cd ../../";
-      fzfp = "fzf --preview='cat {}'";
+    shellAliases =
+      {
+        bat = "bat --color=always";
+        ls = "eza --color=always --group-directories-first";
+        ll = "eza -la --color=always --group-directories-first --sort new";
+        "..." = "cd ../../";
+        fzfp = "fzf --preview='cat {}'";
 
-      # Whisper speech-to-text via Groq API (ad-hoc file transcription)
-      whisper = "bash -c 'source ~/.secrets/env; flac=$(mktemp /tmp/whisper-XXXXXX.flac); ffmpeg -y -i \"$1\" -ar 16000 -ac 1 \"$flac\" 2>/dev/null && curl -s https://api.groq.com/openai/v1/audio/transcriptions -H \"Authorization: Bearer $GROQ_API_KEY\" -F \"file=@$flac\" -F \"model=whisper-large-v3-turbo\" -F \"response_format=text\"; rm -f \"$flac\"' _ ";
+        # Whisper speech-to-text via Groq API (ad-hoc file transcription)
+        whisper = "bash -c 'source ~/.secrets/env; flac=$(mktemp /tmp/whisper-XXXXXX.flac); ffmpeg -y -i \"$1\" -ar 16000 -ac 1 \"$flac\" 2>/dev/null && curl -s https://api.groq.com/openai/v1/audio/transcriptions -H \"Authorization: Bearer $GROQ_API_KEY\" -F \"file=@$flac\" -F \"model=whisper-large-v3-turbo\" -F \"response_format=text\"; rm -f \"$flac\"' _ ";
 
-      # Piper text-to-speech with pre-downloaded model
-      piper-tts = "piper --model ~/piper-models/en_US-lessac-medium.onnx";
+        # Piper text-to-speech with pre-downloaded model
+        piper-tts = "piper --model ~/piper-models/en_US-lessac-medium.onnx";
 
-      # Local LLM (Qwen2.5-3B) — interactive chat
-      llm = "llama-cli -m ~/llm-models/qwen2.5-3b-instruct-q4_k_m.gguf --threads 12 --ctx-size 8192 -ngl 99 --no-display-prompt --log-disable -cnv";
+        # Local LLM (Qwen2.5-3B) — interactive chat
+        llm = "llama-cli -m ~/llm-models/qwen2.5-3b-instruct-q4_k_m.gguf --threads 12 --ctx-size 8192 -ngl 99 --no-display-prompt --log-disable -cnv";
 
-      claude = "claude --effort xhigh --enable-auto-mode \"What to do next /note\"";
-      claude_he = "claude --effort high \"What to do next /note\"";
-      tb = "tmux attach -t base";
+        claude = "claude --effort xhigh --enable-auto-mode \"What to do next /note\"";
+        claude_he = "claude --effort high \"What to do next /note\"";
+        tb = "tmux attach -t base";
 
-      # kitten ssh: auto-copies kitty terminfo to remote hosts (fixes xterm-kitty unknown terminal)
-      kssh = "kitten ssh";
+        # kitten ssh: auto-copies kitty terminfo to remote hosts (fixes xterm-kitty unknown terminal)
+        kssh = "kitten ssh";
 
-      dolphin = "dolphin $PWD";
-      vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
-      vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";
-      aws = "ssh evgenip@172.31.186.68";
-      migal = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa potapgene@172.16.11.55";
-      migal_8484 = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -L 8484:localhost:8484 potapgene@172.16.11.55";
-      migal_8585 = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -L 8585:localhost:8585 potapgene@172.16.11.55";
-    };
+        mac = "ssh mac-studio";
+        aws = "ssh evgenip@172.31.186.68";
+        migal = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa potapgene@172.16.11.55";
+        migal_8484 = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -L 8484:localhost:8484 potapgene@172.16.11.55";
+        migal_8585 = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -L 8585:localhost:8585 potapgene@172.16.11.55";
+      }
+      // lib.optionalAttrs pkgs.stdenv.isLinux {
+        dolphin = "dolphin $PWD";
+        vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
+        vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";
+      };
     initExtra =
       ''
         [ -f ~/.secrets/env ] && source ~/.secrets/env
@@ -83,6 +87,30 @@
         export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
         export RSTUDIO_WHICH_R="/home/ortho/micromamba/envs/R42/bin/R"
       '';
+  };
+
+  programs.ssh = {
+    enable = true;
+    matchBlocks = {
+      "mac-studio" = {
+        hostname = "100.68.68.16";
+        user = "ortho";
+        identityFile = "~/.ssh/mac_studio_ed25519";
+        identitiesOnly = true;
+      };
+      "github-personal" = {
+        hostname = "github.com";
+        user = "git";
+        identityFile = "~/.ssh/id_github_ed25519";
+        identitiesOnly = true;
+      };
+      "github-hubner" = {
+        hostname = "github.com";
+        user = "git";
+        identityFile = "~/.ssh/hubnergit_ed25519";
+        identitiesOnly = true;
+      };
+    };
   };
 
   programs.fzf = {
