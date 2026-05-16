@@ -168,12 +168,17 @@
               end
             '';
           };
-          ollama = {
+          ollama = let
+            ollamaUrl =
+              if pkgs.stdenv.isDarwin
+              then "http://localhost:11434"
+              else "http://100.68.68.16:11434";
+          in {
             __raw = ''
               function()
                 return require("codecompanion.adapters").extend("ollama", {
                   env = {
-                    url = os.getenv("OLLAMA_API_URL") or "http://localhost:11434",
+                    url = "${ollamaUrl}",
                   },
                   schema = {
                     model = {
