@@ -13,7 +13,7 @@
     runtimeInputs = [pkgs.coreutils];
     text = ''
       set -euo pipefail
-      BOT_TOKEN="$(cat /run/secrets/tgbot/bot_token)"
+      read -r BOT_TOKEN < /run/secrets/tgbot/bot_token
       export BOT_TOKEN
       export OLLAMA_URL="http://localhost:11434"
       export OLLAMA_MODEL="qwen2.5:14b-instruct"
