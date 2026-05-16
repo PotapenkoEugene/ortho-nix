@@ -13,11 +13,8 @@
     shell = pkgs.bash;
   };
 
-  # Enable flakes for `darwin-rebuild` itself.
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
+  # Determinate Nix manages the installation — disable nix-darwin's conflicting management.
+  nix.enable = false;
 
   # nix-darwin state version — separate from home-manager's stateVersion.
   # 6 is current as of nix-darwin 25.05; bump only on instructed migrations.
