@@ -25,4 +25,17 @@
 
   # Register bash in /etc/shells (required when using bash as default shell).
   programs.bash.enable = true;
+
+  # Allow ortho to run darwin-rebuild without password (required for remote SSH automation).
+  security.sudo.extraRules = [
+    {
+      users = ["ortho"];
+      commands = [
+        {
+          command = "/run/current-system/sw/bin/darwin-rebuild";
+          options = ["NOPASSWD"];
+        }
+      ];
+    }
+  ];
 }
