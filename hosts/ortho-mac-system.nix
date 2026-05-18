@@ -45,11 +45,9 @@ in {
     serviceConfig = {
       Label = "com.ortho.mlx";
       ProgramArguments = [
-        "${mlxPython}/bin/python"
-        "-m"
-        "mlx_lm.server"
+        "${mlxPython}/bin/mlx_lm.server"
         "--model"
-        "mlx-community/Qwen3-30B-A3B-Instruct-4bit"
+        "mlx-community/Qwen3-30B-A3B-4bit"
         "--host"
         "0.0.0.0"
         "--port"
