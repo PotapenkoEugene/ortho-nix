@@ -222,13 +222,44 @@ clean-transcript.sh <input-file> [output-file]    # standalone usage
 
 Output: `recording-YYYY-MM-DD-HHMM-clean.txt` alongside the raw file (raw always preserved).
 
+## Secrets Management (sops)
+
+`secrets/mac.yaml` is age-encrypted via sops-nix. **All sops editing happens on this Linux machine** — the mac only pulls from GitHub and never edits secrets directly.
+
+**Key location:** `~/.config/sops/age/keys.txt` (same key on both machines; Linux copy is authoritative for editing).
+
+**sops is not installed system-wide** — always invoke via `nix shell`:
+```bash
+# Decrypt (read-only)
+cd ~/.config/home-manager
+SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt nix shell nixpkgs#sops --command sops -d secrets/mac.yaml
+
+# Edit interactively (opens $EDITOR)
+cd ~/.config/home-manager
+SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt nix shell nixpkgs#sops --command sops secrets/mac.yaml
+
+# Set a single value non-interactively
+cd ~/.config/home-manager
+SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt nix shell nixpkgs#sops --command sops set secrets/mac.yaml '["anthropic"]["api_key"]' '"sk-ant-..."'
+```
+
+**Critical:** `cd` into `~/.config/home-manager` first — sops finds `.sops.yaml` by walking up from cwd. Without it: "config file not found" error. Do NOT use `--command env ... sops` wrapper; pass `SOPS_AGE_KEY_FILE` before `nix shell` instead.
+
+After editing: `git add secrets/mac.yaml && git commit -m "secrets: ..." && git push` → darwin-rebuild on mac picks it up.
+
+**Adding a new secret:**
+1. Add `sops.secrets."path/key"` block to `modules/secrets.nix`
+2. Add value to `secrets/mac.yaml` via `sops set` or interactive edit
+3. Reference in launchd script: `read -r VAR < /run/secrets/path/key || true; export VAR`
+4. `/hm-switch` → push → darwin-rebuild
+
 ## TGbot Deployment (Mac Studio)
 
-Telegram bot (`TGbotMessageToHebrew`) runs as `com.ortho.tgbot` launchd user agent on the mac, translating RU/EN↔Hebrew via local Ollama. Repo: `git@github.com:PotapenkoEugene/TGbotMessageToHebrew.git`.
+Telegram bot (`TGbotMessageToHebrew`) runs as `com.ortho.tgbot` launchd user agent on the mac, translating RU/EN↔Hebrew via Anthropic Claude API. Repo: `git@github.com:PotapenkoEugene/TGbotMessageToHebrew.git`.
 
 - **Repo**: `~/Projects/TGbotMessageToHebrew` — manual clone + `uv sync --frozen`, not nix-managed. Must be outside iCloud Drive (`~/Documents/` forbidden — causes launchd hang).
-- **Secrets**: `secrets/mac.yaml` (sops/age-encrypted in git). Age private key at `~/.config/sops/age/keys.txt` on the mac (out of repo, never commit).
-- **Model**: `qwen3:32b` (already pulled by `modules/ollama.nix`).
+- **Secrets**: `secrets/mac.yaml` (sops/age-encrypted in git). See Secrets Management section above.
+- **Model**: `claude-sonnet-4-5` via Anthropic API (`ANTHROPIC_API_KEY` from `/run/secrets/anthropic/api_key`).
 - **DB**: `~/Library/Application Support/tgbot/tgbot.db`.
 - **Logs**: `~/Library/Logs/tgbot.{log,err}`.
 - **Modules**: `modules/secrets.nix` + `modules/tgbot.nix` — both are no-ops until `secrets/mac.yaml` is committed to git.
@@ -240,9 +271,10 @@ nix shell nixpkgs#sops nixpkgs#age
 mkdir -p ~/.config/sops/age && age-keygen -o ~/.config/sops/age/keys.txt && chmod 600 $_
 age-keygen -y ~/.config/sops/age/keys.txt    # copy the age1… pubkey
 
-# Fill it into .sops.yaml (replace AGE_PUBKEY_REPLACE_ME)
-# Then create encrypted secrets:
-SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt sops secrets/mac.yaml
+# Fill it into .sops.yaml on linux (replace AGE_PUBKEY_REPLACE_ME)
+# Then create encrypted secrets from linux:
+cd ~/.config/home-manager
+SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt nix shell nixpkgs#sops --command sops secrets/mac.yaml
 
 # Clone bot repo + install deps (~/Projects = local, not iCloud)
 mkdir -p ~/Projects && GIT_SSH_COMMAND='ssh -i ~/.ssh/id_github_ed25519 -o IdentitiesOnly=yes' git clone git@github.com:PotapenkoEugene/TGbotMessageToHebrew.git ~/Projects/TGbotMessageToHebrew
@@ -255,7 +287,7 @@ darwin-rebuild switch --flake .#ortho-mac
 
 **Day-to-day**:
 - Code update (after push from linux): `tgbot-update` on mac (pulls, syncs, restarts agent).
-- Secret rotation: `SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt sops secrets/mac.yaml` → edit → save → git push → `/hm-switch`.
+- Secret rotation: edit `secrets/mac.yaml` from linux (see Secrets Management above) → git push → `/hm-switch`.
 - See bootstrap guide: `secrets/README.md`.
 
 ## Claude Code Integration
