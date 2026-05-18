@@ -18,8 +18,8 @@
       # Load CLAUDE_CODE_OAUTH_TOKEN and other secrets from ~/.secrets/env
       # shellcheck source=/dev/null
       [ -f "$HOME/.secrets/env" ] && source "$HOME/.secrets/env"
-      # Ensure claude CLI (installed to ~/.npm-global by home-manager activation) is reachable
-      export PATH="$HOME/.npm-global/bin:/etc/profiles/per-user/ortho/bin:/run/current-system/sw/bin:$PATH"
+      # claude is installed via nixpkgs (claude-code package) into the per-user nix profile
+      export PATH="/etc/profiles/per-user/ortho/bin:/run/current-system/sw/bin:$PATH"
       export DB_PATH="${dbDir}/tgbot.db"
       mkdir -p "${dbDir}"
       cd "${repoDir}"

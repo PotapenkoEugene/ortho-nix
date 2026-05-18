@@ -125,6 +125,9 @@
         ];
       })
     ])
+    ++ lib.optionals pkgs.stdenv.isDarwin (with pkgs; [
+      claude-code
+    ])
     ++ lib.optionals pkgs.stdenv.isLinux (with pkgs; [
       # Linux-only: GUI office / viewers / desktop apps
       libreoffice

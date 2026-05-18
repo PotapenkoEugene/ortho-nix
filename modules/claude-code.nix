@@ -314,18 +314,4 @@ in {
       fi
     fi
   '';
-
-  # Install Claude Code CLI to ~/.npm-global (nix store is immutable, can't use as npm prefix).
-  # Idempotent: skipped if claude binary already present.
-  # Adds ~/.npm-global/bin to PATH via home.sessionPath below.
-  home.activation.installClaudeCLI = lib.hm.dag.entryAfter ["installPackages"] ''
-    NPM_GLOBAL="$HOME/.npm-global"
-    if [ ! -f "$NPM_GLOBAL/bin/claude" ]; then
-      mkdir -p "$NPM_GLOBAL"
-      npm config set prefix "$NPM_GLOBAL" 2>/dev/null || true
-      npm install -g @anthropic-ai/claude-code 2>/dev/null || true
-    fi
-  '';
-
-  home.sessionPath = ["${config.home.homeDirectory}/.npm-global/bin"];
 }
