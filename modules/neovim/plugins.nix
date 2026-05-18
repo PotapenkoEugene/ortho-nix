@@ -169,21 +169,22 @@
                 end
               '';
             };
-            ollama = let
-              ollamaUrl =
+            mlx = let
+              mlxUrl =
                 if pkgs.stdenv.isDarwin
-                then "http://localhost:11434"
-                else "http://100.68.68.16:11434";
+                then "http://localhost:8765"
+                else "http://100.68.68.16:8765";
             in {
               __raw = ''
                 function()
-                  return require("codecompanion.adapters").extend("ollama", {
+                  return require("codecompanion.adapters").extend("openai", {
                     env = {
-                      url = "${ollamaUrl}",
+                      url = "${mlxUrl}",
+                      api_key = "not-needed",
                     },
                     schema = {
                       model = {
-                        default = "qwen3:32b",
+                        default = "mlx-community/Qwen3-30B-A3B-4bit",
                       },
                     },
                   })
@@ -210,10 +211,10 @@
             adapter = "claude_code";
           };
           chat = {
-            adapter = "ollama";
+            adapter = "mlx";
           };
           inline = {
-            adapter = "ollama";
+            adapter = "mlx";
           };
         };
         display = {
