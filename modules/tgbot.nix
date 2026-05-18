@@ -15,9 +15,11 @@
       set -euo pipefail
       read -r BOT_TOKEN < /run/secrets/tgbot/bot_token || true
       export BOT_TOKEN
-      read -r ANTHROPIC_API_KEY < /run/secrets/anthropic/api_key || true
-      export ANTHROPIC_API_KEY
-      export ANTHROPIC_MODEL="claude-sonnet-4-5"
+      # Load CLAUDE_CODE_OAUTH_TOKEN and other secrets from ~/.secrets/env
+      # shellcheck source=/dev/null
+      [ -f "$HOME/.secrets/env" ] && source "$HOME/.secrets/env"
+      # Ensure claude CLI (installed to ~/.npm-global by home-manager activation) is reachable
+      export PATH="$HOME/.npm-global/bin:/etc/profiles/per-user/ortho/bin:/run/current-system/sw/bin:$PATH"
       export DB_PATH="${dbDir}/tgbot.db"
       mkdir -p "${dbDir}"
       cd "${repoDir}"
