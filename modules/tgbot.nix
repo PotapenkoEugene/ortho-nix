@@ -15,8 +15,9 @@
       set -euo pipefail
       read -r BOT_TOKEN < /run/secrets/tgbot/bot_token || true
       export BOT_TOKEN
-      export OLLAMA_URL="http://localhost:11434"
-      export OLLAMA_MODEL="qwen3:32b"
+      read -r ANTHROPIC_API_KEY < /run/secrets/anthropic/api_key || true
+      export ANTHROPIC_API_KEY
+      export ANTHROPIC_MODEL="claude-sonnet-4-5"
       export DB_PATH="${dbDir}/tgbot.db"
       mkdir -p "${dbDir}"
       cd "${repoDir}"

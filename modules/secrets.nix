@@ -15,5 +15,11 @@ lib.mkIf (pkgs.stdenv.isDarwin && builtins.pathExists ../secrets/mac.yaml) {
       group = "staff";
       mode = "0400";
     };
+
+    secrets."anthropic/api_key" = {
+      owner = "ortho";
+      group = "staff";
+      mode = "0400";
+    };
   };
 }
