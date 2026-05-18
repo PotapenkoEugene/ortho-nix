@@ -2,9 +2,7 @@
   pkgs,
   lib,
   ...
-}: let
-  mlxPython = pkgs.python313.withPackages (ps: [ps.mlx-lm]);
-in {
+}: {
   imports = [
     ../modules/secrets.nix
     ../modules/tgbot.nix
@@ -37,35 +35,6 @@ in {
   security.sudo.extraConfig = ''
     ortho ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/darwin-rebuild
   '';
-
-  # MLX-LM server — serves Qwen3-30B-A3B-Instruct via OpenAI-compatible API on :8765.
-  # Listens on all interfaces so Tailscale IP is reachable from Linux box.
-  # Model auto-downloaded from HuggingFace on first start (~17GB, may take a while).
-  launchd.user.agents.mlx = {
-    serviceConfig = {
-      Label = "com.ortho.mlx";
-      ProgramArguments = [
-        "${mlxPython}/bin/mlx_lm.server"
-        "--model"
-        "mlx-community/Qwen3-30B-A3B-4bit"
-        "--host"
-        "0.0.0.0"
-        "--port"
-        "8765"
-        "--log-level"
-        "INFO"
-      ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      ThrottleInterval = 30;
-      EnvironmentVariables = {
-        HF_HOME = "/Users/ortho/.cache/huggingface";
-        PATH = "/usr/bin:/bin:/usr/sbin:/sbin";
-      };
-      StandardOutPath = "/Users/ortho/Library/Logs/mlx.log";
-      StandardErrorPath = "/Users/ortho/Library/Logs/mlx.err";
-    };
-  };
 
   # Ollama LLM daemon — auto-starts on login, restarts if killed.
   # Listens on all interfaces (OLLAMA_HOST=0.0.0.0) so Tailscale IP is reachable from Linux.

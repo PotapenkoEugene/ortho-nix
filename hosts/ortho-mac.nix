@@ -4,10 +4,7 @@
   lib,
   ...
 }: {
-  imports = [
-    ../modules/ollama.nix
-    ../modules/mlx.nix
-  ];
+  imports = [../modules/ollama.nix];
 
   home.username = "ortho";
   home.homeDirectory = "/Users/ortho";
