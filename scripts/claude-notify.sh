@@ -9,6 +9,9 @@ PANE="${TMUX_PANE}"
 SESSION=$(tmux display-message -p -t "$PANE" '#{session_name}' 2>/dev/null) || true
 [ -z "$PANE" ] && exit 0
 
+# Mark this tmux window as needing attention (recolors window-status + rings kitty bell)
+"$(dirname "$0")"/claude-attn.sh set || true
+
 # Add to queue
 echo "${PANE}|${SESSION}" >> "$QUEUE"
 

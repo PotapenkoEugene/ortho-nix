@@ -30,6 +30,17 @@
     ];
   };
 
+  # Clear tmux window attention indicator (called on UserPromptSubmit + Stop)
+  attnClear = {
+    matcher = "*";
+    hooks = [
+      {
+        type = "command";
+        command = "bash -c '${scriptsDir}/claude-attn.sh clear'";
+      }
+    ];
+  };
+
   # Linux-only hooks: peon sounds + notify-send
   linuxHooks = {
     SessionStart = [
@@ -53,7 +64,8 @@
         ];
       }
     ];
-    UserPromptSubmit = [cavemanUserPrompt];
+    UserPromptSubmit = [cavemanUserPrompt attnClear];
+    Stop = [attnClear];
     Notification = [
       {
         matcher = "*";
