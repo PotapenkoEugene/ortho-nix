@@ -5,6 +5,7 @@
 }: {
   imports = [
     ../modules/tgbot.nix
+    ../modules/contentfabricbot.nix
   ];
 
   # Set platform so nix-darwin.lib.darwinSystem doesn't require a `system` arg.
@@ -36,6 +37,18 @@
   # Allow ortho to run darwin-rebuild without password (required for remote SSH automation).
   security.sudo.extraConfig = ''
     ortho ALL=(ALL) NOPASSWD: /run/current-system/sw/bin/darwin-rebuild
+  '';
+
+  # Switch the login shell to the nix-managed bash during activation.
+  # dscl write is needed because ortho is a pre-existing macOS user (not managed
+  # by users.knownUsers), so nix-darwin's user module skips the UserShell update.
+  system.activationScripts.setLoginShell.text = ''
+    BASH=/run/current-system/sw/bin/bash
+    CURRENT_SHELL=$(/usr/bin/dscl . -read /Users/ortho UserShell 2>/dev/null | awk '{print $2}')
+    if [ "$CURRENT_SHELL" != "$BASH" ]; then
+      echo "Setting login shell to $BASH"
+      /usr/bin/dscl . -change /Users/ortho UserShell "$CURRENT_SHELL" "$BASH"
+    fi
   '';
 
   # Ollama LLM daemon — auto-starts on login, restarts if killed.
