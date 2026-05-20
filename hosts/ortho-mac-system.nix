@@ -42,11 +42,12 @@
   # Switch the login shell to the nix-managed bash during activation.
   # dscl write is needed because ortho is a pre-existing macOS user (not managed
   # by users.knownUsers), so nix-darwin's user module skips the UserShell update.
-  system.activationScripts.setLoginShell.text = ''
+  # system.activationScripts is internal — use the public postActivation hook instead.
+  system.activationScripts.postActivation.text = lib.mkAfter ''
     BASH=/run/current-system/sw/bin/bash
     CURRENT_SHELL=$(/usr/bin/dscl . -read /Users/ortho UserShell 2>/dev/null | awk '{print $2}')
     if [ "$CURRENT_SHELL" != "$BASH" ]; then
-      echo "Setting login shell to $BASH"
+      echo "postActivation: setting login shell to $BASH" >&2
       /usr/bin/dscl . -change /Users/ortho UserShell "$CURRENT_SHELL" "$BASH"
     fi
   '';
