@@ -27,8 +27,11 @@
   # 6 is current as of nix-darwin 25.05; bump only on instructed migrations.
   system.stateVersion = 6;
 
-  # Register bash in /etc/shells (required when using bash as default shell).
+  # Register bash in /etc/shells so users.users.ortho.shell takes effect.
+  # macOS rejects a login shell not listed in /etc/shells; environment.shells
+  # adds the nix bash path there during activation.
   programs.bash.enable = true;
+  environment.shells = [pkgs.bash];
 
   # Allow ortho to run darwin-rebuild without password (required for remote SSH automation).
   security.sudo.extraConfig = ''
