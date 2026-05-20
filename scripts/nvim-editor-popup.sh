@@ -8,9 +8,9 @@ FILE="${1:?Usage: nvim-editor-popup.sh <file>}"
 # Ensure secrets are in env before forwarding to the popup.
 # tmux display-popup spawns from the tmux server's env, not ours,
 # so we must pass needed vars explicitly via -e.
-if [ -z "${OPENAI_API_KEY:-}" ] && [ -f ~/.secrets/env ]; then
+if [ -z "${OPENAI_API_KEY:-}" ] && [ -f "$HOME/.config/sops-nix/secrets/rendered/secrets.env" ]; then
   # shellcheck disable=SC1090
-  source ~/.secrets/env
+  source "$HOME/.config/sops-nix/secrets/rendered/secrets.env"
 fi
 
 if [ -n "${TMUX:-}" ]; then

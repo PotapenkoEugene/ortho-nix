@@ -13,11 +13,11 @@
     runtimeInputs = [pkgs.coreutils];
     text = ''
       set -euo pipefail
-      read -r BOT_TOKEN < /run/secrets/tgbot/bot_token || true
+      read -r BOT_TOKEN < "$HOME/.config/sops-nix/secrets/tgbot/bot_token" || true
       export BOT_TOKEN
-      # Load CLAUDE_CODE_OAUTH_TOKEN and other secrets from ~/.secrets/env
+      # Load API keys from sops-managed secrets.env
       # shellcheck source=/dev/null
-      [ -f "$HOME/.secrets/env" ] && source "$HOME/.secrets/env"
+      [ -f "$HOME/.config/sops-nix/secrets/rendered/secrets.env" ] && source "$HOME/.config/sops-nix/secrets/rendered/secrets.env"
       # claude is installed via nixpkgs (claude-code package) into the per-user nix profile
       export PATH="/etc/profiles/per-user/ortho/bin:/run/current-system/sw/bin:$PATH"
       export DB_PATH="${dbDir}/tgbot.db"
@@ -42,7 +42,7 @@
     '';
   };
 in
-  lib.mkIf (pkgs.stdenv.isDarwin && builtins.pathExists ../secrets/mac.yaml) {
+  lib.mkIf (pkgs.stdenv.isDarwin && builtins.pathExists ../secrets/common.yaml) {
     environment.systemPackages = [tgbotRun tgbotUpdate];
 
     launchd.user.agents.tgbot = {

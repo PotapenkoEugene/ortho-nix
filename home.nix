@@ -15,6 +15,7 @@
     ./modules/neovim
     ./modules/claude-code.nix
     ./modules/television.nix
+    ./modules/secrets.nix
   ];
 
   home.stateVersion = "24.11";

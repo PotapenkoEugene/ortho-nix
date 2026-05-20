@@ -45,6 +45,7 @@
     darwinHomeModule = {
       imports = [
         nixvim.homeModules.nixvim
+        sops-nix.homeManagerModules.sops
         ./home.nix
         ./hosts/ortho-mac.nix
       ];
@@ -57,7 +58,6 @@
       nixpkgs.overlays = [commonOverlay];
       imports = [
         home-manager.darwinModules.home-manager
-        sops-nix.darwinModules.sops
         ./hosts/ortho-mac-system.nix
       ];
       home-manager.useGlobalPkgs = true;
@@ -81,6 +81,7 @@
         inherit pkgs;
         modules = [
           nixvim.homeModules.nixvim
+          sops-nix.homeManagerModules.sops
           ./home.nix
           hostModule
         ];

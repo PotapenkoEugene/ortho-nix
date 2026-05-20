@@ -1,19 +1,47 @@
 {
   config,
-  pkgs,
   lib,
   ...
 }:
-lib.mkIf (pkgs.stdenv.isDarwin && builtins.pathExists ../secrets/mac.yaml) {
-  sops = {
-    defaultSopsFile = ../secrets/mac.yaml;
-    age.keyFile = "/Users/ortho/.config/sops/age/keys.txt";
-    age.generateKey = false;
+lib.mkIf (builtins.pathExists ../secrets/common.yaml) {
+  # sops-nix needs parent dir to exist before activation
+  home.activation.createSopsDir = lib.hm.dag.entryBefore ["writeBoundary"] ''
+    mkdir -p "${config.home.homeDirectory}/.config/sops-nix"
+  '';
 
-    secrets."tgbot/bot_token" = {
-      owner = "ortho";
-      group = "staff";
+  sops = {
+    defaultSopsFile = ../secrets/common.yaml;
+    age = {
+      keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+      generateKey = false;
+    };
+    # Use defaultSymlinkPath for HM-level sops (simpler than mount point mechanism)
+    defaultSymlinkPath = "${config.home.homeDirectory}/.config/sops-nix/secrets";
+    defaultSecretsMountPoint = "%r/secrets.d";
+
+    secrets = {
+      "openai/api_key" = {};
+      "openweathermap/api_key" = {};
+      "google_oauth/client_id" = {};
+      "google_oauth/client_secret" = {};
+      "google_oauth/credentials_json" = {};
+      "groq/api_key" = {};
+      "anthropic/api_key" = {};
+      "claude_code/oauth_token" = {};
+      "tgbot/bot_token" = {};
+    };
+
+    templates."secrets.env" = {
       mode = "0400";
+      content = ''
+        export OPENAI_API_KEY="${config.sops.placeholder."openai/api_key"}"
+        export OPENWEATHERMAP_API_KEY="${config.sops.placeholder."openweathermap/api_key"}"
+        export GOOGLE_OAUTH_CLIENT_ID="${config.sops.placeholder."google_oauth/client_id"}"
+        export GOOGLE_OAUTH_CLIENT_SECRET="${config.sops.placeholder."google_oauth/client_secret"}"
+        export GROQ_API_KEY="${config.sops.placeholder."groq/api_key"}"
+        export ANTHROPIC_API_KEY="${config.sops.placeholder."anthropic/api_key"}"
+        export CLAUDE_CODE_OAUTH_TOKEN="${config.sops.placeholder."claude_code/oauth_token"}"
+      '';
     };
   };
 }

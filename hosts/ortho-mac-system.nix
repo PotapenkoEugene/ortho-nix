@@ -4,7 +4,6 @@
   ...
 }: {
   imports = [
-    ../modules/secrets.nix
     ../modules/tgbot.nix
   ];
 

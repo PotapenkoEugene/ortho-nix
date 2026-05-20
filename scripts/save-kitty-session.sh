@@ -6,6 +6,9 @@
 #============================================================================
 SESSION_FILE="$HOME/.config/kitty/session.conf"
 
+# Mac has no kitty-session module and no /proc — exit silently
+[ "$(uname -s)" = Darwin ] && exit 0
+
 # Don't overwrite session.conf during the first 3 minutes after boot.
 # Resurrect restore may still be in progress — overwriting now would lock in
 # a degraded state (only tabs that opened before restore completed).

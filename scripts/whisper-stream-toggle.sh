@@ -28,11 +28,11 @@ if [ -f "$PID_FILE" ]; then
         BASENAME="recording-$(date +%Y-%m-%d-%H%M)"
         FINAL_FILE="$TRANSCRIPTS_DIR/${BASENAME}.txt"
 
-        # Load GROQ_API_KEY from secrets
+        # Load GROQ_API_KEY from sops-managed secrets
         # shellcheck source=/dev/null
-        [ -f "$HOME/.secrets/env" ] && source "$HOME/.secrets/env"
+        [ -f "$HOME/.config/sops-nix/secrets/rendered/secrets.env" ] && source "$HOME/.config/sops-nix/secrets/rendered/secrets.env"
         if [ -z "${GROQ_API_KEY:-}" ]; then
-            notify "Error: GROQ_API_KEY not set in ~/.secrets/env"
+            notify "Error: GROQ_API_KEY not set (run home-manager switch to decrypt sops secrets)"
             rm -f "$SYS_FILE" "$MIC_FILE"
             exit 1
         fi

@@ -19,153 +19,153 @@
     prefix = "C-a";
 
     # Base tmux configuration
-    extraConfig = ''
-      # Custom keybindings
-      # AWS VPN popup
-      bind C-y display-popup \
-         -d "#{pane_current_path}" \
-         -w 80% \
-         -h 80% \
-         -E "openvpn3 session-start --config ~/evgenip.ovpn"
+    extraConfig =
+      ''
+        # Custom keybindings
+        # btop popup
+        bind t display-popup -w 90% -h 85% -E "btop"
 
-      # Migal VPN popup (persistent session)
-      bind y display-popup -w 80% -h 50% -E "~/.config/home-manager/scripts/vpn-migal-popup.sh"
+        # lazygit popup
+        bind g display-popup -d "#{pane_current_path}" -w 90% -h 85% -E "lazygit"
 
-      # btop popup
-      bind t display-popup -w 90% -h 85% -E "btop"
+        # notes popup (persistent nvim session in Orthidian vault)
+        bind n display-popup -w 90% -h 90% -E "~/.config/home-manager/scripts/notes-popup.sh"
 
-      # lazygit popup
-      bind g display-popup -d "#{pane_current_path}" -w 90% -h 85% -E "lazygit"
+        # docker browser (tv): images -> drill into containers
+        bind D display-popup -w 90% -h 85% -E "tv docker-images"
 
-      # notes popup (persistent nvim session in Orthidian vault)
-      bind n display-popup -w 90% -h 90% -E "~/.config/home-manager/scripts/notes-popup.sh"
+        # cmatrix screensaver popup
+        bind '`' display-popup -w 100% -h 100% -E "cmatrix -ab"
 
-      # docker browser (tv): images -> drill into containers
-      bind D display-popup -w 90% -h 85% -E "tv docker-images"
+        # codeburn (AI token usage dashboard) popup
+        bind T display-popup -w 100% -h 100% -x 0 -y 0 -b none -E "~/.config/home-manager/scripts/codeburn-popup.sh"
 
-      # Dolphin file manager — open in current pane's directory (detached)
-      bind d run-shell "dolphin '#{pane_current_path}' >/dev/null 2>&1 &"
+        # Reload tmux config
+        bind R source-file ~/.config/tmux/tmux.conf \; display-message "Config reloaded"
 
-      # cmatrix screensaver popup
-      bind '`' display-popup -w 100% -h 100% -E "cmatrix -ab"
+        # Required for image.nvim
+        set -gq allow-passthrough on
+        set -g visual-activity off
 
-      # rmpc (music player) popup
-      bind m display-popup -w 80% -h 75% -E "rmpc"
+        # Terminal overrides — true color + undercurl (colored squiggly underlines for Neovim LSP)
+        set -as terminal-overrides ',xterm-kitty:RGB'
+        set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'
+        set -as terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m'
 
-      # codeburn (AI token usage dashboard) popup
-      bind T display-popup -w 100% -h 100% -x 0 -y 0 -b none -E "~/.config/home-manager/scripts/codeburn-popup.sh"
+        # Session and window management
+        set -g detach-on-destroy off     # don't exit from tmux when closing a session
+        set -g renumber-windows on       # renumber all windows when any window is closed
+        set -g set-clipboard on          # use system clipboard
+        set -g status-position top       # macOS / darwin style
 
-      # Reload tmux config
-      bind R source-file ~/.config/tmux/tmux.conf \; display-message "Config reloaded"
+        # Clipboard config
+        set -g @override_copy_command '${
+          if pkgs.stdenv.isDarwin
+          then "pbcopy"
+          else "xclip -selection clipboard"
+        }'
 
-      # Required for image.nvim
-      set -gq allow-passthrough on
-      set -g visual-activity off
-
-      # Terminal overrides — true color + undercurl (colored squiggly underlines for Neovim LSP)
-      set -as terminal-overrides ',xterm-kitty:RGB'
-      set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'
-      set -as terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m'
-
-      # Session and window management
-      set -g detach-on-destroy off     # don't exit from tmux when closing a session
-      set -g renumber-windows on       # renumber all windows when any window is closed
-      set -g set-clipboard on          # use system clipboard
-      set -g status-position top       # macOS / darwin style
-
-      # Clipboard config
-      set -g @override_copy_command '${
-        if pkgs.stdenv.isDarwin
-        then "pbcopy"
-        else "xclip -selection clipboard"
-      }'
-
-      # Pane styling
-      set -g pane-active-border-style 'fg=magenta,bg=default'
-      set -g pane-border-style 'fg=brightblack,bg=default'
+        # Pane styling
+        set -g pane-active-border-style 'fg=magenta,bg=default'
+        set -g pane-border-style 'fg=brightblack,bg=default'
 
 
-      # Window and session management
-      bind ^X lock-server
-      bind c new-window -c "$HOME"
-      bind ^D detach
-      bind * list-clients
+        # Window and session management
+        bind ^X lock-server
+        bind c new-window -c "$HOME"
+        bind ^D detach
+        bind * list-clients
 
-      bind H previous-window
-      bind L next-window
+        bind H previous-window
+        bind L next-window
 
-      bind r command-prompt "rename-window %%"
-      bind ^A last-window
-      bind ^W list-windows
-      # weather popup (overrides default list-windows)
-      bind w display-popup -w 100% -h 100% -E "bash -c 'source ~/.secrets/env && LOC=\$(curl -s ipinfo.io/city) && wego -owm-api-key \$OPENWEATHERMAP_API_KEY -l \$LOC; read -n1'"
-      bind z resize-pane -Z
-      bind ^L refresh-client
-      bind l refresh-client
+        bind r command-prompt "rename-window %%"
+        bind ^A last-window
+        bind ^W list-windows
+        # weather popup (overrides default list-windows)
+        bind w display-popup -w 100% -h 100% -E "bash -c 'source \$HOME/.config/sops-nix/secrets/rendered/secrets.env 2>/dev/null || true; LOC=\$(curl -s ipinfo.io/city) && wego -owm-api-key \$OPENWEATHERMAP_API_KEY -l \$LOC; read -n1'"
+        bind z resize-pane -Z
+        bind ^L refresh-client
+        bind l refresh-client
 
-      # Pane management
-      bind | split-window
-      bind s display-popup -w 80% -h 60% -E "tv tmux-sessions | xargs -r tmux switch-client -t"
-      bind v split-window -h -c "#{pane_current_path}"
-      bind '"' choose-window
-      bind h select-pane -L
-      bind j select-pane -D
-      bind k select-pane -U
-      bind l select-pane -R
+        # Pane management
+        bind | split-window
+        bind s display-popup -w 80% -h 60% -E "tv tmux-sessions | xargs -r tmux switch-client -t"
+        bind v split-window -h -c "#{pane_current_path}"
+        bind '"' choose-window
+        bind h select-pane -L
+        bind j select-pane -D
+        bind k select-pane -U
+        bind l select-pane -R
 
-      # Pane resizing
-      bind -r -T prefix , resize-pane -L 20
-      bind -r -T prefix . resize-pane -R 20
-      bind -r -T prefix - resize-pane -D 7
-      bind -r -T prefix = resize-pane -U 7
+        # Pane resizing
+        bind -r -T prefix , resize-pane -L 20
+        bind -r -T prefix . resize-pane -R 20
+        bind -r -T prefix - resize-pane -D 7
+        bind -r -T prefix = resize-pane -U 7
 
-      # Utility bindings
-      bind : command-prompt
-      bind * setw synchronize-panes
-      bind P set pane-border-status
-      bind ^C kill-pane
-      bind x swap-pane -D
-      bind K send-keys "clear"\; send-keys "Enter"
+        # Utility bindings
+        bind : command-prompt
+        bind * setw synchronize-panes
+        bind P set pane-border-status
+        bind ^C kill-pane
+        bind x swap-pane -D
+        bind K send-keys "clear"\; send-keys "Enter"
 
-      # Copy mode
-      bind Escape copy-mode
-      bind-key -T copy-mode-vi v send-keys -X begin-selection
+        # Copy mode
+        bind Escape copy-mode
+        bind-key -T copy-mode-vi v send-keys -X begin-selection
 
-      # Space: start selection if nothing selected, open nvim popup if selection active
-      bind-key -T copy-mode-vi Space if-shell -F "#{selection_active}" \
-        "send-keys -X copy-pipe-and-cancel '~/.config/home-manager/scripts/tmux-nvim-scratch.sh'" \
-        "send-keys -X begin-selection"
+        # Space: start selection if nothing selected, open nvim popup if selection active
+        bind-key -T copy-mode-vi Space if-shell -F "#{selection_active}" \
+          "send-keys -X copy-pipe-and-cancel '~/.config/home-manager/scripts/tmux-nvim-scratch.sh'" \
+          "send-keys -X begin-selection"
 
-      # Copy mode visual indicator — turns entire status bar red
-      set-hook -g pane-mode-changed 'if-shell -F "#{pane_in_mode}" \
-        "set status-style bg=#f38ba8,fg=#11111b" \
-        "set status-style bg=#181825,fg=#cdd6f4"'
-      set-hook -g after-select-window 'if-shell -F "#{pane_in_mode}" \
-        "set status-style bg=#f38ba8,fg=#11111b" \
-        "set status-style bg=#181825,fg=#cdd6f4"'
-      set-hook -g after-select-pane 'if-shell -F "#{pane_in_mode}" \
-        "set status-style bg=#f38ba8,fg=#11111b" \
-        "set status-style bg=#181825,fg=#cdd6f4"'
+        # Copy mode visual indicator — turns entire status bar red
+        set-hook -g pane-mode-changed 'if-shell -F "#{pane_in_mode}" \
+          "set status-style bg=#f38ba8,fg=#11111b" \
+          "set status-style bg=#181825,fg=#cdd6f4"'
+        set-hook -g after-select-window 'if-shell -F "#{pane_in_mode}" \
+          "set status-style bg=#f38ba8,fg=#11111b" \
+          "set status-style bg=#181825,fg=#cdd6f4"'
+        set-hook -ga after-select-window 'run-shell "~/.config/home-manager/scripts/claude-attn.sh clear-done #{window_id}"'
+        set-hook -g after-select-pane 'if-shell -F "#{pane_in_mode}" \
+          "set status-style bg=#f38ba8,fg=#11111b" \
+          "set status-style bg=#181825,fg=#cdd6f4"'
 
-      # Only enable continuum auto-save/restore on the main (default) tmux server.
-      # Prevents secondary sockets (-L notes, -L vpn) from restoring all sessions.
-      %if #{m:*/default,#{socket_path}}
-      set -g @continuum-restore 'on'
-      set -g @continuum-save-interval '15'
-      %else
-      set -g @continuum-save-interval '0'
-      %endif
+        # Only enable continuum auto-save/restore on the main (default) tmux server.
+        # Prevents secondary sockets (-L notes, -L vpn) from restoring all sessions.
+        %if #{m:*/default,#{socket_path}}
+        set -g @continuum-restore 'on'
+        set -g @continuum-save-interval '15'
+        %else
+        set -g @continuum-save-interval '0'
+        %endif
 
-      # Keep kitty session.conf current whenever sessions change (no waiting for 5-min timer)
-      set-hook -g client-session-changed 'run-shell "~/.config/home-manager/scripts/save-kitty-session.sh"'
-      set-hook -g session-closed 'run-shell "~/.config/home-manager/scripts/save-kitty-session.sh"'
+      ''
+      + lib.optionalString pkgs.stdenv.isLinux ''
+        # Linux-only keybindings
+        bind C-y display-popup \
+           -d "#{pane_current_path}" \
+           -w 80% \
+           -h 80% \
+           -E "openvpn3 session-start --config ~/evgenip.ovpn"
+        bind y display-popup -w 80% -h 50% -E "~/.config/home-manager/scripts/vpn-migal-popup.sh"
+        bind d run-shell "dolphin '#{pane_current_path}' >/dev/null 2>&1 &"
+        bind m display-popup -w 80% -h 75% -E "rmpc"
 
-      # Catppuccin status bar composition (must be after catppuccin plugin loads)
-      set -g status-left-length 120
-      set -g status-right-length 100
-      set -g status-left "#{E:@catppuccin_status_session}"
-      set -g status-right "#{E:@catppuccin_status_directory}#{E:@catppuccin_status_date_time}"
-    '';
+        # Keep kitty session.conf current whenever sessions change (no waiting for 5-min timer)
+        set-hook -g client-session-changed 'run-shell "~/.config/home-manager/scripts/save-kitty-session.sh"'
+        set-hook -g session-closed 'run-shell "~/.config/home-manager/scripts/save-kitty-session.sh"'
+      ''
+      + ''
+
+        # Catppuccin status bar composition (must be after catppuccin plugin loads)
+        set -g status-left-length 120
+        set -g status-right-length 100
+        set -g status-left "#{E:@catppuccin_status_session}"
+        set -g status-right "#{E:@catppuccin_status_directory}#{E:@catppuccin_status_date_time}"
+      '';
 
     # Plugins
     plugins = with pkgs.tmuxPlugins; [

@@ -65,7 +65,17 @@
       }
     ];
     UserPromptSubmit = [cavemanUserPrompt attnClear];
-    Stop = [attnClear];
+    Stop = [
+      {
+        matcher = "*";
+        hooks = [
+          {
+            type = "command";
+            command = "bash -c '${scriptsDir}/claude-attn.sh done; ${scriptsDir}/peon-sound.sh task.complete &'";
+          }
+        ];
+      }
+    ];
     Notification = [
       {
         matcher = "*";
@@ -110,7 +120,7 @@
     ];
   };
 
-  # darwin: caveman + project context injection
+  # darwin: full hook set — notifications reach Linux via Kitty OSC 99 over SSH
   darwinHooks = {
     SessionStart = [
       cavemanSessionStart
@@ -124,7 +134,29 @@
         ];
       }
     ];
-    UserPromptSubmit = [cavemanUserPrompt];
+    UserPromptSubmit = [cavemanUserPrompt attnClear];
+    Stop = [
+      {
+        matcher = "*";
+        hooks = [
+          {
+            type = "command";
+            command = "bash -c '${scriptsDir}/claude-attn.sh done'";
+          }
+        ];
+      }
+    ];
+    Notification = [
+      {
+        matcher = "*";
+        hooks = [
+          {
+            type = "command";
+            command = "bash -c '${scriptsDir}/claude-notify.sh'";
+          }
+        ];
+      }
+    ];
   };
 
   # Bash permissions exclusive to Linux (PipeWire, systemd, GNOME, X11, hardware tools)

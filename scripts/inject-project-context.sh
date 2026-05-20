@@ -62,9 +62,11 @@ SUMMARY=$(awk '
 END { flush() }
 ' "$PROJECT_FILE")
 
-# Show summary via notify-send (desktop notification) and tmux status bar
-notify-send --urgency=low --expire-time=8000 \
-    "Project: $PROJECT_NAME" "$SUMMARY" 2>/dev/null || true
+# Show summary via notify-send (desktop notification — Linux only) and tmux status bar
+if command -v notify-send >/dev/null 2>&1; then
+    notify-send --urgency=low --expire-time=8000 \
+        "Project: $PROJECT_NAME" "$SUMMARY" 2>/dev/null || true
+fi
 tmux display-message -d 6000 "── $PROJECT_NAME ── session start" 2>/dev/null || true
 
 jq -n \

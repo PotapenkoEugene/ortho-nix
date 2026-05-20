@@ -4,6 +4,9 @@
 # e.g.: peon-sound.sh input.required
 set -euo pipefail
 
+# darwin has no PipeWire — skip silently (BEL via OSC 99 replaces sound over SSH)
+[ "$(uname -s)" = Darwin ] && exit 0
+
 CATEGORY="${1:-}"
 [ -z "$CATEGORY" ] && exit 1
 
@@ -12,8 +15,8 @@ CONFIG="$SOUNDS_DIR/config.json"
 
 # Read config (fall back to random + unmuted if missing)
 if [ -f "$CONFIG" ]; then
-    MUTED=$(/usr/bin/jq -r '.muted // false' "$CONFIG")
-    ACTIVE_PACK=$(/usr/bin/jq -r '.active_pack // "random"' "$CONFIG")
+    MUTED=$(jq -r '.muted // false' "$CONFIG")
+    ACTIVE_PACK=$(jq -r '.active_pack // "random"' "$CONFIG")
 else
     MUTED=false
     ACTIVE_PACK=random
@@ -27,20 +30,20 @@ PACKS=()
 if [ "$ACTIVE_PACK" = "random" ]; then
     # Original behavior: all packs with sounds for this category
     for manifest in "$SOUNDS_DIR"/*/openpeon.json; do
-        count=$(/usr/bin/jq -r ".categories.\"$CATEGORY\".sounds | length" "$manifest" 2>/dev/null)
+        count=$(jq -r ".categories.\"$CATEGORY\".sounds | length" "$manifest" 2>/dev/null)
         [ "$count" -gt 0 ] && PACKS+=("$(dirname "$manifest")")
     done
 else
     # Single pack mode
     manifest="$SOUNDS_DIR/$ACTIVE_PACK/openpeon.json"
     if [ -f "$manifest" ]; then
-        count=$(/usr/bin/jq -r ".categories.\"$CATEGORY\".sounds | length" "$manifest" 2>/dev/null)
+        count=$(jq -r ".categories.\"$CATEGORY\".sounds | length" "$manifest" 2>/dev/null)
         if [ "$count" -gt 0 ]; then
             PACKS+=("$SOUNDS_DIR/$ACTIVE_PACK")
         else
             # Fallback to random if active pack lacks this category
             for manifest in "$SOUNDS_DIR"/*/openpeon.json; do
-                count=$(/usr/bin/jq -r ".categories.\"$CATEGORY\".sounds | length" "$manifest" 2>/dev/null)
+                count=$(jq -r ".categories.\"$CATEGORY\".sounds | length" "$manifest" 2>/dev/null)
                 [ "$count" -gt 0 ] && PACKS+=("$(dirname "$manifest")")
             done
         fi
@@ -53,7 +56,7 @@ fi
 PACK="${PACKS[$((RANDOM % ${#PACKS[@]}))]}"
 
 # Pick random sound file from that pack's category
-SOUND=$(/usr/bin/jq -r ".categories.\"$CATEGORY\".sounds[].file" "$PACK/openpeon.json" | /usr/bin/shuf -n1)
+SOUND=$(jq -r ".categories.\"$CATEGORY\".sounds[].file" "$PACK/openpeon.json" | shuf -n1)
 
 # Play it
-/home/ortho/.nix-profile/bin/pw-play --volume=2.0 "$PACK/$SOUND" 2>>/tmp/peon-debug.log
+pw-play --volume=2.0 "$PACK/$SOUND" 2>>/tmp/peon-debug.log
