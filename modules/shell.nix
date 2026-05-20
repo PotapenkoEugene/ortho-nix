@@ -92,6 +92,9 @@
           command playwright-cli "$@"
         }
       ''
+      + lib.optionalString pkgs.stdenv.isDarwin ''
+        PS1='\[\e[01;32m\]\u@\h\[\e[00m\]:\[\e[01;34m\]\w\[\e[00m\]\$ '
+      ''
       + lib.optionalString pkgs.stdenv.isLinux ''
         export PKG_CONFIG_PATH="${pkgs.imagemagick.dev}/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig"
         export CFLAGS="-I/usr/include"
