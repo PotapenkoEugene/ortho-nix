@@ -30,6 +30,13 @@ These rules apply to ALL projects and sessions. Project-level CLAUDE.md files ad
 
 - **Never modify raw data.** Treat anything in `data/`, `raw/`, or input directories as read-only. Always create new output files rather than overwriting source data.
 
+## Secrets Safety
+
+- **Never read secrets files as plain text in the session.** This includes: `~/.secrets/env`, `~/.config/sops-nix/secrets/*`, `~/.claude/.credentials.json`, `*.gpg`, `*.yaml` encrypted with sops, any file with "secret", "token", "key", "credential", or "password" in the name or path.
+- **Never run commands that dump secret values** (e.g., `cat ~/.secrets/env`, `printenv | grep API`, `python3 -c "... print(creds)"`). Token values printed to tool output land in conversation history — a permanent exposure risk.
+- **When you need to know a secret exists or its structure:** check the config that declares it (e.g., `secrets.nix`, shell config) — never the resolved value.
+- **When a task requires knowing a secret value** (e.g., checking if a key is set): tell the user what to run themselves via `! <command>` and act on their report. Example: "Run `! printenv ANTHROPIC_API_KEY | wc -c` and tell me the character count."
+
 ## MANDATORY: After Every Feature or Logical Chunk
 
 **After completing any meaningful implementation** (a new feature, a fix, a config change, a skill, a script — anything that "works" as a unit), always ask:
