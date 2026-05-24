@@ -67,7 +67,7 @@ notebooklm ask "<targeted question>" -n <notebook_id>
 
 Before creating any knowledge note, search existing notes to avoid redundancy:
 ```
-mcpvault search_notes query="<topic keywords>"
+orthi-brain search_vault query="<topic keywords>"  # falls back to mcpvault search_notes if unavailable
 ```
 
 Save new knowledge to `~/Orthidian/knowledge/`:
@@ -211,7 +211,7 @@ Plus standard fields: `status: budding`, `domain`, `created`, `updated`, `tags`,
 - **Do ask** before generating podcasts (time + quota cost)
 - Always use explicit notebook IDs (`-n <id>`)
 - Poll `notebooklm source list` before querying — sources must be ready
-- Check mcpvault before creating knowledge notes (avoid duplicates)
+- Check `orthi-brain` (or `mcpvault` fallback) before creating knowledge notes (avoid duplicates)
 - Rate limit: if 429 error, wait 5-10 min
 - Auth failure: run `notebooklm login`
 - `--json` flag on all commands for reliable output

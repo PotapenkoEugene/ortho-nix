@@ -54,7 +54,7 @@ Review the current conversation for insights worth persisting:
 
 **If insights exist:**
 1. Search for duplicates first:
-   - Use mcpvault `search_notes` tool if available, or Grep `~/Orthidian/knowledge/`
+   - Use `orthi-brain` `search_vault` tool if available, else `mcpvault` `search_notes`, else Grep `~/Orthidian/knowledge/`
 2. Determine target: project knowledge (`knowledge/PROJECTNAME/`) or domain (`knowledge/_technical/`, `_biology/`, etc.)
 3. Create or append a knowledge note following the format in `/knowledge` skill conventions:
    - Frontmatter: `status: budding`, `domain`, `created`, `updated`, `tags`, `projects`

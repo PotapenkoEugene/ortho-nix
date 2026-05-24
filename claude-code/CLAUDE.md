@@ -141,7 +141,7 @@ During any exploration, planning, or research work — when you encounter valuab
 1. **Categorize** into `{Project}_{topic}` notebook (e.g., `ADAPTOGENE_gwas`, `Desktop_nix`, `soloLTRs_transposable-elements`)
 2. **Auto-create** notebook if new topic (`notebooklm create "{Project}_{topic}"`), or add to existing (ID from project file `## Notes`)
 3. **Add task** to task list: "Extract knowledge from {notebook} → knowledge base"
-4. **After exploration**: query notebook for key concepts, save grounded notes to `~/Orthidian/knowledge/` — check mcpvault for duplicates first
+4. **After exploration**: query notebook for key concepts, save grounded notes to `~/Orthidian/knowledge/` — check `orthi-brain` (or `mcpvault` fallback) for duplicates first
 5. **At >5 sources**: mention to user once — "want a Russian podcast for {notebook}?"
 6. **Track association** in project file `## Notes`: `- NotebookLM: {Project}_{topic} ({notebook_id})`
 
@@ -201,7 +201,7 @@ When user asks to investigate a topic: use `/notebook investigate <topic>` — f
   - `evergreen` 🌳 — well understood / confident. Skip basics, go deep.
 - **Auto-capture** — when research, debugging, or analysis yields significant insights, facts, or methods: these are saved automatically by `/done` (Phase 2). Set status to `budding`. This is how shared memory grows.
 - **Project memory** — when knowledge is linked to a project, add a backlink in the project file's `## Notes` section: `- Knowledge: [[knowledge/PATH|Title]]`
-- **Before creating knowledge**: search existing notes to avoid duplication (`/knowledge search` or mcpvault `search_notes`).
+- **Before creating knowledge**: search existing notes to avoid duplication (`/knowledge search`, or directly: `orthi-brain` `search_vault` → `mcpvault` `search_notes` → grep fallback).
 - **Use `/knowledge build`** for deliberate, interactive learning sessions — structuring what you know, filling gaps, confirming status.
 - All knowledge notes use frontmatter: `status`, `domain`, `created`, `updated`, `tags`, `projects`.
 - Cross-link everything: knowledge notes link to projects and to each other via `[[wikilinks]]`.

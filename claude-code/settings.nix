@@ -223,6 +223,25 @@ in {
         args = ["-m" "orthi_brain.server"];
         env = {};
       };
+    }
+    // lib.optionalAttrs pkgs.stdenv.isLinux {
+      "orthi-brain" = {
+        command = "ssh";
+        args = [
+          "-T"
+          "-o"
+          "BatchMode=yes"
+          "-o"
+          "ServerAliveInterval=60"
+          "-o"
+          "ServerAliveCountMax=3"
+          "-o"
+          "ConnectTimeout=10"
+          "mac-studio"
+          "/Users/ortho/Projects/orthi-brain/.venv/bin/python -m orthi_brain.server"
+        ];
+        env = {};
+      };
     };
   permissions = {
     defaultMode = "acceptEdits";

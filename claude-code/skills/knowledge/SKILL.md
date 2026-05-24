@@ -198,10 +198,11 @@ Use the `/obsidian-markdown` skill conventions for note formatting (callouts, wi
 Search the knowledge base for QUERY.
 
 **Steps:**
-1. Use the `mcpvault` MCP server's `search_notes` tool with the query
-2. If mcpvault unavailable, fall back to: `Grep(QUERY, path="~/Orthidian/knowledge/", output_mode="content")`
-3. Display results with: file path, status (from frontmatter), domain, linked projects, matching excerpt
-4. Offer to:
+1. Use the `orthi-brain` MCP server's `search_vault` tool with the query (hybrid BM25 + dense + RRF + reranker)
+2. If `orthi-brain` unavailable, fall back to `mcpvault` `search_notes`
+3. If both unavailable, fall back to: `Grep(QUERY, path="~/Orthidian/knowledge/", output_mode="content")`
+4. Display results with: file path, status (from frontmatter), domain, linked projects, matching excerpt
+5. Offer to:
    - Read the full note
    - Update the status (e.g., promote seedling → budding)
    - Find related notes via `## Related` links
