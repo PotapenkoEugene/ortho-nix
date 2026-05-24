@@ -126,7 +126,7 @@
       })
     ])
     ++ lib.optionals pkgs.stdenv.isDarwin (with pkgs; [
-      claude-code
+      # claude-code installed via native installer (~/.local/bin/claude) for auto-updates
     ])
     ++ lib.optionals pkgs.stdenv.isLinux (with pkgs; [
       # Linux-only: GUI office / viewers / desktop apps

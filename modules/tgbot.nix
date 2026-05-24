@@ -18,8 +18,8 @@
       # Load API keys from sops-managed secrets.env
       # shellcheck source=/dev/null
       [ -f "$HOME/.config/sops-nix/secrets/rendered/secrets.env" ] && source "$HOME/.config/sops-nix/secrets/rendered/secrets.env"
-      # claude is installed via nixpkgs (claude-code package) into the per-user nix profile
-      export PATH="/etc/profiles/per-user/ortho/bin:/run/current-system/sw/bin:$PATH"
+      # claude is installed via native installer at ~/.local/bin/claude (auto-updating)
+      export PATH="$HOME/.local/bin:/etc/profiles/per-user/ortho/bin:/run/current-system/sw/bin:$PATH"
       export DB_PATH="${dbDir}/tgbot.db"
       mkdir -p "${dbDir}"
       cd "${repoDir}"

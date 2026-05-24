@@ -48,8 +48,12 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake .#ortho-mac
 # 5. Ongoing activation (darwin-rebuild now in PATH)
 darwin-rebuild switch --flake .#ortho-mac
 
-# 6. Post-activation checks
-which bash kitty tmux tv nvim claude          # /nix/store or /run/current-system/sw/bin
+# 6. Install Claude Code via official installer (auto-updates, mirrors Linux setup)
+curl -fsSL https://claude.ai/install.sh | bash
+which claude && claude --version   # should resolve to ~/.local/bin/claude
+
+# 7. Post-activation checks
+which bash kitty tmux tv nvim                 # /nix/store or /run/current-system/sw/bin
 # Tmux: open kitty, start tmux, copy something — verify pbcopy works
 cat ~/.claude/settings.json | jq '.hooks'     # should have only SessionStart inject entry
 samtools --version && bcftools --version       # bioinf tools present
