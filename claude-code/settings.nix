@@ -209,13 +209,21 @@ in {
     if pkgs.stdenv.isLinux
     then linuxHooks
     else darwinHooks;
-  mcpServers = {
-    mcpvault = {
-      command = "npx";
-      args = ["@bitbonsai/mcpvault@latest" "${homeDir}/Orthidian"];
-      env = {};
+  mcpServers =
+    {
+      mcpvault = {
+        command = "npx";
+        args = ["@bitbonsai/mcpvault@latest" "${homeDir}/Orthidian"];
+        env = {};
+      };
+    }
+    // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      "orthi-brain" = {
+        command = "${homeDir}/Projects/orthi-brain/.venv/bin/python";
+        args = ["-m" "orthi_brain.server"];
+        env = {};
+      };
     };
-  };
   permissions = {
     defaultMode = "acceptEdits";
     additionalDirectories = ["~/Orthidian"];
@@ -392,6 +400,13 @@ in {
         "mcp__google-workspace__sheets_getMetadata"
         "mcp__google-workspace__sheets_getText"
       ]
-      ++ lib.optionals pkgs.stdenv.isLinux linuxPermissions;
+      ++ lib.optionals pkgs.stdenv.isLinux linuxPermissions
+      ++ lib.optionals pkgs.stdenv.isDarwin [
+        "mcp__orthi-brain__search_vault"
+        "mcp__orthi-brain__get_chunk"
+        "mcp__orthi-brain__get_note"
+        "mcp__orthi-brain__related_notes"
+        "mcp__orthi-brain__reindex"
+      ];
   };
 }
