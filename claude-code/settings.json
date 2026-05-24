@@ -80,6 +80,11 @@
       "command": "npx",
       "args": ["@bitbonsai/mcpvault@latest", "/home/ortho/Orthidian"],
       "env": {}
+    },
+    "orthi-brain": {
+      "command": "/Users/ortho/Projects/orthi-brain/.venv/bin/python",
+      "args": ["-m", "orthi_brain.server"],
+      "env": {}
     }
   },
   "permissions": {
@@ -271,6 +276,12 @@
       "mcp__mcpvault__search_notes",
       "mcp__mcpvault__get_note",
       "mcp__mcpvault__list_notes",
+      "mcp__orthi-brain__search_vault",
+      "mcp__orthi-brain__get_note",
+      "mcp__orthi-brain__get_chunk",
+      "mcp__orthi-brain__related_notes",
+      "mcp__orthi-brain__reindex",
+      "mcp__orthi-brain__index_status",
       "mcp__google-workspace__calendar_listEvents",
       "mcp__google-workspace__calendar_getEvent",
       "mcp__google-workspace__calendar_list",

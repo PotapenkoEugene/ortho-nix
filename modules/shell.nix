@@ -60,6 +60,8 @@
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         # Local LLM (Qwen3-32B via Ollama MLX backend)
         llm = "ollama run qwen3:32b";
+        # orthi-brain semantic search (mac-only)
+        brain = "~/Projects/orthi-brain/brain.sh";
       };
     initExtra =
       ''

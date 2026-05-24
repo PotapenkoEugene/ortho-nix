@@ -4,7 +4,7 @@
   lib,
   ...
 }: {
-  imports = [../modules/ollama.nix];
+  imports = [../modules/ollama.nix ../modules/orthi-brain.nix];
 
   home.username = "ortho";
   home.homeDirectory = "/Users/ortho";
