@@ -29,7 +29,7 @@ lib.mkIf (builtins.pathExists ../secrets/common.yaml) {
       "anthropic/api_key" = {};
       "claude_code/oauth_token" = {};
       "tgbot/bot_token" = {};
-      # "cfbot/bot_token" = {};  # uncomment after: sops secrets/common.yaml → add cfbot/bot_token
+      "cfbot/bot_token" = {};
     };
 
     templates."secrets.env" = {

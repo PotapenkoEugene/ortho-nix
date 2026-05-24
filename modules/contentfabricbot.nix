@@ -36,12 +36,15 @@
 
   cfbotUpdate = pkgs.writeShellApplication {
     name = "cfbot-update";
-    runtimeInputs = [pkgs.git pkgs.uv];
+    runtimeInputs = [pkgs.uv pkgs.openssh];
     text = ''
       set -euo pipefail
+      # Sync latest code from Linux dev machine (ortho-nix) via rsync
+      rsync -av --exclude '.venv' --exclude '__pycache__' --exclude '*.pyc' --exclude '.git' \
+        "ortho-nix:/home/ortho/Documents/Projects/ContentFabricBot/" "${repoDir}/"
       cd "${repoDir}"
-      git pull --ff-only
       uv sync --frozen
+      uv pip install -e . -q
       launchctl kickstart -k "gui/$(id -u)/com.ortho.cfbot"
       echo "cfbot updated and restarted"
     '';
