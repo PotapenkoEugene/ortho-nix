@@ -40,7 +40,6 @@ lib.mkIf (builtins.pathExists ../secrets/common.yaml) {
         export GOOGLE_OAUTH_CLIENT_ID="${config.sops.placeholder."google_oauth/client_id"}"
         export GOOGLE_OAUTH_CLIENT_SECRET="${config.sops.placeholder."google_oauth/client_secret"}"
         export GROQ_API_KEY="${config.sops.placeholder."groq/api_key"}"
-        export ANTHROPIC_API_KEY="${config.sops.placeholder."anthropic/api_key"}"
         export CLAUDE_CODE_OAUTH_TOKEN="${config.sops.placeholder."claude_code/oauth_token"}"
       '';
     };
