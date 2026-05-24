@@ -302,6 +302,41 @@ in {
       mv "$INSTALLED_JSON.tmp" "$INSTALLED_JSON"
   '';
 
+  # Register MCP servers in ~/.claude.json (the runtime config Claude Code actually reads).
+  # settings.json/mcpServers is NOT honored by Claude Code — only ~/.claude.json is.
+  # Idempotent: skips servers already present in `claude mcp list` output.
+  home.activation.registerMcpServers = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    # No-op if claude CLI not installed yet
+    command -v claude &>/dev/null || exit 0
+
+    have_mcp() { claude mcp list 2>/dev/null | grep -q "^$1:"; }
+
+    # orthi-brain: SSH-stdio tunnel to mac-studio (Linux) or direct venv (darwin)
+    if ! have_mcp "orthi-brain"; then
+      ${
+      if pkgs.stdenv.isLinux
+      then ''
+        claude mcp add --scope user orthi-brain -- \
+          ssh -T -o BatchMode=yes -o ServerAliveInterval=60 \
+              -o ServerAliveCountMax=3 -o ConnectTimeout=10 \
+              mac-studio \
+              '/Users/ortho/Projects/orthi-brain/.venv/bin/python -m orthi_brain.server'
+      ''
+      else ''
+        claude mcp add --scope user orthi-brain -- \
+          "${config.home.homeDirectory}/Projects/orthi-brain/.venv/bin/python" \
+          -m orthi_brain.server
+      ''
+    }
+    fi
+
+    # mcpvault: BM25 full-text search over Obsidian vault
+    if ! have_mcp "mcpvault"; then
+      claude mcp add --scope user mcpvault -- \
+        npx @bitbonsai/mcpvault@latest "${config.home.homeDirectory}/Orthidian"
+    fi
+  '';
+
   # Install Python playwright's chromium for notebooklm login flow
   # Uses playwright binary from the notebooklm-py closure (rev 1200, separate from playwright-cli's rev 1212)
   # Idempotent: skipped if chromium-1200 already present

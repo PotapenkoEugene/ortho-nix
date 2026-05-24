@@ -209,40 +209,8 @@ in {
     if pkgs.stdenv.isLinux
     then linuxHooks
     else darwinHooks;
-  mcpServers =
-    {
-      mcpvault = {
-        command = "npx";
-        args = ["@bitbonsai/mcpvault@latest" "${homeDir}/Orthidian"];
-        env = {};
-      };
-    }
-    // lib.optionalAttrs pkgs.stdenv.isDarwin {
-      "orthi-brain" = {
-        command = "${homeDir}/Projects/orthi-brain/.venv/bin/python";
-        args = ["-m" "orthi_brain.server"];
-        env = {};
-      };
-    }
-    // lib.optionalAttrs pkgs.stdenv.isLinux {
-      "orthi-brain" = {
-        command = "ssh";
-        args = [
-          "-T"
-          "-o"
-          "BatchMode=yes"
-          "-o"
-          "ServerAliveInterval=60"
-          "-o"
-          "ServerAliveCountMax=3"
-          "-o"
-          "ConnectTimeout=10"
-          "mac-studio"
-          "/Users/ortho/Projects/orthi-brain/.venv/bin/python -m orthi_brain.server"
-        ];
-        env = {};
-      };
-    };
+  # mcpServers is NOT honored from settings.json — Claude Code reads from ~/.claude.json only.
+  # MCP registration is handled by home.activation.registerMcpServers in modules/claude-code.nix.
   permissions = {
     defaultMode = "acceptEdits";
     additionalDirectories = ["~/Orthidian"];
@@ -401,6 +369,11 @@ in {
         "mcp__mcpvault__search_notes"
         "mcp__mcpvault__get_note"
         "mcp__mcpvault__list_notes"
+        "mcp__orthi-brain__search_vault"
+        "mcp__orthi-brain__get_chunk"
+        "mcp__orthi-brain__get_note"
+        "mcp__orthi-brain__related_notes"
+        "mcp__orthi-brain__reindex"
         "mcp__google-workspace__calendar_listEvents"
         "mcp__google-workspace__calendar_getEvent"
         "mcp__google-workspace__calendar_list"
@@ -419,13 +392,6 @@ in {
         "mcp__google-workspace__sheets_getMetadata"
         "mcp__google-workspace__sheets_getText"
       ]
-      ++ lib.optionals pkgs.stdenv.isLinux linuxPermissions
-      ++ lib.optionals pkgs.stdenv.isDarwin [
-        "mcp__orthi-brain__search_vault"
-        "mcp__orthi-brain__get_chunk"
-        "mcp__orthi-brain__get_note"
-        "mcp__orthi-brain__related_notes"
-        "mcp__orthi-brain__reindex"
-      ];
+      ++ lib.optionals pkgs.stdenv.isLinux linuxPermissions;
   };
 }
