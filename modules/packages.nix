@@ -29,6 +29,7 @@
       # Documents / office
       aria2
       pandoc
+      texliveFull # Complete TeX Live distribution
       mermaid-cli # diagram generation from text
       wego # terminal weather
       ctop # container top
@@ -168,6 +169,7 @@
       bcftools
       bedtools
       fastqc
+      fastp
       bowtie2
       macs2
       # Other Linux-only

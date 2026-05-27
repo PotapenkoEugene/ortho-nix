@@ -73,10 +73,10 @@
 
     # Jupyter-like
     image = {
-      enable = true;
+      enable = false; # Disabled: corrupted PNGs in lab05 deck crash both processors
       settings = {
         backend = "kitty";
-        processor = "magick_cli";
+        processor = "magick_rock";
       };
     };
     quarto = {
