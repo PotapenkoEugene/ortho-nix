@@ -76,7 +76,7 @@
       enable = true;
       settings = {
         backend = "kitty";
-        processor = "magick_rock";
+        processor = "magick_cli";
       };
     };
     quarto = {
