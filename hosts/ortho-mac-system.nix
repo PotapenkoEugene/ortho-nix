@@ -5,7 +5,7 @@
 }: {
   imports = [
     ../modules/tgbot.nix
-    ../modules/contentfabricbot.nix
+    ../modules/nlmbot.nix
     ../modules/askbot.nix
   ];
 
