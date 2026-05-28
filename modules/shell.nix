@@ -50,7 +50,7 @@
         migal_8585 = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -L 8585:localhost:8585 potapgene@172.16.11.55";
       }
       // lib.optionalAttrs pkgs.stdenv.isLinux {
-        mac = "ssh mac-studio";
+        mac = "kitten ssh mac-studio";
         dolphin = "dolphin $PWD";
         vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
         vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";
