@@ -1,0 +1,29 @@
+# popsci-ru — Russian popular-science podcast, two-host deep dive
+# Upgraded from hard-coded pipeline defaults to expose all NotebookLM levers.
+
+name: popsci-ru
+language: ru
+format: deep-dive
+# Russian: NotebookLM ignores short/long — always produces ~10 min Default Deep Dive.
+length: default
+
+configure:
+  mode: detailed
+  response_length: longer
+  persona: |
+    Ты — источник знаний для двух ведущих российского научно-популярного подкаста.
+    Первый ведущий — тёплый популяризатор науки, объясняет сложное просто.
+    Второй — критически мыслящий учёный, задаёт неудобные вопросы об ограничениях методологии.
+    Давай точные, цитируемые ответы строго из загруженных источников.
+    Никогда не используй формулировки, которых нет в источниках.
+
+customize_prompt_path: popsci-ru.md
+style_guide_source: style-guide-ru.md
+
+knowledge_extraction_defaults:
+  - briefing
+  - glossary
+
+companions:
+  max: 4
+  prefer: reviews

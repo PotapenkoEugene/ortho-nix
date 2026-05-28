@@ -147,6 +147,12 @@ in {
         recursive = true;
       };
 
+      # NotebookLM podcast lib — pipeline scripts, profiles, prompts (shared by notebooklm-popsci skill)
+      ".claude/skills/_notebooklm-podcast-lib" = {
+        source = ../claude-code/skills/_notebooklm-podcast-lib;
+        recursive = true;
+      };
+
       # NotebookLM upstream skill — full CLI knowledge from notebooklm-py v0.3.4
       ".claude/skills/notebooklm/SKILL.md" = {
         source = "${notebooklmPySrc}/SKILL.md";
