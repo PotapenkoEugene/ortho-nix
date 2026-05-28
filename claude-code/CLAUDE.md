@@ -177,6 +177,27 @@ When user asks to investigate a topic: use `/notebook investigate <topic>` — f
 - Supports: themes, code execution, mermaid/d2 diagrams, LaTeX formulas, PDF/HTML export.
 - Presentation files go in the project directory as `*.md` with presenterm frontmatter.
 
+## Vault Lookup (orthi-brain)
+
+`orthi-brain` is a local RAG index over `~/Orthidian/` — knowledge notes, transcripts, processed PDFs, and scientific papers. It is available as MCP tools (`mcp__orthi-brain__search_vault`, `get_note`, `get_chunk`, `related_notes`).
+
+**When to search proactively** — before answering, search the vault if the user's message contains:
+- Prior-work phrases: "how did we", "last time", "what was the error", "we discussed", "I saved a note about", "what did we find"
+- A named project (ADAPTOGENE, Desktop, soloLTRs, etc.) combined with a question
+- A technical topic that plausibly has a knowledge note (nix, tmux, orthi-brain, RAG, etc.)
+- A request for citations, papers, or literature on any topic
+- References to podcasts, NotebookLM notebooks, or transcript summaries
+
+**How to search:**
+1. `search_vault(query, k=10)` — general hybrid search; add filters to scope
+2. Filter options: `path_prefix="knowledge/_technical/"` for prior solutions; `source_type="paper"` for citations; `source_type="notebooklm-grounded"` for grounded notes; `mtime_after="YYYY-MM-DD"` for recent work; `tags=["tag"]` for tag-scoped search; `lang="ru"` for Russian notes
+3. If hits found, cite them with `[[wikilinks]]` (use the note filename stem)
+4. Use `get_note(path)` to read the full note when a chunk isn't enough
+
+**Fallback chain:** `orthi-brain` → `mcpvault search_notes` → `grep ~/Orthidian/knowledge/`
+
+**Do not search for:** trivial factual questions unrelated to prior work, pure coding questions with no project history, one-off tasks the user hasn't done before.
+
 ## Obsidian Integration
 
 - Note system at `~/Orthidian/`. Project files in `projects/` and `personal/` are append-only archives.
