@@ -5,6 +5,7 @@
 }: {
   imports = [
     ../modules/tgbot.nix
+    ../modules/nlmbot.nix
   ];
 
   # Set platform so nix-darwin.lib.darwinSystem doesn't require a `system` arg.
