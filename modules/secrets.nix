@@ -30,9 +30,8 @@ lib.mkIf (builtins.pathExists ../secrets/common.yaml) {
       "claude_code/oauth_token" = {};
       "tgbot/bot_token" = {};
       "cfbot/bot_token" = {};
-      # askbot secrets — add after user creates bot via @BotFather
-      # "askbot/bot_token" = {};
-      # "askbot/allowed_user_ids" = {};
+      "askbot/bot_token" = {};
+      "askbot/allowed_user_ids" = {};
     };
 
     templates."secrets.env" = {
@@ -44,6 +43,8 @@ lib.mkIf (builtins.pathExists ../secrets/common.yaml) {
         export GOOGLE_OAUTH_CLIENT_SECRET="${config.sops.placeholder."google_oauth/client_secret"}"
         export GROQ_API_KEY="${config.sops.placeholder."groq/api_key"}"
         export CLAUDE_CODE_OAUTH_TOKEN="${config.sops.placeholder."claude_code/oauth_token"}"
+        export ASKBOT_BOT_TOKEN="${config.sops.placeholder."askbot/bot_token"}"
+        export ASKBOT_ALLOWED_USER_IDS="${config.sops.placeholder."askbot/allowed_user_ids"}"
       '';
     };
   };

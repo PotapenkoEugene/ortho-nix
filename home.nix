@@ -16,8 +16,6 @@
     ./modules/claude-code.nix
     ./modules/television.nix
     ./modules/secrets.nix
-    ./modules/tgbot.nix
-    ./modules/askbot.nix
   ];
 
   home.stateVersion = "24.11";

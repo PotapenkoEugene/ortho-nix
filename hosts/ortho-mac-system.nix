@@ -6,6 +6,7 @@
   imports = [
     ../modules/tgbot.nix
     ../modules/contentfabricbot.nix
+    ../modules/askbot.nix
   ];
 
   # Set platform so nix-darwin.lib.darwinSystem doesn't require a `system` arg.

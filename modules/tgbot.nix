@@ -15,10 +15,8 @@
       set -euo pipefail
       read -r BOT_TOKEN < "$HOME/.config/sops-nix/secrets/tgbot/bot_token" || true
       export BOT_TOKEN
-      # Load API keys from sops-managed secrets.env
       # shellcheck source=/dev/null
       [ -f "$HOME/.config/sops-nix/secrets/rendered/secrets.env" ] && source "$HOME/.config/sops-nix/secrets/rendered/secrets.env"
-      # claude is installed via native installer at ~/.local/bin/claude (auto-updating)
       export PATH="$HOME/.local/bin:/etc/profiles/per-user/ortho/bin:/run/current-system/sw/bin:$PATH"
       export DB_PATH="${dbDir}/tgbot.db"
       mkdir -p "${dbDir}"
@@ -43,11 +41,10 @@
   };
 in
   lib.mkIf (pkgs.stdenv.isDarwin && builtins.pathExists ../secrets/common.yaml) {
-    home.packages = [tgbotRun tgbotUpdate];
+    environment.systemPackages = [tgbotRun tgbotUpdate];
 
-    launchd.agents.tgbot = {
-      enable = true;
-      config = {
+    launchd.user.agents.tgbot = {
+      serviceConfig = {
         Label = "com.ortho.tgbot";
         ProgramArguments = ["${tgbotRun}/bin/tgbot-run"];
         EnvironmentVariables = {
