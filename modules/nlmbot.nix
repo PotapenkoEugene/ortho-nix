@@ -33,6 +33,7 @@
       cd "${repoDir}"
       export PYTHONPATH="${repoDir}/src"
       export PYTHONUNBUFFERED=1
+      export PYTHONDONTWRITEBYTECODE=1
       exec "${repoDir}/.venv/bin/python" -m nlmbot.main
     '';
   };
