@@ -43,10 +43,11 @@
   };
 in
   lib.mkIf (pkgs.stdenv.isDarwin && builtins.pathExists ../secrets/common.yaml) {
-    environment.systemPackages = [tgbotRun tgbotUpdate];
+    home.packages = [tgbotRun tgbotUpdate];
 
-    launchd.user.agents.tgbot = {
-      serviceConfig = {
+    launchd.agents.tgbot = {
+      enable = true;
+      config = {
         Label = "com.ortho.tgbot";
         ProgramArguments = ["${tgbotRun}/bin/tgbot-run"];
         EnvironmentVariables = {

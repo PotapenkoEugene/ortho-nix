@@ -30,6 +30,9 @@ lib.mkIf (builtins.pathExists ../secrets/common.yaml) {
       "claude_code/oauth_token" = {};
       "tgbot/bot_token" = {};
       "cfbot/bot_token" = {};
+      # askbot secrets — add after user creates bot via @BotFather
+      # "askbot/bot_token" = {};
+      # "askbot/allowed_user_ids" = {};
     };
 
     templates."secrets.env" = {

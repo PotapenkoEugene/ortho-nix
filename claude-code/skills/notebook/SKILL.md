@@ -52,20 +52,39 @@ Credentials stored at `~/.notebooklm/`. Re-run if auth expires.
    - NotebookLM: {Project}_{topic} ({notebook_id})
    ```
 
-### After adding sources (knowledge extraction)
+### After adding sources
 
-Wait for processing, then run grounded queries and save to knowledge base:
-
+**1. Configure notebook persona** (mandatory before any ask/generate):
 ```bash
-# Wait for sources to be ready
-notebooklm source list -n <notebook_id> --json
-# Poll until all sources show status "ready"
-
-# Query for knowledge
-notebooklm ask "<targeted question>" -n <notebook_id>
+notebooklm configure -n <notebook_id> \
+  --mode detailed \
+  --response-length longer \
+  --persona "Ты — источник знаний. Давай точные ответы строго из загруженных источников. Никогда не используй формулировки, которых нет в источниках."
 ```
 
-Before creating any knowledge note, search existing notes to avoid redundancy:
+**2. Wait for processing**:
+```bash
+notebooklm source wait -n <notebook_id>
+```
+
+**3. Extract knowledge** using prompt library at `~/.claude/skills/_notebooklm-podcast-lib/prompts/knowledge/`:
+
+Available types: `briefing`, `study-guide`, `faq`, `timeline`, `glossary`, `concept-inventory`, `controversies`
+
+```bash
+PROMPT=$(cat ~/.claude/skills/_notebooklm-podcast-lib/prompts/knowledge/briefing.md)
+notebooklm ask "$PROMPT" -n <notebook_id> --save-as-note --note-title "{slug}_briefing"
+```
+
+Or via project script (also writes to Orthidian with frontmatter):
+```bash
+python3 ~/Documents/Projects/NotebookLM_pipelines/cli/extract-knowledge.py \
+  <notebook_id> <slug> --types briefing,glossary --knowledge-subdir Genomics
+```
+
+All prompts enforce `[источник: N]` citation tagging — each claim must reference a source.
+
+**4. Search before creating new notes**:
 ```
 orthi-brain search_vault query="<topic keywords>"  # falls back to mcpvault search_notes if unavailable
 ```
