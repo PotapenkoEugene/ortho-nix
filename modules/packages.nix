@@ -85,7 +85,6 @@
       # Desktop / communication / automation
       kitty-themes
       tdl # Telegram CLI — automation pipelines (download/upload/forward, MTProto)
-      gws # Google Workspace CLI (gmail, calendar)
 
       # Fonts
       jetbrains-mono

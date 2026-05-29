@@ -342,6 +342,12 @@ in {
       "$CLAUDE" mcp add --scope user mcpvault -- \
         npx @bitbonsai/mcpvault@latest "${config.home.homeDirectory}/Orthidian"
     fi
+
+    # google-workspace: Gmail + Calendar via presto-ai MCP (auto-refreshing OAuth)
+    if ! have_mcp "google-workspace"; then
+      "$CLAUDE" mcp add --scope user google-workspace -- \
+        npx -y @presto-ai/google-workspace-mcp
+    fi
   '';
 
   # Install Python playwright's chromium for notebooklm login flow

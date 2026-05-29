@@ -109,9 +109,11 @@ This is a default reflex — the user should never have to remember to ask for i
 ## Email & Calendar
 
 - **Use `/mail` skill** for inbox triage, email composition, and digest generation.
-- Accounts: `selfisheugenes` (personal + GCP) and `potapgene` — both via `gws` CLI with isolated config dirs.
-- Switch accounts via `GOOGLE_WORKSPACE_CLI_CONFIG_DIR=~/.config/gws/accounts/<account>`.
-- Calendar: `gws calendar +agenda --today` for events; Google Tasks synced to `~/Orthidian/personal/tasks.md`.
+- Google access via `google-workspace` MCP server (`@presto-ai/google-workspace-mcp`) — auto-refreshing OAuth, no 7-day expiry. Registered at user scope in `~/.claude.json`.
+- MCP tools: `mcp__google-workspace__gmail_search`, `gmail_get`, `calendar_listEvents`, `calendar_list` — use these in any Claude session or `claude -p` call.
+- Account: `selfisheugenes@gmail.com` (single account). Google Tasks sync dropped (presto-ai has no Tasks API).
+- Email digest: `scripts/email-digest.sh` — `claude -p` fetches via MCP + categorizes via `/mail` skill, writes to `~/Orthidian/mails/`.
+- Calendar: `scripts/calendar-events.sh` — `claude -p` fetches via MCP, outputs `- HH:MM-HH:MM -- Summary` lines for daily note dashboard.
 
 ## R Analysis
 

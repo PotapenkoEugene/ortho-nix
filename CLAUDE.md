@@ -418,18 +418,12 @@ Track `nix flake update` runs here so breakage can be correlated with input chan
 Planned automation features to implement:
 
 ### 1. Google Workspace Integration (Calendar + Gmail)
-- **Approach**: `gws` CLI v0.6.3 — [googleworkspace/cli](https://github.com/googleworkspace/cli) (Rust, in nixpkgs)
-- **Auth**: OAuth 2.0 via Google Cloud Console project `booming-cairn-272721` (Desktop app client)
-  - Client secret: `~/.config/gws/client_secret.json` (shared across accounts)
-  - Per-account config dirs: `~/.config/gws/accounts/{selfisheugenes,potapgene}/`
-  - Switch accounts via `GOOGLE_WORKSPACE_CLI_CONFIG_DIR` env var
-  - Scopes: `gmail,calendar` (selfisheugenes also has `cloud-platform` for GCP console access)
-- **Multi-account**: `--account` flag is broken for `+triage` skills in v0.6.3; use isolated config dirs instead
-- **Token expiry**: Testing mode tokens expire after 7 days; re-auth with `gws auth login -s gmail,calendar` or publish consent screen for permanent tokens
-- **Gmail**: `gws gmail +triage --query "after:X before:Y" --max 50` for inbox summary
-- **Calendar**: `gws calendar +agenda --today` for upcoming events
-- **Email digest**: `scripts/email-digest.sh` fetches via gws, passes to Claude for categorization only (Write tool only, prompt injection guard via EMAIL_DATA envelope)
-- **Status**: Implemented — Gmail digest working, Calendar integration planned
+- **Status**: Migrated from `gws` CLI to `google-workspace` MCP — Done 2026-05-29
+- **Approach**: `@presto-ai/google-workspace-mcp` stdio MCP server — auto-refreshing OAuth, no 7-day expiry, no Google Cloud project verification needed. Registered declaratively in `modules/claude-code.nix` (`registerMcpServers` activation) and at user scope in `~/.claude.json`.
+- **Auth**: presto-ai manages OAuth; credentials cached at `~/.config/google-workspace-mcp/credentials/`. Re-auth: `rm -rf ~/.config/google-workspace-mcp && claude mcp remove google-workspace && /hm-switch` (triggers re-registration + browser OAuth on next use).
+- **Account**: `selfisheugenes@gmail.com` (single account). Google Tasks sync dropped.
+- **Email digest**: `scripts/email-digest.sh` — `claude -p` fetches via `gmail_search`+`gmail_get` MCP tools + categorizes via `/mail` skill + writes digest. Single account `[S]`.
+- **Calendar**: `scripts/calendar-events.sh` — `claude -p` fetches via `calendar_listEvents` MCP (both calendars), writes JSON to tempfile, formats with jq, outputs `- HH:MM-HH:MM -- Summary` lines for daily note dashboard.
 
 ### 2. Reminder Notifications
 - Parse daily notes for:

@@ -594,39 +594,6 @@ function Tasks.write(entries)
   Utils.write_file(path, table.concat(lines, "\n") .. "\n")
 end
 
--- Sync Google Tasks into file (add new ones)
-function Tasks.sync_google(google_tasks, today_date)
-  local entries, existing = Tasks.read()
-  local changed = false
-  local last_entry = nil
-
-  for _, line in ipairs(google_tasks) do
-    if line:match("^%- %[.%]") then
-      local text = line:match("^%- %[.%]%s*(.*)") or line
-      if not existing[text:lower()] then
-        last_entry = {
-          text = text,
-          marker = "[ ]",
-          notes = {},
-          date = today_date,
-          done = false,
-        }
-        table.insert(entries, last_entry)
-        existing[text:lower()] = #entries
-        changed = true
-        Debug.log("Task added from Google: %s", text)
-      else
-        last_entry = nil
-      end
-    elseif line:match("^    %- ") and last_entry then
-      table.insert(last_entry.notes, line)
-    end
-  end
-
-  if changed then Tasks.write(entries) end
-  return entries, existing
-end
-
 -- Sync tasks from previous daily note's Personal section back to file
 -- - Marks done tasks as [x]
 -- - Adds manually written tasks that aren't in the file yet
@@ -719,27 +686,20 @@ end
 
 local Calendar = {}
 
--- Fetch today's events and tasks by calling the calendar script
--- Returns: events (list of lines), tasks (list of lines)
+-- Fetch today's events by calling the calendar script
+-- Returns: events (list of lines)
 function Calendar.fetch()
   local output = vim.fn.system(Config.calendar_script)
-  if vim.v.shell_error ~= 0 then return {}, {} end
+  if vim.v.shell_error ~= 0 then return {} end
 
-  local events, tasks = {}, {}
-  local in_tasks = false
+  local events = {}
   for line in output:gmatch("([^\n]*)\n?") do
     local trimmed = Utils.trim(line)
-    if trimmed == "---TASKS---" then
-      in_tasks = true
-    elseif trimmed ~= "" then
-      if in_tasks then
-        table.insert(tasks, line) -- preserve indentation for note lines
-      else
-        table.insert(events, trimmed)
-      end
+    if trimmed ~= "" then
+      table.insert(events, trimmed)
     end
   end
-  return events, tasks
+  return events
 end
 
 -- ============================================================================
@@ -827,14 +787,11 @@ local function generate(ref_date)
     end
   end
 
-  -- Fetch calendar events and Google Tasks
-  local events_lines, google_tasks = Calendar.fetch()
+  -- Fetch calendar events
+  local events_lines = Calendar.fetch()
 
   -- Sync tasks from previous daily note back to tasks file (done + new manual tasks)
   Tasks.sync_from_daily(prev_sections.personal, ref_date or today)
-
-  -- Sync Google Tasks into tasks file (adds new ones)
-  Tasks.sync_google(google_tasks, today)
 
   -- Read undone tasks from file (source of truth)
   local unlinked = Tasks.get_undone(today)

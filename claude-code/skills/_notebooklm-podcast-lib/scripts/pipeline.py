@@ -179,12 +179,108 @@ def _append_episode_log(slug: str, doi: str, ru_title: str, episode_dir: Path):
     """Append episode line to ~/Orthidian/projects/podcast-channel.md."""
     EPISODE_LOG.parent.mkdir(parents=True, exist_ok=True)
     today = datetime.now().strftime("%Y-%m-%d")
-    line = f"- {today} [{slug}]({episode_dir}) — DOI: {doi} — {ru_title}\n"
+    ident = f"DOI: {doi}" if doi else "Topic"
+    line = f"- {today} [{slug}]({episode_dir}) — {ident} — {ru_title}\n"
     if not EPISODE_LOG.exists():
         EPISODE_LOG.write_text("# Podcast Channel Episodes\n\n", encoding="utf-8")
     with open(EPISODE_LOG, "a", encoding="utf-8") as f:
         f.write(line)
     print(f"  Episode logged: {EPISODE_LOG}")
+
+
+def _setup_topic_mode(
+    topic: str,
+    sources_file: str,
+    force: bool,
+    fresh: bool,
+) -> tuple:
+    """Load sources JSON, synthesize primary_meta and episode dir for topic mode."""
+    src_path = Path(sources_file).expanduser()
+    if not src_path.exists():
+        raise FileNotFoundError(f"--sources-file not found: {src_path}")
+    sources = json.loads(src_path.read_text(encoding="utf-8"))
+    if not isinstance(sources, list) or not sources:
+        raise ValueError("--sources-file must be a non-empty JSON list of source entries.")
+
+    year = datetime.now().year
+    first = sources[0]
+    primary_meta = {
+        "doi": None,
+        "title": topic,
+        "authors": [],
+        "year": year,
+        "journal": None,
+        "source": "topic",
+        "topic": topic,
+        "nominal_primary": {
+            "value": first.get("value"),
+            "kind": first.get("kind"),
+            "title": first.get("title"),
+        },
+    }
+
+    slug = make_slug("topic", year, topic)
+    episode_dir = PODCAST_ROOT / slug
+
+    if episode_dir.exists() and not force and not fresh:
+        print(f"\nERROR: Episode dir already exists: {episode_dir}")
+        print("Use --force to overwrite or --fresh to restart.")
+        raise SystemExit(1)
+
+    if (force or fresh) and episode_dir.exists():
+        shutil.rmtree(episode_dir)
+
+    refs_dir = episode_dir / "references"
+    refs_dir.mkdir(parents=True, exist_ok=True)
+    (refs_dir / "primary.meta.json").write_text(
+        json.dumps(primary_meta, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return primary_meta, sources, slug, episode_dir, refs_dir
+
+
+def _upload_topic_sources(sources: list, refs_dir: Path, notebook_id: str, slug: str):
+    """Upload every entry in the topic sources list to the notebook.
+
+    Scientific-paper DOIs: resolve to PDF (download to refs_dir) and also copy to
+    ~/Orthidian/papers/<slug>/ for orthi-brain indexing.
+    Non-scientific sources (url/github/youtube/docs/tutorial/article): add by URL.
+    """
+    papers_dir = Path.home() / "Orthidian" / "papers" / slug
+    for i, s in enumerate(sources, 1):
+        kind = (s.get("kind") or "").lower()
+        category = (s.get("category") or "").lower()
+        value = s.get("value") or ""
+        local = s.get("local_path") or ""
+        label = (s.get("title") or value)[:60]
+        print(f"  [{i}/{len(sources)}] ({kind}) {label}")
+
+        if kind in ("pdf", "file"):
+            path = Path(local or value).expanduser()
+            if not path.exists():
+                print(f"    WARNING: file not found, skipping: {path}")
+                continue
+            _notebooklm("source", "add", str(path), capture=True, check=False)
+
+        elif kind == "doi":
+            doi_clean = re.sub(r"^https?://(dx\.)?doi\.org/", "", value.strip())
+            dest = refs_dir / f"source_{i:02d}.pdf"
+            try:
+                resolve_doi(value, dest)
+                _notebooklm("source", "add", str(dest), capture=True, check=False)
+                # Copy to orthi-brain papers library for indexing
+                if dest.exists() and category == "scientific-paper":
+                    papers_dir.mkdir(parents=True, exist_ok=True)
+                    lib_pdf = papers_dir / f"{i:02d}_{dest.name}"
+                    shutil.copy2(str(dest), str(lib_pdf))
+                    print(f"    Copied to library: {lib_pdf}")
+            except Exception:
+                url = f"https://doi.org/{doi_clean}"
+                print(f"    PDF unavailable — using URL: {url}")
+                _notebooklm("source", "add", url, capture=True, check=False)
+
+        else:
+            # url / github / youtube / docs / article / tutorial / workshop → bare URL/string
+            _notebooklm("source", "add", value, capture=True, check=False)
 
 
 # ──────────────────────────────────────────────
@@ -204,6 +300,8 @@ def run(
     with_artifacts: list[str] | None = None,
     extract_knowledge_types: list[str] | None = None,
     knowledge_subdir: str = "",
+    topic: str = "",
+    sources_file: str = "",
 ) -> Path:
     """Run full pipeline. Returns episode_dir Path."""
 
@@ -266,69 +364,81 @@ def run(
     # ── Step 1: Resolve primary ──────────────────
     print("Step 1/8: Resolving primary source...")
 
-    # Pre-resolve to get slug before creating episode_dir
-    meta_tmp_dest = Path("/tmp") / "popsci_primary_tmp.pdf"
-    primary_url_source = None  # set when PDF unavailable but OA URL exists
-    try:
-        primary_meta = resolve_doi(source, meta_tmp_dest)
-    except PaywallError as e:
-        print(f"\nERROR (Paywall): {e}")
-        print("Provide the PDF path directly instead of a DOI.")
-        raise SystemExit(1)
-    except OAURLOnlyError as e:
-        print(f"  PDF blocked by server — using URL source: {e.url}")
-        primary_url_source = e.url
-        # Still need CrossRef metadata for slug generation
-        from resolve_doi import _crossref_meta
-        doi_clean = re.sub(r"^https?://(dx\.)?doi\.org/", "", source.strip())
-        primary_meta = _crossref_meta(doi_clean)
-        primary_meta["doi"] = doi_clean
-        primary_meta["source"] = "url"
-        meta_tmp_dest = None  # no PDF file
-    except DOINotFoundError as e:
-        print(f"\nERROR: {e}")
-        raise SystemExit(1)
-
-    # Generate slug and episode dir
-    authors = primary_meta.get("authors", [])
-    first_author = authors[0] if authors else "unknown"
-    year = primary_meta.get("year") or "0000"
-    title = primary_meta.get("title", "paper")
-    doi = primary_meta.get("doi") or source
-
-    slug = make_slug(first_author, year, title)
-    episode_dir = PODCAST_ROOT / slug
-
-    if episode_dir.exists() and not force and not fresh:
-        print(f"\nERROR: Episode dir already exists: {episode_dir}")
-        print("Use --force to overwrite or --fresh to restart.")
-        raise SystemExit(1)
-
-    if (force or fresh) and episode_dir.exists():
-        shutil.rmtree(episode_dir)
-
-    refs_dir = episode_dir / "references"
-    refs_dir.mkdir(parents=True, exist_ok=True)
-    primary_pdf = refs_dir / "primary.pdf"
-
-    if meta_tmp_dest and meta_tmp_dest.exists():
-        # Move PDF from tmp to final location
-        shutil.move(str(meta_tmp_dest), str(primary_pdf))
-        primary_meta["pdf_path"] = "references/primary.pdf"
+    topic_mode = bool(sources_file or topic)
+    if topic_mode:
+        # Topic mode: synthesize primary_meta from pre-gathered sources list
+        print(f"  Topic mode: {topic[:60]}")
+        primary_meta, _topic_sources, slug, episode_dir, refs_dir = _setup_topic_mode(
+            topic, sources_file, force, fresh
+        )
+        primary_meta["_sources"] = _topic_sources
+        primary_url_source = None
+        primary_pdf = None
+        print(f"  slug={slug}, {len(_topic_sources)} source(s) to upload")
     else:
-        primary_meta["url_source"] = primary_url_source
+        # Pre-resolve to get slug before creating episode_dir
+        meta_tmp_dest = Path("/tmp") / "popsci_primary_tmp.pdf"
+        primary_url_source = None  # set when PDF unavailable but OA URL exists
+        try:
+            primary_meta = resolve_doi(source, meta_tmp_dest)
+        except PaywallError as e:
+            print(f"\nERROR (Paywall): {e}")
+            print("Provide the PDF path directly instead of a DOI.")
+            raise SystemExit(1)
+        except OAURLOnlyError as e:
+            print(f"  PDF blocked by server — using URL source: {e.url}")
+            primary_url_source = e.url
+            # Still need CrossRef metadata for slug generation
+            from resolve_doi import _crossref_meta
+            doi_clean = re.sub(r"^https?://(dx\.)?doi\.org/", "", source.strip())
+            primary_meta = _crossref_meta(doi_clean)
+            primary_meta["doi"] = doi_clean
+            primary_meta["source"] = "url"
+            meta_tmp_dest = None  # no PDF file
+        except DOINotFoundError as e:
+            print(f"\nERROR: {e}")
+            raise SystemExit(1)
 
-    primary_meta["doi"] = doi
+        # Generate slug and episode dir
+        authors = primary_meta.get("authors", [])
+        first_author = authors[0] if authors else "unknown"
+        year = primary_meta.get("year") or "0000"
+        title = primary_meta.get("title", "paper")
+        doi = primary_meta.get("doi") or source
 
-    # Write primary metadata
-    (refs_dir / "primary.meta.json").write_text(
-        json.dumps(primary_meta, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
-    print(f"  Primary: {primary_meta.get('title', doi)[:60]}")
-    if primary_url_source:
-        print(f"  URL source: {primary_url_source}")
-    else:
-        print(f"  Saved: {primary_pdf}")
+        slug = make_slug(first_author, year, title)
+        episode_dir = PODCAST_ROOT / slug
+
+        if episode_dir.exists() and not force and not fresh:
+            print(f"\nERROR: Episode dir already exists: {episode_dir}")
+            print("Use --force to overwrite or --fresh to restart.")
+            raise SystemExit(1)
+
+        if (force or fresh) and episode_dir.exists():
+            shutil.rmtree(episode_dir)
+
+        refs_dir = episode_dir / "references"
+        refs_dir.mkdir(parents=True, exist_ok=True)
+        primary_pdf = refs_dir / "primary.pdf"
+
+        if meta_tmp_dest and meta_tmp_dest.exists():
+            # Move PDF from tmp to final location
+            shutil.move(str(meta_tmp_dest), str(primary_pdf))
+            primary_meta["pdf_path"] = "references/primary.pdf"
+        else:
+            primary_meta["url_source"] = primary_url_source
+
+        primary_meta["doi"] = doi
+
+        # Write primary metadata
+        (refs_dir / "primary.meta.json").write_text(
+            json.dumps(primary_meta, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        print(f"  Primary: {primary_meta.get('title', doi)[:60]}")
+        if primary_url_source:
+            print(f"  URL source: {primary_url_source}")
+        else:
+            print(f"  Saved: {primary_pdf}")
 
     # ── Step 2: Quota check ──────────────────────
     print("\nStep 2/8: Checking NotebookLM quota...")
@@ -364,9 +474,11 @@ def run(
         _notebooklm("use", notebook_id, capture=True)
         print(f"  Notebook ID: {notebook_id}")
 
-    # ── Step 4: Add primary source ───────────────
-    print("\nStep 4/8: Adding primary source to notebook...")
-    if primary_url_source:
+    # ── Step 4: Add source(s) to notebook ────────
+    print("\nStep 4/8: Adding source(s) to notebook...")
+    if topic_mode:
+        _upload_topic_sources(primary_meta.get("_sources", []), refs_dir, notebook_id, slug)
+    elif primary_url_source:
         url_candidates = [primary_url_source]
         if primary_meta.get("doi"):
             url_candidates.append(f"https://doi.org/{primary_meta['doi']}")
@@ -383,7 +495,7 @@ def run(
     _notebooklm("source", "wait", capture=True, check=False)
 
     # ── Enrich metadata for local PDFs via NotebookLM ──
-    if primary_meta.get("source") == "local" and not primary_meta.get("title_resolved"):
+    if not topic_mode and primary_meta.get("source") == "local" and not primary_meta.get("title_resolved"):
         print("  Enriching metadata from NotebookLM (local PDF)...")
         try:
             r = subprocess.run(
@@ -445,7 +557,9 @@ def run(
 
     # ── Step 5: Companion selection ──────────────
     companions: list[dict] = []
-    if companions_mode != "none":
+    if topic_mode:
+        print("\nStep 5/8: Companions skipped (topic mode — sources are pre-specified).")
+    elif companions_mode != "none":
         print(f"\nStep 5/8: Selecting companion papers (mode={companions_mode})...")
         candidates = select_companions(
             doi, title, notebook_id, mode=companions_mode
@@ -776,6 +890,10 @@ def _run_from_notebook(
                 },
             },
         }
+        # Topic-mode extras: inject topic title and flat sources list
+        if primary_meta.get("source") == "topic":
+            meta["topic"] = primary_meta.get("topic", "")
+            meta["sources"] = primary_meta.get("_sources", [])
         (episode_dir / "meta.json").write_text(
             json.dumps(meta, indent=2, ensure_ascii=False)
         )
@@ -813,7 +931,7 @@ def _run_from_notebook(
         qa_report.run(episode_dir)
 
         # ── Step 11: Episode log ─────────────────
-        _append_episode_log(slug, primary_meta.get("doi", ""), ru_title, episode_dir)
+        _append_episode_log(slug, primary_meta.get("doi") or "", ru_title, episode_dir)
 
         print(f"\nEpisode dir: {episode_dir}")
         print(f"\n✓ Episode bundle: {episode_dir}")
@@ -832,6 +950,10 @@ def main():
         description="Generate NotebookLM podcast from a paper (DOI or PDF)."
     )
     parser.add_argument("source", nargs="?", help="DOI or local PDF path")
+    parser.add_argument("--topic", default="",
+                        help="Topic title for explicit-sources mode (bypasses DOI resolution)")
+    parser.add_argument("--sources-file", default="", metavar="PATH",
+                        help="JSON file: pre-gathered source entries [{value,kind,category,title,authority_note,local_path}]")
     parser.add_argument("--profile", default="popsci-ru",
                         help="Pipeline profile name (default: popsci-ru)")
     parser.add_argument("--companions", default="auto",
@@ -857,8 +979,15 @@ def main():
                         help="Subdirectory under ~/Orthidian/knowledge/ for extracted notes")
     args = parser.parse_args()
 
-    if not args.source and not args.resume:
-        parser.error("Provide a DOI, PDF path, or --resume <dir>.")
+    _topic_mode = bool(args.sources_file or args.topic)
+    if _topic_mode and args.source:
+        parser.error("Provide EITHER a positional DOI/PDF source OR --topic/--sources-file, not both.")
+    if _topic_mode and not args.sources_file:
+        parser.error("--topic requires --sources-file <path.json>.")
+    if _topic_mode and not args.topic:
+        parser.error("--sources-file requires --topic \"<title>\".")
+    if not args.source and not args.resume and not _topic_mode:
+        parser.error("Provide a DOI/PDF source, --topic + --sources-file, or --resume <dir>.")
 
     artifacts = [a.strip() for a in args.with_artifacts.split(",") if a.strip()]
     knowledge = [k.strip() for k in args.extract_knowledge.split(",") if k.strip()]
@@ -876,6 +1005,8 @@ def main():
         with_artifacts=artifacts,
         extract_knowledge_types=knowledge,
         knowledge_subdir=args.knowledge_subdir,
+        topic=args.topic,
+        sources_file=args.sources_file,
     )
 
 
