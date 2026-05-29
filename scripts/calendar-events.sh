@@ -23,14 +23,19 @@ CAL_LIST=$(printf '"%s"\n' "${CALENDARS[@]}" | paste -sd, -)
 unset CLAUDECODE
 timeout 30 claude -p \
     --permission-mode bypassPermissions \
-    --allowedTools "mcp__google-workspace__calendar_listEvents,Write" \
+    --allowedTools "mcp__google-workspace-selfisheugenes__calendar_listEvents,mcp__google-workspace-potapgene__calendar_listEvents,Write" \
     --model haiku \
     --no-session-persistence \
-    "Fetch today's calendar events using the calendar_listEvents MCP tool.
+    "Fetch today's calendar events using the calendar_listEvents MCP tools (two accounts).
 
-Fetch from these two calendars (call the tool once per calendar):
+Fetch from these calendars (one tool call per calendar):
+
+selfisheugenes account (use mcp__google-workspace-selfisheugenes__calendar_listEvents):
 1. selfisheugenes@gmail.com
 2. 4aa68da75eba9757ea4c7ada9892525cb985e3ecdafce2eaa47757d4b79c4901@group.calendar.google.com
+
+potapgene account (use mcp__google-workspace-potapgene__calendar_listEvents):
+3. potapgene@gmail.com
 
 For each call use:
 - calendarId: the calendar ID above

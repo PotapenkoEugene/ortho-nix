@@ -343,10 +343,32 @@ in {
         npx @bitbonsai/mcpvault@latest "${config.home.homeDirectory}/Orthidian"
     fi
 
-    # google-workspace: Gmail + Calendar via presto-ai MCP (auto-refreshing OAuth)
-    if ! have_mcp "google-workspace"; then
-      "$CLAUDE" mcp add --scope user google-workspace -- \
-        npx -y @presto-ai/google-workspace-mcp
+    # google-workspace: two isolated instances, one per account
+    # Each gets its own GOOGLE_WORKSPACE_MCP_HOME to keep credentials separate.
+    CLAUDE_JSON="$HOME/.claude.json"
+    GWMCP_S="${config.home.homeDirectory}/.config/gwmcp-selfisheugenes"
+    GWMCP_P="${config.home.homeDirectory}/.config/gwmcp-potapgene"
+    GWMCP_OLD="${config.home.homeDirectory}/.config/google-workspace-mcp"
+
+    # Migrate credentials from old single-account setup (no re-auth needed for selfisheugenes)
+    [ -d "$GWMCP_OLD" ] && [ ! -d "$GWMCP_S" ] && cp -r "$GWMCP_OLD" "$GWMCP_S"
+
+    # Idempotent jq update: remove old server, add both new ones (//= skips if already present)
+    if [ -f "$CLAUDE_JSON" ] && ${pkgs.jq}/bin/jq empty "$CLAUDE_JSON" 2>/dev/null; then
+      ${pkgs.jq}/bin/jq \
+        --arg s "$GWMCP_S" \
+        --arg p "$GWMCP_P" \
+        'del(.mcpServers["google-workspace"]) |
+         .mcpServers["google-workspace-selfisheugenes"] //= {
+           "type": "stdio", "command": "npx",
+           "args": ["-y", "@presto-ai/google-workspace-mcp"],
+           "env": {"GOOGLE_WORKSPACE_MCP_HOME": $s}
+         } |
+         .mcpServers["google-workspace-potapgene"] //= {
+           "type": "stdio", "command": "npx",
+           "args": ["-y", "@presto-ai/google-workspace-mcp"],
+           "env": {"GOOGLE_WORKSPACE_MCP_HOME": $p}
+         }' "$CLAUDE_JSON" > "$CLAUDE_JSON.tmp" && mv "$CLAUDE_JSON.tmp" "$CLAUDE_JSON"
     fi
   '';
 
