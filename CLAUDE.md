@@ -24,6 +24,7 @@ A Nix Flake-based Home Manager configuration for user `ortho`. Two hosts:
 ```bash
 sudo darwin-rebuild switch --flake 'github:PotapenkoEugene/ortho-nix#ortho-mac' --refresh
 ```
+`sudo` is pre-approved on mac-studio for system operations (`darwin-rebuild`, `launchctl`, `chown`, etc.). Run via `ssh mac-studio "sudo ..."` without asking for confirmation.
 
 ## Mac Studio Bootstrap
 
