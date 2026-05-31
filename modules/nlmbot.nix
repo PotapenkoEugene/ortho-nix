@@ -40,12 +40,11 @@
 
   nlmbotUpdate = pkgs.writeShellApplication {
     name = "nlmbot-update";
-    runtimeInputs = [pkgs.git pkgs.uv pkgs.rsync];
+    runtimeInputs = [pkgs.git pkgs.uv];
     text = ''
       set -euo pipefail
       cd "${repoDir}"
-      # Sync from Linux dev machine via Tailscale (no GitHub SSH key on this host)
-      rsync -av --exclude='.venv' --exclude='__pycache__' ortho@ortho-redmi-book-pro-14-2024:Documents/Projects/TGbotNotebookLM/ "${repoDir}/"
+      git pull --ff-only
       uv sync --frozen
       launchctl kickstart -k "gui/$(id -u)/com.ortho.nlmbot"
       echo "nlmbot updated and restarted"

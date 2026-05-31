@@ -121,6 +121,11 @@
         identityFile = "~/.ssh/mac_studio_ed25519";
         identitiesOnly = true;
       };
+      "github.com" = {
+        user = "git";
+        identityFile = "~/.ssh/id_github_ed25519";
+        identitiesOnly = true;
+      };
       "github-personal" = {
         hostname = "github.com";
         user = "git";
