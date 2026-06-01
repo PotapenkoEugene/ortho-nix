@@ -109,8 +109,11 @@
       # Last-active tab toggle — tmux-style (prefix C-a); overrides Kitty's default select_all
       "ctrl+shift+a" = "goto_tab 0";
 
-      # Mac tabs restore — open one kitty tab per live mac-studio tmux session (mac_ prefix, dedup)
-      "ctrl+shift+m" = "launch --type=background mac-tabs.sh";
+      # Mac session picker — fuzzy select (tv) mac-studio tmux sessions, open/focus tab
+      "ctrl+shift+m" = "launch --type=overlay mac-picker.sh";
+
+      # Mac tabs bulk restore — open ALL mac-studio tmux sessions as mac_* tabs (dedup)
+      "ctrl+shift+o" = "launch --type=background mac-tabs.sh";
 
       # Kittens
       "ctrl+shift+u" = "kitten unicode_input"; # Unicode character picker
