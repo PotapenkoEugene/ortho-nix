@@ -51,6 +51,8 @@
       }
       // lib.optionalAttrs pkgs.stdenv.isLinux {
         mac = "kitten ssh mac-studio";
+        # mac tab transport: macs <session> — opens/attaches named mac tmux session, self-reconnects after sleep
+        macs = "mac-attach.sh";
         dolphin = "dolphin $PWD";
         vpn_migal = "sudo /home/ortho/.nix-profile/bin/openfortivpn";
         vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";
@@ -120,6 +122,9 @@
         user = "ortho";
         identityFile = "~/.ssh/mac_studio_ed25519";
         identitiesOnly = true;
+        # Detect dead link faster on sleep/wake (~45s vs ~3min with global 60s)
+        serverAliveInterval = 15;
+        serverAliveCountMax = 3;
       };
       "github.com" = {
         user = "git";

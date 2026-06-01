@@ -172,6 +172,7 @@
       bowtie2
       macs2
       # Other Linux-only
+      autossh # auto-restart SSH connections (mac tab sleep/wake reconnect)
       fuse # for installing apps from AppImage
       yad # GTK dialogs (used for REC indicator in whisper-stream)
     ]);

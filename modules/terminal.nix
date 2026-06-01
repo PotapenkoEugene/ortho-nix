@@ -109,6 +109,9 @@
       # Last-active tab toggle — tmux-style (prefix C-a); overrides Kitty's default select_all
       "ctrl+shift+a" = "goto_tab 0";
 
+      # Mac tabs restore — open one kitty tab per live mac-studio tmux session (mac_ prefix, dedup)
+      "ctrl+shift+m" = "launch --type=background mac-tabs.sh";
+
       # Kittens
       "ctrl+shift+u" = "kitten unicode_input"; # Unicode character picker
       "ctrl+shift+e" = "kitten hints"; # Keyboard-driven URL/path/hash selection
