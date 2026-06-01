@@ -110,7 +110,7 @@
       "ctrl+shift+a" = "goto_tab 0";
 
       # Unified tmux session picker — fuzzy select (tv) local + mac sessions, sorted by frequency
-      "ctrl+shift+m" = "launch --type=overlay tmux-picker.sh";
+      "ctrl+shift+m" = "launch --type=tab tmux-picker.sh";
 
       # Mac tabs bulk restore — open ALL mac-studio tmux sessions as mac_* tabs (dedup)
       "ctrl+shift+o" = "launch --type=background mac-tabs.sh";

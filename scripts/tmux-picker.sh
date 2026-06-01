@@ -2,22 +2,24 @@
 #============================================================================
 # Tmux Picker — unified fuzzy-select for local + mac-studio tmux sessions
 #
-# Runs in a kitty overlay (--type=overlay), bound to Ctrl+Shift+M.
-# Shows all sessions from both hosts, sorted by usage frequency.
+# Opens as a new kitty tab (--type=tab), NOT an overlay.
+# On selection:
+#   - Tab already exists → focus it, exit (this tab closes)
+#   - No tab yet → exec the session in THIS tab (tab transforms, no kitten @ launch)
 #
-# Display format:
-#   [mac] ADAPTOGENE   ← mac-studio session (opens/focuses mac_* tab)
-#   [loc] base         ← local linux session (focuses bare tab or spawns one)
-#
-# Frequency file: ~/.local/share/tmux-picker-freq
-#   Each line: COUNT<TAB>DISPLAY_LINE   (sorted desc on write, re-read on open)
+# Debug log: /tmp/tmux-picker.log (check if things go wrong)
 #============================================================================
 set -uo pipefail
 
 SOCK="unix:/tmp/kitty-main"
 FREQ_FILE="${XDG_DATA_HOME:-$HOME/.local/share}/tmux-picker-freq"
+LOG="/tmp/tmux-picker.log"
 RAW="/tmp/tmux-picker-$$.raw"
 trap 'rm -f "$RAW"' EXIT
+
+# Redirect stderr to log for diagnostics
+exec 2>>"$LOG"
+echo "=== $(date) ===" >> "$LOG"
 
 # Gather sessions
 {
@@ -26,9 +28,14 @@ trap 'rm -f "$RAW"' EXIT
         'tmux ls -F "[mac] #{session_name}"' 2>/dev/null || true
 } > "$RAW"
 
-[ ! -s "$RAW" ] && { echo "no tmux sessions found"; sleep 2; exit 1; }
+if [ ! -s "$RAW" ]; then
+    echo "no sessions found" >> "$LOG"
+    echo "no tmux sessions found"
+    sleep 2
+    exit 1
+fi
 
-# Sort by usage frequency; unknown entries get 0 and appear last
+# Sort by usage frequency
 sorted=$(awk -v freq_file="$FREQ_FILE" '
 BEGIN {
     while ((getline line < freq_file) > 0)
@@ -38,13 +45,17 @@ BEGIN {
 { count = ($0 in freq) ? freq[$0] : 0; printf "%d\t%s\n", count, $0 }
 ' "$RAW" | sort -t$'\t' -k1 -rn | cut -f2-)
 
-# Fuzzy pick — ui-scale 70 = 70% centered rectangle; don't bail on non-zero exit
+echo "sessions: $sorted" >> "$LOG"
+
+# Fuzzy pick
 selected=$(echo "$sorted" | tv --ui-scale 70 --no-preview)
+echo "selected: '$selected'" >> "$LOG"
 [ -z "$selected" ] && exit 0
 
-# Parse: "[mac] ADAPTOGENE" → host="mac", sess="ADAPTOGENE"
-host="${selected:1:3}"   # chars 1-3 inside brackets: "mac" or "loc"
-sess="${selected:6}"     # everything after "[xxx] "
+# Parse "[mac] ADAPTOGENE" → host, sess
+host="${selected:1:3}"
+sess="${selected:6}"
+echo "host='$host' sess='$sess'" >> "$LOG"
 
 # Update frequency counter
 mkdir -p "$(dirname "$FREQ_FILE")"
@@ -61,16 +72,26 @@ freq["$selected"]=$(( ${freq["$selected"]:-0} + 1 ))
     done
 } | sort -t$'\t' -k1 -rn > "$FREQ_FILE"
 
-# Open or focus tab — try focus by title first; launch new tab on failure
+# Open or focus
 if [ "$host" = "mac" ]; then
     tab_title="mac_$sess"
-    if ! kitten @ --to "$SOCK" focus-tab --match "title:$tab_title" 2>/dev/null; then
-        kitten @ --to "$SOCK" launch \
-            --type=tab --tab-title "$tab_title" mac-attach.sh "$sess"
+    if kitten @ --to "$SOCK" focus-tab --match "title:$tab_title" 2>>"$LOG"; then
+        echo "focused existing: $tab_title" >> "$LOG"
+        # exit closes this picker tab; focus already set to target
+        exit 0
+    else
+        echo "transforming picker tab into: $tab_title" >> "$LOG"
+        # Set title via OSC sequence, then replace this process with the transport
+        printf '\033]2;%s\007' "$tab_title"
+        exec mac-attach.sh "$sess"
     fi
 else
-    if ! kitten @ --to "$SOCK" focus-tab --match "title:$sess" 2>/dev/null; then
-        kitten @ --to "$SOCK" launch \
-            --type=tab --tab-title "$sess" kitty-tab-launch.sh "$sess"
+    if kitten @ --to "$SOCK" focus-tab --match "title:$sess" 2>>"$LOG"; then
+        echo "focused existing: $sess" >> "$LOG"
+        exit 0
+    else
+        echo "transforming picker tab into: $sess" >> "$LOG"
+        printf '\033]2;%s\007' "$sess"
+        exec kitty-tab-launch.sh "$sess"
     fi
 fi
