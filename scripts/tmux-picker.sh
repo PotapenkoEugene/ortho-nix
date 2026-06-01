@@ -38,8 +38,8 @@ BEGIN {
 { count = ($0 in freq) ? freq[$0] : 0; printf "%d\t%s\n", count, $0 }
 ' "$RAW" | sort -t$'\t' -k1 -rn | cut -f2-)
 
-# Fuzzy pick
-selected=$(echo "$sorted" | tv) || exit 0
+# Fuzzy pick — ui-scale 70 = 70% centered rectangle; don't bail on non-zero exit
+selected=$(echo "$sorted" | tv --ui-scale 70 --no-preview)
 [ -z "$selected" ] && exit 0
 
 # Parse: "[mac] ADAPTOGENE" → host="mac", sess="ADAPTOGENE"
@@ -61,25 +61,15 @@ freq["$selected"]=$(( ${freq["$selected"]:-0} + 1 ))
     done
 } | sort -t$'\t' -k1 -rn > "$FREQ_FILE"
 
-# Open or focus tab based on host
+# Open or focus tab — try focus by title first; launch new tab on failure
 if [ "$host" = "mac" ]; then
     tab_title="mac_$sess"
-    tab_id=$(kitten @ --to "$SOCK" ls 2>/dev/null \
-        | jq -r --arg t "$tab_title" '.[].tabs[] | select(.title == $t) | .id' \
-        | head -1)
-    if [ -n "$tab_id" ]; then
-        kitten @ --to "$SOCK" focus-tab --match "id:$tab_id"
-    else
+    if ! kitten @ --to "$SOCK" focus-tab --match "title:$tab_title" 2>/dev/null; then
         kitten @ --to "$SOCK" launch \
             --type=tab --tab-title "$tab_title" mac-attach.sh "$sess"
     fi
 else
-    tab_id=$(kitten @ --to "$SOCK" ls 2>/dev/null \
-        | jq -r --arg t "$sess" '.[].tabs[] | select(.title == $t) | .id' \
-        | head -1)
-    if [ -n "$tab_id" ]; then
-        kitten @ --to "$SOCK" focus-tab --match "id:$tab_id"
-    else
+    if ! kitten @ --to "$SOCK" focus-tab --match "title:$sess" 2>/dev/null; then
         kitten @ --to "$SOCK" launch \
             --type=tab --tab-title "$sess" kitty-tab-launch.sh "$sess"
     fi
