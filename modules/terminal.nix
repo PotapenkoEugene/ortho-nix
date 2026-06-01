@@ -109,8 +109,8 @@
       # Last-active tab toggle — tmux-style (prefix C-a); overrides Kitty's default select_all
       "ctrl+shift+a" = "goto_tab 0";
 
-      # Mac session picker — fuzzy select (tv) mac-studio tmux sessions, open/focus tab
-      "ctrl+shift+m" = "launch --type=overlay mac-picker.sh";
+      # Unified tmux session picker — fuzzy select (tv) local + mac sessions, sorted by frequency
+      "ctrl+shift+m" = "launch --type=overlay tmux-picker.sh";
 
       # Mac tabs bulk restore — open ALL mac-studio tmux sessions as mac_* tabs (dedup)
       "ctrl+shift+o" = "launch --type=background mac-tabs.sh";
