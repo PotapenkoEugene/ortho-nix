@@ -17,7 +17,6 @@ if [ -n "${TMUX:-}" ]; then
   tmux display-popup -w 90% -h 90% \
     -e "OPENAI_API_KEY=${OPENAI_API_KEY:-}" \
     -e "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}" \
-    -e "CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-}" \
     -E "nvim $(printf '%q' "$FILE")"
 else
   nvim "$FILE"
