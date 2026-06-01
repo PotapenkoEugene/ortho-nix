@@ -36,6 +36,7 @@ These rules apply to ALL projects and sessions. Project-level CLAUDE.md files ad
 - **Never run commands that dump secret values** (e.g., `cat ~/.secrets/env`, `printenv | grep API`, `python3 -c "... print(creds)"`). Token values printed to tool output land in conversation history — a permanent exposure risk.
 - **When you need to know a secret exists or its structure:** check the config that declares it (e.g., `secrets.nix`, shell config) — never the resolved value.
 - **When a task requires knowing a secret value** (e.g., checking if a key is set): tell the user what to run themselves via `! <command>` and act on their report. Example: "Run `! printenv ANTHROPIC_API_KEY | wc -c` and tell me the character count."
+- **Never put `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY` in sops templates or any shell-sourced secrets file.** These are CI/headless-automation env vars — when present in the environment, Claude Code enters API mode: startup header shows "Claude API", `/remote-control` is blocked (inference-only token), and `/usage` breaks. Interactive Claude Code authenticates exclusively via `claude auth login` → `~/.claude/.credentials.json`. If you see these vars referenced in `secrets.nix` templates, flag and remove them.
 
 ## MANDATORY: After Every Feature or Logical Chunk
 
