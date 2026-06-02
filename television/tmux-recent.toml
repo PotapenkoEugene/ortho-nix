@@ -1,0 +1,10 @@
+[metadata]
+name = "tmux-recent"
+description = "Switch tmux sessions — color-coded by recency [Now/Today/Week/Month/Older]"
+requirements = ["tmux"]
+
+[source]
+command = "bash $HOME/.config/home-manager/scripts/tmux-recency-source.sh"
+ansi = true
+display = "{split:\t:1}  {split:\t:0}"
+output = "{split:\t:0}"

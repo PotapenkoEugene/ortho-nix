@@ -6,6 +6,9 @@
 # On selection:
 #   - Tab already exists → focus it, exit (this tab closes)
 #   - No tab yet → exec the session in THIS tab (tab transforms)
+#
+# Each entry shows a recency bucket: [Now]/[Today]/[Week]/[Month]/[Older]
+# color-coded with ANSI. Sorted by usage frequency (key = host:name).
 #============================================================================
 set -uo pipefail
 
@@ -15,39 +18,69 @@ RAW="/tmp/tmux-picker-$$.raw"
 MAC_TMP="/tmp/tmux-picker-mac-$$"
 trap 'rm -f "$RAW" "$MAC_TMP"' EXIT
 
-# Start SSH in background — don't block tv startup
+# Emit: host<TAB>attached<TAB>last_attached<TAB>name
+# tmux interprets \t in -F format strings as a literal tab character
+tmux ls -F "loc\t#{session_attached}\t#{session_last_attached}\t#{session_name}" 2>/dev/null > "$RAW" || true
+
+# Mac sessions via SSH — same 4-field format, host prefix = "mac"
 ssh -o BatchMode=yes -o ConnectTimeout=3 mac-studio \
-    'tmux ls -F "[mac] #{session_name}"' > "$MAC_TMP" 2>/dev/null &
+    'tmux ls -F "mac\t#{session_attached}\t#{session_last_attached}\t#{session_name}"' \
+    > "$MAC_TMP" 2>/dev/null &
 SSH_PID=$!
 
-# Local sessions are instant
-tmux ls -F "[loc] #{session_name}" 2>/dev/null > "$RAW" || true
-
-# Wait for ssh (max 3s), append mac sessions
 wait "$SSH_PID" 2>/dev/null || true
 cat "$MAC_TMP" >> "$RAW" 2>/dev/null || true
 
 [ ! -s "$RAW" ] && { echo "no tmux sessions found"; sleep 2; exit 1; }
 
-# Sort by usage frequency
-sorted=$(awk -v freq_file="$FREQ_FILE" '
+NOW=$(date +%s)
+
+# Annotate with recency bucket + sort by usage frequency.
+# Freq key = host:name (stable — survives label/color changes).
+# Display line = <color>[Bucket]<reset>  [host]  name
+sorted=$(awk -F'\t' -v now="$NOW" -v freq_file="$FREQ_FILE" '
 BEGIN {
     while ((getline line < freq_file) > 0)
         if (split(line, a, "\t") == 2) freq[a[2]] = int(a[1])
     close(freq_file)
+    c_now   = "\033[1;32m"
+    c_today = "\033[36m"
+    c_week  = "\033[34m"
+    c_month = "\033[33m"
+    c_older = "\033[90m"
+    c_reset = "\033[0m"
 }
-{ count = ($0 in freq) ? freq[$0] : 0; printf "%d\t%s\n", count, $0 }
+{
+    host = $1; attached = $2 + 0; last = $3 + 0; name = $4
+    if (attached > 0) {
+        color = c_now;   bucket = "[Now]"
+    } else {
+        delta = now - last
+        if (last == 0 || delta >= 2592000) { color = c_older; bucket = "[Older]"  }
+        else if (delta >= 604800)          { color = c_month; bucket = "[Month]"  }
+        else if (delta >= 86400)           { color = c_week;  bucket = "[Week]"   }
+        else                               { color = c_today; bucket = "[Today]"  }
+    }
+    key  = host ":" name
+    cnt  = (key in freq) ? freq[key] : 0
+    disp = color bucket c_reset "  [" host "]  " name
+    printf "%d\t%s\n", cnt, disp
+}
 ' "$RAW" | sort -t$'\t' -k1 -rn | cut -f2-)
 
-# Fuzzy pick — tv uses stderr for TUI; do NOT redirect stderr globally
-selected=$(echo "$sorted" | tv --ui-scale 70 --no-preview)
+# Fuzzy pick — tv --ansi renders ANSI escape codes from stdin
+selected=$(echo "$sorted" | tv --ansi --ui-scale 70 --no-preview)
 [ -z "$selected" ] && exit 0
 
-# Parse "[mac] ADAPTOGENE" → host, sess
-host="${selected:1:3}"
-sess="${selected:6}"
+# Parse selection: strip ANSI codes, then fields are: [Bucket]  [host]  name
+clean=$(printf '%s' "$selected" | sed 's/\x1b\[[0-9;]*m//g')
+# $1=[Bucket]  $2=[loc]/[mac]  $3..NF=session_name
+host_tag=$(echo "$clean" | awk '{print $2}')
+sess=$(echo "$clean" | awk '{for(i=3;i<=NF;i++) printf "%s%s",$i,(i<NF?" ":""); print ""}')
+host="${host_tag:1:3}"   # strip brackets: "[loc]" → "loc", "[mac]" → "mac"
 
-# Update frequency counter
+# Update frequency counter (key = host:name)
+stable_key="${host}:${sess}"
 mkdir -p "$(dirname "$FREQ_FILE")"
 declare -A freq
 if [ -f "$FREQ_FILE" ]; then
@@ -55,7 +88,7 @@ if [ -f "$FREQ_FILE" ]; then
         freq["$key"]=$cnt
     done < "$FREQ_FILE"
 fi
-freq["$selected"]=$(( ${freq["$selected"]:-0} + 1 ))
+freq["$stable_key"]=$(( ${freq["$stable_key"]:-0} + 1 ))
 {
     for k in "${!freq[@]}"; do
         printf '%s\t%s\n' "${freq[$k]}" "$k"

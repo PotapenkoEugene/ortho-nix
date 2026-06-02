@@ -17,6 +17,11 @@
       source = ../television/docker-containers.toml;
       force = true;
     };
+    # Custom tmux session picker with recency buckets [Now/Today/Week/Month/Older]
+    ".config/television/cable/tmux-recent.toml" = {
+      source = ../television/tmux-recent.toml;
+      force = true;
+    };
   };
 
   # Install cable channels on every switch; patch tmux-sessions to use switch-client
