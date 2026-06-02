@@ -6,6 +6,8 @@
 }: let
   ccArgs = "--effort xhigh --enable-auto-mode";
   ccPrompt = ''"What to do next /note"'';
+  # Strip inherited API-mode tokens so claude always uses ~/.claude/.credentials.json (Max OAuth)
+  ccUnset = "unset CLAUDE_CODE_OAUTH_TOKEN ANTHROPIC_API_KEY;";
 in {
   home.sessionVariables =
     lib.optionalAttrs pkgs.stdenv.isLinux {
@@ -40,7 +42,7 @@ in {
         # Piper text-to-speech with pre-downloaded model
         piper-tts = "piper --model ~/piper-models/en_US-lessac-medium.onnx";
 
-        claude = "claude ${ccArgs} ${ccPrompt}";
+        claude = "${ccUnset} claude ${ccArgs} ${ccPrompt}";
         tb = "tmux attach -t base";
 
         # kitten ssh: auto-copies kitty terminfo to remote hosts (fixes xterm-kitty unknown terminal)
@@ -67,7 +69,7 @@ in {
         # orthi-brain semantic search (mac-only)
         brain = "~/Projects/orthi-brain/brain.sh";
         # mac: every claude session remote-control enabled by default
-        claude = "claude --remote-control ${ccArgs} ${ccPrompt}";
+        claude = "${ccUnset} claude --remote-control ${ccArgs} ${ccPrompt}";
       };
     initExtra =
       ''
