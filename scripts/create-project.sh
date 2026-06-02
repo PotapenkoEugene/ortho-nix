@@ -25,9 +25,15 @@ if [ -z "$name" ]; then
 fi
 
 # ── 2. Target machine ────────────────────────────────────────────────────────
-machine=$(printf 'Linux (local)\nMac (mac-studio)' \
-    | tv --ansi --ui-scale 50 --no-preview --prompt "Machine > ")
-[ -z "$machine" ] && exit 0
+echo "  1) Linux (local)"
+echo "  2) Mac (mac-studio)"
+printf "Machine [1/2]: "
+read -r choice
+case "$choice" in
+    2) machine="Mac" ;;
+    1) machine="Linux" ;;
+    *) echo "Cancelled."; sleep 1; exit 0 ;;
+esac
 
 # ── 3. Create GitHub repo ────────────────────────────────────────────────────
 echo ""
