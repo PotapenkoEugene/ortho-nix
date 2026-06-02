@@ -41,6 +41,7 @@
       # Dev tools
       cmatrix
       git
+      gh # GitHub CLI
       lazygit
       obsidian
       nil # Nix LSP

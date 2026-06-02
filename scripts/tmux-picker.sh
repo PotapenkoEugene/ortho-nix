@@ -4,11 +4,13 @@
 #
 # Opens as a new kitty tab (--type=tab).
 # On selection:
+#   - "[+ New Project]" → exec create-project.sh wizard
 #   - Tab already exists → focus it, exit (this tab closes)
 #   - No tab yet → exec the session in THIS tab (tab transforms)
 #
-# Each entry shows a recency bucket: [Now]/[Today]/[Week]/[Month]/[Older]
+# Each entry shows a recency bucket: [Today]/[Week]/[Month]/[Older]
 # color-coded with ANSI. Sorted by usage frequency (key = host:name).
+# Currently-attached (open) sessions are hidden — they're already visible.
 #============================================================================
 set -uo pipefail
 
@@ -31,19 +33,16 @@ SSH_PID=$!
 wait "$SSH_PID" 2>/dev/null || true
 cat "$MAC_TMP" >> "$RAW" 2>/dev/null || true
 
-[ ! -s "$RAW" ] && { echo "no tmux sessions found"; sleep 2; exit 1; }
-
 NOW=$(date +%s)
 
 # Annotate with recency bucket + sort by usage frequency.
+# Skip attached sessions — they're already open in another tab.
 # Freq key = host:name (stable — survives label/color changes).
-# Display line = <color>[Bucket]<reset>  [host]  name
 sorted=$(awk -F'\t' -v now="$NOW" -v freq_file="$FREQ_FILE" '
 BEGIN {
     while ((getline line < freq_file) > 0)
         if (split(line, a, "\t") == 2) freq[a[2]] = int(a[1])
     close(freq_file)
-    c_now   = "\033[1;32m"
     c_today = "\033[36m"
     c_week  = "\033[34m"
     c_month = "\033[33m"
@@ -52,15 +51,12 @@ BEGIN {
 }
 {
     host = $1; attached = $2 + 0; last = $3 + 0; name = $4
-    if (attached > 0) {
-        color = c_now;   bucket = "[Now]";   pri = 5
-    } else {
-        delta = now - last
-        if (last == 0 || delta >= 2592000) { color = c_older; bucket = "[Older]"; pri = 4 }
-        else if (delta >= 604800)          { color = c_month; bucket = "[Month]"; pri = 3 }
-        else if (delta >= 86400)           { color = c_week;  bucket = "[Week]";  pri = 2 }
-        else                               { color = c_today; bucket = "[Today]"; pri = 1 }
-    }
+    if (attached > 0) next
+    delta = now - last
+    if (last == 0 || delta >= 2592000) { color = c_older; bucket = "[Older]"; pri = 4 }
+    else if (delta >= 604800)          { color = c_month; bucket = "[Month]"; pri = 3 }
+    else if (delta >= 86400)           { color = c_week;  bucket = "[Week]";  pri = 2 }
+    else                               { color = c_today; bucket = "[Today]"; pri = 1 }
     key  = host ":" name
     cnt  = (key in freq) ? freq[key] : 0
     disp = color bucket c_reset "  [" host "]  " name
@@ -68,13 +64,28 @@ BEGIN {
 }
 ' "$RAW" | sort -t$'\t' -k1,1n -k2,2rn | cut -f3-)
 
+# Prepend the New Project entry (magenta, always first)
+NP=$'\033[1;35m[+] New Project\033[0m'
+
+if [ -z "$sorted" ]; then
+    list="$NP"
+else
+    list=$(printf '%s\n%s' "$NP" "$sorted")
+fi
+
 # Fuzzy pick — tv --ansi renders ANSI escape codes from stdin
-selected=$(echo "$sorted" | tv --ansi --ui-scale 70 --no-preview)
+selected=$(echo "$list" | tv --ansi --ui-scale 70 --no-preview)
 [ -z "$selected" ] && exit 0
 
-# Parse selection: strip ANSI codes, then fields are: [Bucket]  [host]  name
+# Strip ANSI codes for detection
 clean=$(printf '%s' "$selected" | sed 's/\x1b\[[0-9;]*m//g')
-# $1=[Bucket]  $2=[loc]/[mac]  $3..NF=session_name
+
+# New Project wizard
+if [[ "$clean" == "[+] New Project"* ]]; then
+    exec create-project.sh
+fi
+
+# Parse selection: fields are: [Bucket]  [host]  name
 host_tag=$(echo "$clean" | awk '{print $2}')
 sess=$(echo "$clean" | awk '{for(i=3;i<=NF;i++) printf "%s%s",$i,(i<NF?" ":""); print ""}')
 host="${host_tag:1:3}"   # strip brackets: "[loc]" → "loc", "[mac]" → "mac"
