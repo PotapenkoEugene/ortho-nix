@@ -19,12 +19,12 @@ MAC_TMP="/tmp/tmux-picker-mac-$$"
 trap 'rm -f "$RAW" "$MAC_TMP"' EXIT
 
 # Emit: host<TAB>attached<TAB>last_attached<TAB>name
-# tmux interprets \t in -F format strings as a literal tab character
-tmux ls -F "loc\t#{session_attached}\t#{session_last_attached}\t#{session_name}" 2>/dev/null > "$RAW" || true
+# $'...' quoting produces actual tab chars — tmux does NOT interpret \t in -F strings
+tmux ls -F $'loc\t#{session_attached}\t#{session_last_attached}\t#{session_name}' 2>/dev/null > "$RAW" || true
 
-# Mac sessions via SSH — same 4-field format, host prefix = "mac"
+# Mac sessions via SSH — \$'...' passes $'...' to the remote shell for actual tab expansion
 ssh -o BatchMode=yes -o ConnectTimeout=3 mac-studio \
-    'tmux ls -F "mac\t#{session_attached}\t#{session_last_attached}\t#{session_name}"' \
+    "tmux ls -F \$'mac\t#{session_attached}\t#{session_last_attached}\t#{session_name}'" \
     > "$MAC_TMP" 2>/dev/null &
 SSH_PID=$!
 

@@ -90,7 +90,7 @@
 
         # Pane management
         bind | split-window
-        bind s display-popup -w 80% -h 60% -E "tv --ansi tmux-recent | xargs -r tmux switch-client -t"
+        bind s display-popup -w 80% -h 60% -E "bash $HOME/.config/home-manager/scripts/tmux-recency-source.sh | tv --ansi --no-preview | awk -F'\\t' '{print $NF}' | xargs -r tmux switch-client -t"
         bind v split-window -h -c "#{pane_current_path}"
         bind '"' choose-window
         bind h select-pane -L

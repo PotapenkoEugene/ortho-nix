@@ -7,7 +7,8 @@
 
 NOW=$(date +%s)
 
-tmux ls -F "#{session_attached}\t#{session_last_attached}\t#{session_name}" 2>/dev/null | \
+# $'...' quoting produces actual tab chars — tmux does NOT interpret \t in -F strings
+tmux ls -F $'#{session_attached}\t#{session_last_attached}\t#{session_name}' 2>/dev/null | \
 awk -F'\t' -v now="$NOW" '
 BEGIN {
     c_now   = "\033[1;32m"
@@ -28,6 +29,7 @@ BEGIN {
         else if (d >= 86400)           { c = c_week;  b = "[Week]"   }
         else                           { c = c_today; b = "[Today]"  }
     }
-    print name "\t" c b r
+    # Output: colored_label<TAB>name — tv shows label+name; awk extracts name after selection
+    print c b r "\t" name
 }
 '
