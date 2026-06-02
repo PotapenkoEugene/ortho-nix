@@ -53,20 +53,20 @@ BEGIN {
 {
     host = $1; attached = $2 + 0; last = $3 + 0; name = $4
     if (attached > 0) {
-        color = c_now;   bucket = "[Now]"
+        color = c_now;   bucket = "[Now]";   pri = 5
     } else {
         delta = now - last
-        if (last == 0 || delta >= 2592000) { color = c_older; bucket = "[Older]"  }
-        else if (delta >= 604800)          { color = c_month; bucket = "[Month]"  }
-        else if (delta >= 86400)           { color = c_week;  bucket = "[Week]"   }
-        else                               { color = c_today; bucket = "[Today]"  }
+        if (last == 0 || delta >= 2592000) { color = c_older; bucket = "[Older]"; pri = 4 }
+        else if (delta >= 604800)          { color = c_month; bucket = "[Month]"; pri = 3 }
+        else if (delta >= 86400)           { color = c_week;  bucket = "[Week]";  pri = 2 }
+        else                               { color = c_today; bucket = "[Today]"; pri = 1 }
     }
     key  = host ":" name
     cnt  = (key in freq) ? freq[key] : 0
     disp = color bucket c_reset "  [" host "]  " name
-    printf "%d\t%s\n", cnt, disp
+    printf "%d\t%d\t%s\n", pri, cnt, disp
 }
-' "$RAW" | sort -t$'\t' -k1 -rn | cut -f2-)
+' "$RAW" | sort -t$'\t' -k1,1n -k2,2rn | cut -f3-)
 
 # Fuzzy pick — tv --ansi renders ANSI escape codes from stdin
 selected=$(echo "$sorted" | tv --ansi --ui-scale 70 --no-preview)

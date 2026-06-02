@@ -21,15 +21,15 @@ BEGIN {
 {
     attached = $1 + 0; last = $2 + 0; name = $3
     if (attached > 0) {
-        c = c_now; b = "[Now]"
+        c = c_now; b = "[Now]"; pri = 5
     } else {
         d = now - last
-        if (last == 0 || d >= 2592000) { c = c_older; b = "[Older]"  }
-        else if (d >= 604800)          { c = c_month; b = "[Month]"  }
-        else if (d >= 86400)           { c = c_week;  b = "[Week]"   }
-        else                           { c = c_today; b = "[Today]"  }
+        if (last == 0 || d >= 2592000) { c = c_older; b = "[Older]"; pri = 4 }
+        else if (d >= 604800)          { c = c_month; b = "[Month]"; pri = 3 }
+        else if (d >= 86400)           { c = c_week;  b = "[Week]";  pri = 2 }
+        else                           { c = c_today; b = "[Today]"; pri = 1 }
     }
-    # Output: colored_label<TAB>name — tv shows label+name; awk extracts name after selection
-    print c b r "\t" name
+    # pri<TAB>colored_label<TAB>name — sort on pri, then strip it before tv
+    print pri "\t" c b r "\t" name
 }
-'
+' | sort -t$'\t' -k1,1n | cut -f2-
