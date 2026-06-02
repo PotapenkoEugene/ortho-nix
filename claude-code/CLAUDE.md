@@ -68,6 +68,12 @@ This is a default reflex — the user should never have to remember to ask for i
 - **Never force push.** Never rewrite published history.
 - **Repo hygiene:** `/done` and `/commit` both scan for gitignore candidates before staging.
 
+## GitHub CLI (gh)
+
+- **Allowed autonomously:** `gh repo create` (always private unless told otherwise), `gh repo list`, `gh repo view`, `gh repo clone`, `gh pr create/list/view/merge`, `gh issue create/list/view`, `gh run list/view`.
+- **Never run:** `gh repo delete` — not under any circumstances.
+- **Always confirm before:** changing repo visibility (`--visibility public`), adding/removing collaborators, transferring ownership, archiving, renaming a repo, or any action that affects repo settings or access control. Show the exact command and wait for explicit yes.
+
 ## Academic Writing
 
 - **Concise and technical.** When editing manuscripts or scientific text, use precise scientific language. Avoid hedging, filler, and unnecessary qualifiers. Cite specific data, figures, and results.
