@@ -5,7 +5,13 @@
   ...
 }: {
   home.packages =
-    (with pkgs; [
+    [
+      # Tmux session picker — delivered via Nix so it's on PATH on all hosts
+      # (mac's ~/.config/home-manager is a stale snapshot; path-based refs break there)
+      (pkgs.writeShellScriptBin "tmux-recency-source"
+        (builtins.readFile ../scripts/tmux-recency-source.sh))
+    ]
+    ++ (with pkgs; [
       # System monitoring
       htop
       btop
