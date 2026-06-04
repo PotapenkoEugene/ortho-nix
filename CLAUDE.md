@@ -164,7 +164,6 @@ claude-code/
 - **Image rendering chain**: Kitty graphics protocol requires: `KITTY_DISABLE_WAYLAND=1` env var (in `home.nix`) + tmux `allow-passthrough on` (in `tmux.nix`) + image.nvim with Kitty backend and magick_rock (in `plugins.nix`)
 - **CodeCompanion adapters**: Uses OpenAI for chat/inline strategies, `claude_code` for agent strategy (configured in `plugins.nix`)
 - **Notes popup**: `Ctrl+a n` opens a persistent nvim session in `~/Orthidian/` via tmux popup (`scripts/notes-popup.sh`). Uses separate socket (`-L notes`) so the session persists across popup open/close. Auto-generates today's daily note on first open each day. Toggle with `Ctrl+a n`.
-- **Codeburn popup**: `Ctrl+a T` opens codeburn TUI dashboard (AI token usage analytics) via `scripts/codeburn-popup.sh`. Launched via `npx -y codeburn` — first run downloads to `~/.npm/_npx/` cache; subsequent runs instant. Press `q` to quit.
 - **Tmux alias fragility**: The tmux 3.5a workaround in `shell.nix` hardcodes a specific nix store path — breaks if that path is garbage-collected. Check with `ls /nix/store/msrldc9bfz6piaa0704m0djjm14mq151-tmux-3.5a/` if tmux stops working
 
 ## Whisper Speech-to-Text

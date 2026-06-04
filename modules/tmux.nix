@@ -37,8 +37,6 @@
         # cmatrix screensaver popup
         bind '`' display-popup -w 100% -h 100% -E "cmatrix -ab"
 
-        # codeburn (AI token usage dashboard) popup
-        bind T display-popup -w 100% -h 100% -x 0 -y 0 -b none -E "~/.config/home-manager/scripts/codeburn-popup.sh"
 
         # Reload tmux config
         bind R source-file ~/.config/tmux/tmux.conf \; display-message "Config reloaded"
