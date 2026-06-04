@@ -209,10 +209,10 @@
             adapter = "claude_code";
           };
           chat = {
-            adapter = "ollama";
+            adapter = "openai";
           };
           inline = {
-            adapter = "ollama";
+            adapter = "openai";
           };
         };
         display = {
