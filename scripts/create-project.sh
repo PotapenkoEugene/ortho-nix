@@ -124,20 +124,20 @@ if [[ "$machine" == *"Mac"* ]]; then
 	printf '\033]2;%s\007' "$tab_title"
 	exec mac-attach.sh "$name"
 else
-	echo -e "\033[36mSetting up ~/Projects/$name locally...\033[0m"
-	mkdir -p "$HOME/Projects/$name"
-	cd "$HOME/Projects/$name"
+	echo -e "\033[36mSetting up ~/Documents/Projects/$name locally...\033[0m"
+	mkdir -p "$HOME/Documents/Projects/$name"
+	cd "$HOME/Documents/Projects/$name"
 	if [ "$GH" = yes ]; then
 		GIT_SSH_COMMAND='ssh -i ~/.ssh/id_github_ed25519 -o IdentitiesOnly=yes' \
 			git clone "$CLONE_URL" .
 	fi
 	# (GitHub=no: plain dir, no git init)
-	tmux new-session -d -s "$name" -c "$HOME/Projects/$name" 2>/dev/null || true
+	tmux new-session -d -s "$name" -c "$HOME/Documents/Projects/$name" 2>/dev/null || true
 	# drop .claude/CLAUDE.md active-project pointer
-	mkdir -p "$HOME/Projects/$name/.claude"
-	[ -f "$HOME/Projects/$name/.claude/CLAUDE.md" ] ||
+	mkdir -p "$HOME/Documents/Projects/$name/.claude"
+	[ -f "$HOME/Documents/Projects/$name/.claude/CLAUDE.md" ] ||
 		printf '## Active Obsidian Project\n- Project: %s\n- File: ~/Orthidian/projects/%s.md\n' \
-			"$display_name" "$display_name" >"$HOME/Projects/$name/.claude/CLAUDE.md"
+			"$display_name" "$display_name" >"$HOME/Documents/Projects/$name/.claude/CLAUDE.md"
 	# create Obsidian note
 	create_obsidian_note "$display_name"
 	echo -e "\033[1;32mDone! Opening $name\033[0m"
