@@ -14,6 +14,26 @@ set -uo pipefail
 
 SOCK="unix:/tmp/kitty-main"
 
+# ── Helper: create root CLAUDE.md with project info + links (idempotent) ─────
+create_project_claude_md() {
+	local dir="$1" proj="$2" gh="$3" github_name="$4"
+	local f="$dir/CLAUDE.md"
+	[ -f "$f" ] && return 0
+	local gh_line=""
+	[ "$gh" = yes ] && gh_line="- GitHub: https://github.com/PotapenkoEugene/$github_name"$'\n'
+	cat >"$f" <<EOF
+# $proj
+
+## Active Obsidian Project
+- Project: $proj
+- File: ~/Orthidian/projects/$proj.md
+
+## Links
+- Obsidian: ~/Orthidian/projects/$proj.md
+${gh_line}- Knowledge: ~/Orthidian/knowledge/$proj/
+EOF
+}
+
 # ── Helper: create Obsidian project note (idempotent) ────────────────────────
 create_obsidian_note() {
 	local proj="$1" note d t
@@ -116,8 +136,26 @@ if [[ "$machine" == *"Mac"* ]]; then
 	ssh mac-studio "mkdir -p ~/Projects/$name/.claude && \
       printf '## Active Obsidian Project\n- Project: %s\n- File: ~/Orthidian/projects/%s.md\n' \
       '$display_name' '$display_name' > ~/Projects/$name/.claude/CLAUDE.md"
+	# create root CLAUDE.md on mac via pipe
+	mac_gh_line=""
+	[ "$GH" = yes ] && mac_gh_line="- GitHub: https://github.com/PotapenkoEugene/$name"$'\n'
+	{
+		cat <<EOF
+# $display_name
+
+## Active Obsidian Project
+- Project: $display_name
+- File: ~/Orthidian/projects/$display_name.md
+
+## Links
+- Obsidian: ~/Orthidian/projects/$display_name.md
+${mac_gh_line}- Knowledge: ~/Orthidian/knowledge/$display_name/
+EOF
+	} | ssh mac-studio "cat > ~/Projects/$name/CLAUDE.md"
 	# create Obsidian note locally (vault is local; synced separately)
 	create_obsidian_note "$display_name"
+	# auto-launch claude in first tmux window
+	ssh mac-studio "tmux send-keys -t '$name' 'claude' Enter" 2>/dev/null || true
 	echo -e "\033[1;32mDone! Opening mac-studio/$name\033[0m"
 	sleep 0.5
 	tab_title="mac_$name"
@@ -138,8 +176,12 @@ else
 	[ -f "$HOME/Documents/Projects/$name/.claude/CLAUDE.md" ] ||
 		printf '## Active Obsidian Project\n- Project: %s\n- File: ~/Orthidian/projects/%s.md\n' \
 			"$display_name" "$display_name" >"$HOME/Documents/Projects/$name/.claude/CLAUDE.md"
+	# create root CLAUDE.md with project info + links
+	create_project_claude_md "$HOME/Documents/Projects/$name" "$display_name" "$GH" "$name"
 	# create Obsidian note
 	create_obsidian_note "$display_name"
+	# auto-launch claude in first tmux window
+	tmux send-keys -t "$name" "claude" Enter 2>/dev/null || true
 	echo -e "\033[1;32mDone! Opening $name\033[0m"
 	sleep 0.5
 	if kitten @ --to "$SOCK" focus-tab --match "title:$name" 2>/dev/null; then
