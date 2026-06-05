@@ -138,6 +138,16 @@ in {
         ];
       };
       "org/gnome/desktop/interface".show-battery-percentage = true;
+      "org/gnome/desktop/background" = {
+        picture-options = "none";
+        color-shading-type = "solid";
+        primary-color = "#000000";
+        picture-uri = "";
+        picture-uri-dark = "";
+      };
+      "org/gnome/shell/extensions/ding" = {
+        show-home = false;
+      };
       "org/gnome/shell/extensions/appindicator" = {
         icon-brightness = -0.1;
         icon-opacity = 255;
