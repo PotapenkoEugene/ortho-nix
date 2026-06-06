@@ -95,6 +95,9 @@
       "ctrl+shift+left" = "launch --type=background kitty-move-tab-first.sh";
       "ctrl+shift+right" = "launch --type=background kitty-move-tab-last.sh";
 
+      # Extract tab to its own OS window / merge back — picker: New OS Window or existing
+      "ctrl+shift+x" = "detach_tab ask";
+
       # Tab navigation by number — tmux-style (prefix 1..9)
       "ctrl+shift+1" = "goto_tab 1";
       "ctrl+shift+2" = "goto_tab 2";
