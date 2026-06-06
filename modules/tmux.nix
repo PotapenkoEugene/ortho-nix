@@ -77,6 +77,10 @@
         bind H previous-window
         bind L next-window
 
+        # Snap window to first/last position (mirrors Kitty Ctrl+Shift+Left/Right)
+        bind Left  move-window -b -t '{start}'
+        bind Right move-window -a -t '{end}'
+
         bind r command-prompt "rename-window %%"
         bind ^A last-window
         bind ^W list-windows
