@@ -53,34 +53,9 @@
       tree
       presenterm # terminal presentations in markdown
     ])
-    ++ lib.optionals (!config.ortho.headless) (with pkgs; [
-      # ── Heavy / desktop / GUI packages — skipped on headless server ──
-
-      # Multimedia
-      yt-dlp
-      ffmpeg
-
-      # Documents / office
-      aria2
-      texliveFull # Complete TeX Live distribution
-      mermaid-cli # diagram generation from text
-      wego # terminal weather (needs API key)
-      ctop # container top
-      cmatrix
-
-      # Browser automation
-      playwright-cli # Playwright CLI for browser automation in Claude Code
-      notebooklm-py # NotebookLM CLI
-
-      # Dev tools — heavy
-      obsidian # GUI note app
-      imagemagick
-      pkg-config
-      cmake
-      gcc
-
-      # Python environment
-      (python313.withPackages (ps:
+    ++ [
+      # Python environment — available on all hosts (needed for molten/quarto/jupytext on server too)
+      (pkgs.python313.withPackages (ps:
         with ps; [
           weasyprint # for presenterm rendering
           openpyxl
@@ -109,6 +84,32 @@
           requests
           playwright # for excalidraw-diagram render script
         ]))
+    ]
+    ++ lib.optionals (!config.ortho.headless) (with pkgs; [
+      # ── Heavy / desktop / GUI packages — skipped on headless server ──
+
+      # Multimedia
+      yt-dlp
+      ffmpeg
+
+      # Documents / office
+      aria2
+      texliveFull # Complete TeX Live distribution
+      mermaid-cli # diagram generation from text
+      wego # terminal weather (needs API key)
+      ctop # container top
+      cmatrix
+
+      # Browser automation
+      playwright-cli # Playwright CLI for browser automation in Claude Code
+      notebooklm-py # NotebookLM CLI
+
+      # Dev tools — heavy
+      obsidian # GUI note app
+      imagemagick
+      pkg-config
+      cmake
+      gcc
 
       # Desktop / communication / automation
       kitty-themes
