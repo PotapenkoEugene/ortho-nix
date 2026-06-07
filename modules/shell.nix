@@ -76,6 +76,13 @@ in {
         # mac: every claude session remote-control enabled by default
         claude = "${ccUnset} claude --remote-control ${ccArgs} ${ccPrompt}";
       };
+    bashrcExtra = lib.optionalString config.ortho.headless ''
+      # Source server-local bash config (not in git).
+      # Contains: bioinformatics PATH, conda init, HDF5/LD_LIBRARY_PATH, server aliases.
+      # HM aliases defined below override any conflicting ones from this file.
+      [ -f "$HOME/.bashrc_local" ] && source "$HOME/.bashrc_local"
+    '';
+
     initExtra =
       ''
         [ -f "$HOME/.config/sops-nix/secrets/rendered/secrets.env" ] && source "$HOME/.config/sops-nix/secrets/rendered/secrets.env"
