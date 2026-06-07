@@ -13,6 +13,7 @@
 
   programs.nixvim = {
     enable = true;
-    extraLuaPackages = ps: [ps.magick];
+    # magick (ImageMagick lua binding) only needed for image.nvim — skip on headless server
+    extraLuaPackages = ps: lib.optionals (!config.ortho.headless) [ps.magick];
   };
 }

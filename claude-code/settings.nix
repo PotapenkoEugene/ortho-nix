@@ -159,7 +159,14 @@
     ];
   };
 
-  # Bash permissions exclusive to Linux (PipeWire, systemd, GNOME, X11, hardware tools)
+  # Headless server hooks — caveman only, no sounds/desktop popups/OSC99
+  serverHooks = {
+    SessionStart = [cavemanSessionStart];
+    UserPromptSubmit = [cavemanUserPrompt];
+    Stop = [];
+  };
+
+  # Bash permissions exclusive to Linux desktop (PipeWire, systemd, GNOME, X11, hardware tools)
   linuxPermissions = [
     "Bash(pkill pw-play *)"
     "Bash(ip *)"
@@ -206,13 +213,16 @@ in {
     command = "${homeDir}/.config/home-manager/claude-code/statusline.sh";
   };
   hooks =
-    if pkgs.stdenv.isLinux
+    if config.ortho.headless
+    then serverHooks
+    else if pkgs.stdenv.isLinux
     then linuxHooks
     else darwinHooks;
   # mcpServers is NOT honored from settings.json — Claude Code reads from ~/.claude.json only.
   # MCP registration is handled by home.activation.registerMcpServers in modules/claude-code.nix.
   permissions = {
     defaultMode = "acceptEdits";
+    # ~/Orthidian present on all hosts (desktop, mac, and headless server — vault cloned there)
     additionalDirectories = ["~/Orthidian"];
     deny = [
       "Bash(rm -rf /)"
@@ -409,6 +419,6 @@ in {
         "mcp__google-workspace-potapgene__sheets_getMetadata"
         "mcp__google-workspace-potapgene__sheets_getText"
       ]
-      ++ lib.optionals pkgs.stdenv.isLinux linuxPermissions;
+      ++ lib.optionals (pkgs.stdenv.isLinux && !config.ortho.headless) linuxPermissions;
   };
 }

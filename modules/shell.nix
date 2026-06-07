@@ -22,7 +22,7 @@ in {
       "$HOME/.npm-global/bin"
       "$HOME/.config/home-manager/scripts"
     ]
-    ++ lib.optionals pkgs.stdenv.isLinux [
+    ++ lib.optionals (pkgs.stdenv.isLinux && !config.ortho.headless) [
       "/home/ortho/Tools/Bioscripts"
     ];
 
@@ -46,14 +46,15 @@ in {
         tb = "tmux attach -t base";
 
         # kitten ssh: auto-copies kitty terminfo to remote hosts (fixes xterm-kitty unknown terminal)
-        kssh = "kitten ssh";
-
+        # Only on desktop: kitty (and thus kitten) not installed on headless server
         aws = "ssh evgenip@172.31.186.68";
         migal = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa potapgene@172.16.11.55";
         migal_8484 = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -L 8484:localhost:8484 potapgene@172.16.11.55";
         migal_8585 = "ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -L 8585:localhost:8585 potapgene@172.16.11.55";
       }
-      // lib.optionalAttrs pkgs.stdenv.isLinux {
+      // lib.optionalAttrs (pkgs.stdenv.isLinux && !config.ortho.headless) {
+        # Desktop Linux: kitty + VPN + local LLM + GUI apps
+        kssh = "kitten ssh";
         mac = "kitten ssh mac-studio";
         # mac tab transport: macs <session> — opens/attaches named mac tmux session, self-reconnects after sleep
         macs = "mac-attach.sh";
@@ -62,6 +63,10 @@ in {
         vpn_aws_close = "openvpn3 sessions-list | grep Path | tr -s ' ' | cut -f3 -d ' ' | xargs -I {} openvpn3 session-manage --session-path {} --disconnect";
         # Local LLM (Qwen2.5-3B via llama-cpp-vulkan, iGPU-accelerated)
         llm = "llama-cli -m ~/llm-models/qwen2.5-3b-instruct-q4_k_m.gguf --threads 12 --ctx-size 8192 -ngl 99 --no-display-prompt --log-disable -cnv";
+      }
+      // lib.optionalAttrs config.ortho.headless {
+        # Headless server: sync home-manager config from git and apply
+        hm-lab-sync = "cd ~/.config/home-manager && git pull --ff-only && home-manager switch --flake .";
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         # Local LLM (Qwen3-32B via Ollama MLX backend)
@@ -105,7 +110,7 @@ in {
       + lib.optionalString pkgs.stdenv.isDarwin ''
         PS1='\[\e[01;32m\]\u@\h\[\e[00m\]:\[\e[01;34m\]\w\[\e[00m\]\$ '
       ''
-      + lib.optionalString pkgs.stdenv.isLinux ''
+      + lib.optionalString (pkgs.stdenv.isLinux && !config.ortho.headless) ''
         export PKG_CONFIG_PATH="${pkgs.imagemagick.dev}/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig"
         export CFLAGS="-I/usr/include"
         export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"

@@ -80,7 +80,7 @@
       };
     };
     quarto = {
-      enable = true;
+      enable = !config.ortho.headless; # pulls python/jupyter deps; useless headless
       settings = {
         codeRunner = {
           default_method = "molten";
@@ -88,7 +88,7 @@
       };
     };
     jupytext = {
-      enable = true;
+      enable = !config.ortho.headless; # depends on jupytext python package (in heavy set)
       settings = {
         style = "markdown";
         output_extension = "md";
@@ -99,7 +99,7 @@
       enable = false;
     };
     molten = {
-      enable = true;
+      enable = !config.ortho.headless; # requires python+pynvim from heavy package set
       settings = {
         # Core options for molten (Keep it as it is)
         image_provider = "image.nvim";

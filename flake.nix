@@ -47,6 +47,7 @@
         nixvim.homeModules.nixvim
         sops-nix.homeManagerModules.sops
         ./home.nix
+        ./modules/terminal.nix # kitty — desktop hosts only (removed from home.nix shared imports)
         ./hosts/ortho-mac.nix
       ];
     };
@@ -106,6 +107,12 @@
       "ortho" = mkLinuxHome {
         system = "x86_64-linux";
         hostModule = ./hosts/ortho-linux.nix;
+      };
+      # x86_64-linux headless lab server — rootless nix-portable, minimal toolset.
+      # Activation on server (inside nix-portable bubble): home-manager switch --flake .
+      "potapgene" = mkLinuxHome {
+        system = "x86_64-linux";
+        hostModule = ./hosts/potapgene-lab.nix;
       };
     };
 

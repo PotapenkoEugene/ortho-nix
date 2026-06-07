@@ -237,13 +237,13 @@ in {
   '';
 
   # Install playwright-cli browsers (chromium rev 1212, not in nixpkgs playwright-driver)
-  # Idempotent: skipped if chromium-1212 already in cache
-  home.activation.installPlaywrightBrowsers = lib.hm.dag.entryAfter ["installPackages"] ''
+  # Idempotent: skipped if chromium-1212 already in cache. Skipped on headless server (no playwright-cli).
+  home.activation.installPlaywrightBrowsers = lib.mkIf (!config.ortho.headless) (lib.hm.dag.entryAfter ["installPackages"] ''
     if command -v playwright-cli &>/dev/null && \
        [ ! -d "${config.home.homeDirectory}/.cache/ms-playwright/chromium-1212" ]; then
       cd "${config.home.homeDirectory}" && playwright-cli install 2>/dev/null || true
     fi
-  '';
+  '');
 
   # Install caveman plugin into Claude Code's plugin cache.
   # Hooks (SessionStart + UserPromptSubmit) are declared in settings.nix and call the JS scripts here.
@@ -279,7 +279,8 @@ in {
   # Install understand-anything plugin into Claude Code's plugin cache.
   # Uses mutable copy (not symlink) so pnpm can write node_modules on first use.
   # The plugin's SKILL.md handles `pnpm build` automatically on first invocation.
-  home.activation.installUnderstandAnything = lib.hm.dag.entryAfter ["writeBoundary"] ''
+  # Skipped on headless server (no pnpm build environment, not useful there).
+  home.activation.installUnderstandAnything = lib.mkIf (!config.ortho.headless) (lib.hm.dag.entryAfter ["writeBoundary"] ''
     PLUGIN_CACHE="$HOME/.claude/plugins/cache/understand-anything/understand-anything/2.3.1"
     INSTALLED_JSON="$HOME/.claude/plugins/installed_plugins.json"
 
@@ -306,7 +307,7 @@ in {
         }
       ]' "$INSTALLED_JSON" > "$INSTALLED_JSON.tmp" && \
       mv "$INSTALLED_JSON.tmp" "$INSTALLED_JSON"
-  '';
+  '');
 
   # Register MCP servers in ~/.claude.json (the runtime config Claude Code actually reads).
   # settings.json/mcpServers is NOT honored by Claude Code — only ~/.claude.json is.
@@ -318,64 +319,70 @@ in {
 
     have_mcp() { "$CLAUDE" mcp list 2>/dev/null | grep -q "^$1:"; }
 
-    # orthi-brain: SSH-stdio tunnel to mac-studio (Linux) or direct venv (darwin)
-    if ! have_mcp "orthi-brain"; then
-      ${
-      if pkgs.stdenv.isLinux
-      then ''
-        "$CLAUDE" mcp add --scope user orthi-brain -- \
-          ssh -T -o BatchMode=yes -o ServerAliveInterval=60 \
-              -o ServerAliveCountMax=3 -o ConnectTimeout=10 \
-              mac-studio \
-              '/Users/ortho/Projects/orthi-brain/.venv/bin/python -m orthi_brain.server'
-      ''
-      else ''
-        "$CLAUDE" mcp add --scope user orthi-brain -- \
-          "${config.home.homeDirectory}/Projects/orthi-brain/.venv/bin/python" \
-          -m orthi_brain.server
-      ''
-    }
-    fi
+    # orthi-brain: SSH-stdio tunnel to mac-studio (Linux) or direct venv (darwin).
+    # Skipped on headless server (mac-studio SSH alias not available there; use mcpvault instead).
+    ${lib.optionalString (!config.ortho.headless) ''
+      if ! have_mcp "orthi-brain"; then
+        ${
+        if pkgs.stdenv.isLinux
+        then ''
+          "$CLAUDE" mcp add --scope user orthi-brain -- \
+            ssh -T -o BatchMode=yes -o ServerAliveInterval=60 \
+                -o ServerAliveCountMax=3 -o ConnectTimeout=10 \
+                mac-studio \
+                '/Users/ortho/Projects/orthi-brain/.venv/bin/python -m orthi_brain.server'
+        ''
+        else ''
+          "$CLAUDE" mcp add --scope user orthi-brain -- \
+            "${config.home.homeDirectory}/Projects/orthi-brain/.venv/bin/python" \
+            -m orthi_brain.server
+        ''
+      }
+      fi
+    ''}
 
-    # mcpvault: BM25 full-text search over Obsidian vault
+    # mcpvault: BM25 full-text search over Obsidian vault.
+    # Registered on all hosts where vault is present (desktop, mac, and headless server).
     if ! have_mcp "mcpvault"; then
       "$CLAUDE" mcp add --scope user mcpvault -- \
         npx @bitbonsai/mcpvault@latest "${config.home.homeDirectory}/Orthidian"
     fi
 
-    # google-workspace: two isolated instances, one per account
-    # Each gets its own GOOGLE_WORKSPACE_MCP_HOME to keep credentials separate.
-    CLAUDE_JSON="$HOME/.claude.json"
-    GWMCP_S="${config.home.homeDirectory}/.config/gwmcp-selfisheugenes"
-    GWMCP_P="${config.home.homeDirectory}/.config/gwmcp-potapgene"
-    GWMCP_OLD="${config.home.homeDirectory}/.config/google-workspace-mcp"
+    # google-workspace: two isolated instances, one per account.
+    # Skipped on headless server (no OAuth credentials/browser there).
+    ${lib.optionalString (!config.ortho.headless) ''
+      CLAUDE_JSON="$HOME/.claude.json"
+      GWMCP_S="${config.home.homeDirectory}/.config/gwmcp-selfisheugenes"
+      GWMCP_P="${config.home.homeDirectory}/.config/gwmcp-potapgene"
+      GWMCP_OLD="${config.home.homeDirectory}/.config/google-workspace-mcp"
 
-    # Migrate credentials from old single-account setup (no re-auth needed for selfisheugenes)
-    [ -d "$GWMCP_OLD" ] && [ ! -d "$GWMCP_S" ] && cp -r "$GWMCP_OLD" "$GWMCP_S"
+      # Migrate credentials from old single-account setup (no re-auth needed for selfisheugenes)
+      [ -d "$GWMCP_OLD" ] && [ ! -d "$GWMCP_S" ] && cp -r "$GWMCP_OLD" "$GWMCP_S"
 
-    # Idempotent jq update: remove old server, add both new ones (//= skips if already present)
-    if [ -f "$CLAUDE_JSON" ] && ${pkgs.jq}/bin/jq empty "$CLAUDE_JSON" 2>/dev/null; then
-      ${pkgs.jq}/bin/jq \
-        --arg s "$GWMCP_S" \
-        --arg p "$GWMCP_P" \
-        'del(.mcpServers["google-workspace"]) |
-         .mcpServers["google-workspace-selfisheugenes"] //= {
-           "type": "stdio", "command": "npx",
-           "args": ["-y", "@presto-ai/google-workspace-mcp"],
-           "env": {"GOOGLE_WORKSPACE_MCP_HOME": $s}
-         } |
-         .mcpServers["google-workspace-potapgene"] //= {
-           "type": "stdio", "command": "npx",
-           "args": ["-y", "@presto-ai/google-workspace-mcp"],
-           "env": {"GOOGLE_WORKSPACE_MCP_HOME": $p}
-         }' "$CLAUDE_JSON" > "$CLAUDE_JSON.tmp" && mv "$CLAUDE_JSON.tmp" "$CLAUDE_JSON"
-    fi
+      # Idempotent jq update: remove old server, add both new ones (//= skips if already present)
+      if [ -f "$CLAUDE_JSON" ] && ${pkgs.jq}/bin/jq empty "$CLAUDE_JSON" 2>/dev/null; then
+        ${pkgs.jq}/bin/jq \
+          --arg s "$GWMCP_S" \
+          --arg p "$GWMCP_P" \
+          'del(.mcpServers["google-workspace"]) |
+           .mcpServers["google-workspace-selfisheugenes"] //= {
+             "type": "stdio", "command": "npx",
+             "args": ["-y", "@presto-ai/google-workspace-mcp"],
+             "env": {"GOOGLE_WORKSPACE_MCP_HOME": $s}
+           } |
+           .mcpServers["google-workspace-potapgene"] //= {
+             "type": "stdio", "command": "npx",
+             "args": ["-y", "@presto-ai/google-workspace-mcp"],
+             "env": {"GOOGLE_WORKSPACE_MCP_HOME": $p}
+           }' "$CLAUDE_JSON" > "$CLAUDE_JSON.tmp" && mv "$CLAUDE_JSON.tmp" "$CLAUDE_JSON"
+      fi
+    ''}
   '';
 
   # Install Python playwright's chromium for notebooklm login flow
   # Uses playwright binary from the notebooklm-py closure (rev 1200, separate from playwright-cli's rev 1212)
-  # Idempotent: skipped if chromium-1200 already present
-  home.activation.installNotebooklmBrowsers = lib.hm.dag.entryAfter ["installPackages"] ''
+  # Idempotent: skipped if chromium-1200 already present. Skipped on headless server (no notebooklm-py).
+  home.activation.installNotebooklmBrowsers = lib.mkIf (!config.ortho.headless) (lib.hm.dag.entryAfter ["installPackages"] ''
     NOTEBOOKLM_BIN=$(${pkgs.coreutils}/bin/readlink -f "${config.home.homeDirectory}/.nix-profile/bin/notebooklm" 2>/dev/null || true)
     if [ -n "$NOTEBOOKLM_BIN" ]; then
       PLAYWRIGHT_BIN=$(dirname "$NOTEBOOKLM_BIN" | sed 's|/bin$||' | xargs -I{} find {} -name playwright -path "*/playwright-1*/bin/playwright" 2>/dev/null | head -1)
@@ -383,5 +390,5 @@ in {
         PLAYWRIGHT_BROWSERS_PATH="${config.home.homeDirectory}/.cache/ms-playwright" "$PLAYWRIGHT_BIN" install chromium 2>/dev/null || true
       fi
     fi
-  '';
+  '');
 }

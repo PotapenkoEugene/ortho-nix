@@ -57,11 +57,13 @@
         set -g status-position top       # macOS / darwin style
 
         # Clipboard config
-        set -g @override_copy_command '${
+        # Headless: rely on `set-clipboard on` above for OSC52 passthrough to the SSH client.
+        # Desktop: override with native clipboard tool (xclip on Linux, pbcopy on mac).
+        ${lib.optionalString (!config.ortho.headless) "set -g @override_copy_command '${
           if pkgs.stdenv.isDarwin
           then "pbcopy"
           else "xclip -selection clipboard"
-        }'
+        }'"}
 
         # Pane styling
         set -g pane-active-border-style 'fg=magenta,bg=default'
@@ -145,8 +147,8 @@
         %endif
 
       ''
-      + lib.optionalString pkgs.stdenv.isLinux ''
-        # Linux-only keybindings
+      + lib.optionalString (pkgs.stdenv.isLinux && !config.ortho.headless) ''
+        # Linux desktop-only keybindings (GUI apps: openvpn3, dolphin, rmpc, kitty-session)
         bind C-y display-popup \
            -d "#{pane_current_path}" \
            -w 80% \

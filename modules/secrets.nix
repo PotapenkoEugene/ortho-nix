@@ -3,7 +3,7 @@
   lib,
   ...
 }:
-lib.mkIf (builtins.pathExists ../secrets/common.yaml) {
+lib.mkIf (builtins.pathExists ../secrets/common.yaml && !config.ortho.headless) {
   # sops-nix needs parent dir to exist before activation
   home.activation.createSopsDir = lib.hm.dag.entryBefore ["writeBoundary"] ''
     mkdir -p "${config.home.homeDirectory}/.config/sops-nix"

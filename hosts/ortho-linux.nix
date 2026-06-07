@@ -6,6 +6,7 @@
   ...
 }: {
   imports = [
+    ../modules/terminal.nix # kitty — desktop hosts only (removed from home.nix shared imports)
     ../modules/gnome.nix
     ../modules/theme.nix
     ../modules/music.nix

@@ -12,51 +12,72 @@
         (builtins.readFile ../scripts/tmux-recency-source.sh))
     ]
     ++ (with pkgs; [
+      # ── Core CLI tools — installed on ALL hosts (desktop + headless server) ──
+
       # System monitoring
       htop
       btop
 
-      # Analytics
+      # Analytics / data
       datamash
       tabiew
       xan # CSV Swiss Army knife
 
-      # Music clients — daemon only on Linux (music module disabled on darwin)
-      yt-dlp
-      ffmpeg
-
-      # File management
-      ripgrep # Often used with fzf
-      fd # Modern find alternative, works well with fzf
-      television # Fuzzy finder TUI (tv command)
-      eza # color alternative for ls
+      # File management / search
+      ripgrep # used with fzf
+      fd # modern find, works well with fzf
+      television # fuzzy finder TUI (tv command)
+      eza # color ls alternative
       bat # cat with syntax highlight
 
-      # Documents / office
-      aria2
+      # Documents
       pandoc
-      texliveFull # Complete TeX Live distribution
-      mermaid-cli # diagram generation from text
-      wego # terminal weather
-      ctop # container top
 
-      # Browser automation
-      playwright-cli # Playwright CLI for browser automation in Claude Code
-      notebooklm-py # NotebookLM CLI — programmatic access via undocumented RPC API
-
-      # Dev tools
-      cmatrix
+      # Dev tools — core
       git
       gh # GitHub CLI
       lazygit
-      obsidian
       nil # Nix LSP
       bash-language-server
       alejandra # nix formatter
       shfmt # shell formatter
       shellcheck # shell linter
+
+      # Node.js (needed for Claude Code plugins: caveman, understand-anything)
+      nodejs_24
+      pnpm
+
+      # Utilities
+      dos2unix
+      tldr
+      tree
+      presenterm # terminal presentations in markdown
+    ])
+    ++ lib.optionals (!config.ortho.headless) (with pkgs; [
+      # ── Heavy / desktop / GUI packages — skipped on headless server ──
+
+      # Multimedia
+      yt-dlp
+      ffmpeg
+
+      # Documents / office
+      aria2
+      texliveFull # Complete TeX Live distribution
+      mermaid-cli # diagram generation from text
+      wego # terminal weather (needs API key)
+      ctop # container top
+      cmatrix
+
+      # Browser automation
+      playwright-cli # Playwright CLI for browser automation in Claude Code
+      notebooklm-py # NotebookLM CLI
+
+      # Dev tools — heavy
+      obsidian # GUI note app
       imagemagick
       pkg-config
+      cmake
+      gcc
 
       # Python environment
       (python313.withPackages (ps:
@@ -91,29 +112,15 @@
 
       # Desktop / communication / automation
       kitty-themes
-      tdl # Telegram CLI — automation pipelines (download/upload/forward, MTProto)
+      tdl # Telegram CLI
 
       # Fonts
       jetbrains-mono
       nerd-fonts.symbols-only
 
-      # Node.js
-      nodejs_24
-      pnpm
-
-      # Build tools
-      cmake
-      gcc
-
       # Package managers / envs
       micromamba
       uv # Python package manager (provides uvx)
-
-      # Utilities
-      dos2unix
-      tldr
-      tree
-      presenterm # terminal presentations in markdown
 
       # GIS
       gdal
@@ -135,7 +142,7 @@
     ++ lib.optionals pkgs.stdenv.isDarwin (with pkgs; [
       # claude-code installed via native installer (~/.local/bin/claude) for auto-updates
     ])
-    ++ lib.optionals pkgs.stdenv.isLinux (with pkgs; [
+    ++ lib.optionals (pkgs.stdenv.isLinux && !config.ortho.headless) (with pkgs; [
       # Linux-only: GUI office / viewers / desktop apps
       libreoffice
       zathura # PDF viewer (GTK)

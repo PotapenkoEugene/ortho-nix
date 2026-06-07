@@ -141,5 +141,22 @@
       })
 
     require("tv").setup({})
+
+    ${lib.optionalString config.ortho.headless ''
+      -- Headless server: use OSC52 clipboard provider so "+y copies to the local
+      -- terminal's clipboard over SSH (no xclip/wl-clipboard needed).
+      -- Requires nvim 0.10+ and the connecting terminal to support OSC52 (kitty, iTerm2, etc.)
+      vim.g.clipboard = {
+        name = "OSC52",
+        copy = {
+          ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+          ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+        },
+        paste = {
+          ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+          ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+        },
+      }
+    ''}
   '';
 }
