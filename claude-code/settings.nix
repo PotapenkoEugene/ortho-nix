@@ -205,6 +205,13 @@ in {
   effortLevel = "medium";
   showTurnDuration = true;
   includeGitInstructions = false;
+  # Disable claude.ai first-party MCP connectors (Gmail/Calendar/Drive).
+  # They re-auth per session; the presto-ai stdio servers already cover Google
+  # and auto-refresh. ENABLE_..=false short-circuits the connector eligibility
+  # check (verified in cli.js v2.1.168: J9() treats "false" as disable).
+  env = {
+    ENABLE_CLAUDEAI_MCP_SERVERS = "false";
+  };
   attribution = {
     commit = "Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>";
   };
