@@ -202,10 +202,10 @@
 in {
   "$schema" = "https://json.schemastore.org/claude-code-settings.json";
   model = "opusplan";
-  # opusplan plan phase -> Fable 5 (via ANTHROPIC_DEFAULT_OPUS_MODEL remap)
+  # opusplan plan phase -> Opus 4.8 (deep reasoning for planning)
   # opusplan exec phase -> Sonnet 4.6 (fast tool calling preserved)
-  # execution decision points -> Fable advisor
-  advisorModel = "fable";
+  # execution decision points -> Opus 4.8 advisor
+  advisorModel = "claude-opus-4-8";
   effortLevel = "medium";
   showTurnDuration = true;
   includeGitInstructions = false;
@@ -215,9 +215,6 @@ in {
   # check (verified in cli.js v2.1.168: J9() treats "false" as disable).
   env = {
     ENABLE_CLAUDEAI_MCP_SERVERS = "false";
-    # Remap opus alias -> Fable 5 so opusplan's plan mode uses Fable.
-    # Docs: ANTHROPIC_DEFAULT_OPUS_MODEL feeds opusplan when plan mode is active.
-    ANTHROPIC_DEFAULT_OPUS_MODEL = "claude-fable-5";
   };
   attribution = {
     commit = "Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>";
