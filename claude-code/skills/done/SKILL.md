@@ -2,7 +2,7 @@
 name: done
 description: End-of-task wrap-up — note → knowledge → commit+push (local repo only) → understand-graph update (if graph exists).
 argument-hint: "[optional commit message override]"
-allowed-tools: Bash(git *), Bash(find *), Bash(stat *), Bash(ls *), Bash(du *), Bash(jq *), Read, Edit, Glob, Grep
+allowed-tools: Bash(git *), Bash(vault-sync), Bash(find *), Bash(stat *), Bash(ls *), Bash(du *), Bash(jq *), Read, Edit, Glob, Grep
 ---
 
 # Done Skill
@@ -144,7 +144,7 @@ For each group in order:
    git push
    ```
    If no upstream: `git push -u origin <branch>`
-   If push fails due to remote changes: `git pull --rebase && git push`
+   If push fails due to remote changes: `git pull --rebase --autostash && git push`
 
 **If argument provided** (`/done "message"`): treat all changes as one group with that message.
 
@@ -158,6 +158,19 @@ Done: 2 commits pushed
   abc1234 feat(claude-code): add /done skill
   def5678 chore(nix): add done skill symlink
 ```
+
+### Vault Sync (always runs — outside the CWD git guard)
+
+After the CWD repo is handled, sync the Orthidian vault unconditionally — regardless of
+where `/done` was invoked:
+
+```bash
+vault-sync
+```
+
+Report its exit status line (`vault-sync: ok` or `vault-sync: FAILED …`). Non-fatal: if it
+reports FAILED, surface the message in one line and continue — the commit is saved locally and
+the boot/shutdown service will retry on next login.
 
 ---
 
@@ -202,7 +215,7 @@ Phase 4 is **non-fatal** — if the update errors mid-run, report the error in o
 - Never `--no-verify`
 - Never `git push --force`
 - Never commit secrets — always gitignore them and warn
-- Phase 3 operates **only** on the git repo whose work tree contains `$PWD`. Never `cd` elsewhere for git commands. `~/Orthidian/*` edits from Phase 2 stay uncommitted on disk — they are handled by Orthidian's own backup timer.
+- Phase 3 operates **only** on the git repo whose work tree contains `$PWD`. Never `cd` elsewhere for git commands. `~/Orthidian/*` edits from Phase 2 stay uncommitted on disk until the Vault Sync step (above) commits and pushes them via `vault-sync`.
 - Phase 3 skips silently when CWD is not inside a git repo.
 - Phase 4 skips silently when CWD has no `.understand-anything/knowledge-graph.json` — graph maintenance is opt-in per project.
 - Phase 1, 2, and 4 failures are non-fatal — report the issue and continue. Phase 3 is the only phase that must succeed; if git state is clean (nothing to commit), report that and finish.

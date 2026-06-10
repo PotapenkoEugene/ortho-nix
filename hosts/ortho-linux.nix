@@ -12,7 +12,6 @@
     ../modules/music.nix
     ../modules/piper.nix
     ../modules/llm.nix
-    ../modules/obsidian-backup.nix
     ../modules/kitty-session.nix
     ../modules/firefox.nix
     ../modules/icon-cache.nix

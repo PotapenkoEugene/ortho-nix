@@ -5,7 +5,7 @@
   ...
 }: {
   # Cross-platform modules — imported on all hosts.
-  # Linux-only modules (gnome, theme, music, piper, llm, obsidian-backup, kitty-session)
+  # Linux-only modules (gnome, theme, music, piper, llm, kitty-session)
   # are imported from hosts/ortho-linux.nix.
   imports = [
     ./modules/options.nix # ortho.headless flag — must be first
@@ -17,6 +17,7 @@
     ./modules/claude-code.nix
     ./modules/television.nix
     ./modules/secrets.nix
+    ./modules/vault-sync.nix # vault sync — shared; platform triggers are guarded inside
   ];
 
   home.stateVersion = "24.11";
