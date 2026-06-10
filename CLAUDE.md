@@ -12,7 +12,9 @@ A Nix Flake-based Home Manager configuration for user `ortho`. Two hosts:
 - **`ortho`** — x86_64-linux (non-NixOS, Ubuntu-based with Nix). Full desktop config: GNOME, PipeWire, whisper hotkey, local LLM, peon sounds.
 - **`ortho-mac`** — aarch64-darwin (Apple Silicon Mac Studio). nix-darwin with home-manager as a submodule. Single activation: `darwin-rebuild switch --flake .#ortho-mac`. Shared tooling only: shell, neovim, tmux, kitty, Claude Code, bioinformatics CLIs, Obsidian workflow.
 
-**Disabled on darwin:** `gnome`, `theme`, `music` (mpd), `piper`, `llm`, `obsidian-backup`, `kitty-session` modules; whisper F8 hotkey; VPN popups; Peon notifications/sounds; all systemd timers.
+**Disabled on darwin:** `gnome`, `theme`, `music` (mpd), `piper`, `llm`, `kitty-session` modules; whisper F8 hotkey; VPN popups; Peon notifications/sounds; all systemd timers.
+
+**Shared (cross-platform) with platform triggers inside:** `vault-sync` — CLI available everywhere; Linux gets a systemd boot/shutdown service; Mac gets a launchd `RunAtLoad` login agent.
 
 ## Mac Studio — Working Conventions
 
@@ -106,7 +108,7 @@ modules/
   claude-code.nix           # Claude Code settings, skills, hooks  [shared, guarded]
   piper.nix                 # Piper TTS + voice models  [Linux only]
   llm.nix                   # llama-cpp-vulkan + Qwen2.5-3B model  [Linux only]
-  obsidian-backup.nix       # systemd timer — git push Orthidian  [Linux only]
+  vault-sync.nix            # vault sync CLI + triggers  [shared; systemd on Linux, launchd on darwin]
   kitty-session.nix         # systemd timer — snapshot kitty tabs  [Linux only]
   ollama.nix                # Ollama LLM daemon + model pulls  [darwin only]
   secrets.nix               # sops-nix: age-encrypted secrets → /run/secrets/  [darwin, no-op until secrets/mac.yaml committed]
@@ -456,13 +458,12 @@ Planned automation features to implement:
 - Config location: `modules/neovim/plugins.nix` (add plugin + keymap)
 - Suggested keymaps: `<leader>tr` (translate selection), `<leader>tw` (translate word)
 
-### 7. Obsidian Auto-Backup (Git)
-- Systemd user timer + service to auto-commit and push `~/Orthidian/`
-- Implementation: `systemd.user.services` + `systemd.user.timers` in Home Manager (~15 lines of Nix)
-- Script: `git add -A && git commit -m "auto: $(date +%Y-%m-%d %H:%M)" && git push` (no-op if nothing changed)
-- Frequency: configurable (every 30 min, hourly, or nightly)
-- Prerequisites: Orthidian must be a git repo with a remote configured
-- **Status**: Waiting — user plans to restructure the Obsidian repo first, implement after that's done
+### 7. Obsidian Vault Sync (Git) — Done 2026-06-10
+- Implemented as `modules/vault-sync.nix` — conflict-resistant multi-machine sync via git
+- CLI `vault-sync`: `git add -A → commit (uname -n in msg) → pull --rebase --autostash → push` with 3-retry loop and `ConnectTimeout=10`
+- Triggers: Linux systemd oneshot service (ExecStart=boot pull, ExecStop=shutdown push); Mac launchd `RunAtLoad` agent; `/done` skill always calls `vault-sync` at wrap-up
+- `*.md merge=union` in `.gitattributes` — markdown never shows conflict markers
+- `.obsidian/workspace.json` gitignored and untracked — eliminates the #1 conflict source
 
 ### 8. Git Hooks
 - Pre-commit hooks for this config repo:
