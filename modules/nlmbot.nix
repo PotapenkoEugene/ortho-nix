@@ -8,7 +8,7 @@
   dbDir = "/Users/ortho/Library/Application Support/nlmbot";
   logDir = "/Users/ortho/Library/Logs";
   orthidianDir = "/Users/ortho/Orthidian";
-  podcastsDir = "/Users/ortho/Podcasts/notebooklm-popsci";
+  podcastsDir = "/Users/ortho/NotebookLM_pipelines";
 
   nlmbotRun = pkgs.writeShellApplication {
     name = "nlmbot-run";
