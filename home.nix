@@ -70,5 +70,22 @@
     ''
   );
 
+  # Screenshot sync daemon — Linux desktop only.
+  # Watches ~/Pictures/Screenshots/ for new PNGs, scps to mac-studio,
+  # puts remote path on clipboard so it can be pasted directly into Claude Code.
+  systemd.user.services.screenshot-sync = lib.mkIf (pkgs.stdenv.isLinux && !config.ortho.headless) {
+    Unit = {
+      Description = "Auto-sync screenshots to Mac Studio";
+      After = ["network.target"];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${config.home.homeDirectory}/.config/home-manager/scripts/screenshot-sync.sh";
+      Restart = "on-failure";
+      RestartSec = "5";
+    };
+    Install.WantedBy = ["default.target"];
+  };
+
   programs.home-manager.enable = true;
 }
