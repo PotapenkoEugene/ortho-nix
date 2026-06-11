@@ -186,6 +186,7 @@
       fastp
       bowtie2
       macs2
+      tigervnc
       # Other Linux-only
       autossh # auto-restart SSH connections (mac tab sleep/wake reconnect)
       fuse # for installing apps from AppImage
