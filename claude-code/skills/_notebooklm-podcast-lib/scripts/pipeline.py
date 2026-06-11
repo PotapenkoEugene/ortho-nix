@@ -778,18 +778,18 @@ def _run_from_notebook(
             artifact_id = _get_audio_artifact_id(notebook_id) or ""
 
         if artifact_id:
-            print(f"  Generation started (artifact: {artifact_id}). Waiting up to 15 min...")
+            print(f"  Generation started (artifact: {artifact_id}). Waiting up to 45 min...")
             _notebooklm(
                 "artifact", "wait", artifact_id,
                 "-n", notebook_id,
-                "--timeout", "900",
-                "--interval", "10",
+                "--timeout", "2700",
+                "--interval", "15",
                 capture=False,
             )
         else:
-            print("  Generation started. Waiting 12 minutes...")
+            print("  Generation started. Waiting 20 minutes...")
             import time as _time
-            _time.sleep(720)
+            _time.sleep(1200)
 
         print("  Audio generated. Downloading...")
         _notebooklm("download", "audio", str(audio_path), "--latest", capture=False)
