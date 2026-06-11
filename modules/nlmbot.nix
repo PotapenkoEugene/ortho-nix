@@ -26,7 +26,7 @@
       export PODCASTS_DIR="${podcastsDir}"
       export NLM_PROJECT_DIR="${repoDir}"
       export DAILY_RUN_HOUR="5"
-      export PODCAST_TARGET="3"
+      export PODCAST_TARGET="5"
       mkdir -p "${dbDir}"
       mkdir -p "${podcastsDir}"
       mkdir -p "${orthidianDir}/ideas"

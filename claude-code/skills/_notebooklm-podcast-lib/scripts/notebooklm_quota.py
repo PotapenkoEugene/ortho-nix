@@ -1,4 +1,4 @@
-"""Check NotebookLM daily audio generation quota against free-tier limit."""
+"""Check NotebookLM daily audio generation quota (NotebookLM Plus: 20/day)."""
 
 import json
 import subprocess
@@ -6,7 +6,7 @@ import sys
 from datetime import date
 
 
-FREE_TIER_DAILY_LIMIT = 3
+FREE_TIER_DAILY_LIMIT = 20
 
 
 class QuotaExhaustedError(Exception):
@@ -57,7 +57,7 @@ def check(limit: int = FREE_TIER_DAILY_LIMIT) -> int:
     if count >= limit:
         raise QuotaExhaustedError(
             f"NotebookLM daily quota exhausted: {count}/{limit} audio overviews generated today. "
-            "Try again tomorrow, or upgrade to NotebookLM Plus (20/day) at notebooklm.google.com."
+            "Try again tomorrow (resets at UTC 00:00)."
         )
     return count
 
