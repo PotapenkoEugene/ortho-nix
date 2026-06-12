@@ -765,6 +765,7 @@ def _run_from_notebook(
             "generate", "audio", prompt,
             "--format", profile_format,
             "--length", length,
+            "--retry", "3",
             "--no-wait", "--json",
             capture=True,
         )
