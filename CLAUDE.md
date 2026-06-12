@@ -422,10 +422,12 @@ Planned automation features to implement:
 ### 1. Google Workspace Integration (Calendar + Gmail)
 - **Status**: Migrated from `gws` CLI to `google-workspace` MCP — Done 2026-05-29
 - **Approach**: `@presto-ai/google-workspace-mcp` stdio MCP server — auto-refreshing OAuth, no 7-day expiry, no Google Cloud project verification needed. Registered declaratively in `modules/claude-code.nix` (`registerMcpServers` activation) and at user scope in `~/.claude.json`.
-- **Auth**: presto-ai manages OAuth; credentials cached at `~/.config/google-workspace-mcp/credentials/`. Re-auth: `rm -rf ~/.config/google-workspace-mcp && claude mcp remove google-workspace && /hm-switch` (triggers re-registration + browser OAuth on next use).
-- **Account**: `selfisheugenes@gmail.com` (single account). Google Tasks sync dropped.
-- **Email digest**: `scripts/email-digest.sh` — `claude -p` fetches via `gmail_search`+`gmail_get` MCP tools + categorizes via `/mail` skill + writes digest. Single account `[S]`.
-- **Calendar**: `scripts/calendar-events.sh` — `claude -p` fetches via `calendar_listEvents` MCP (both calendars), writes JSON to tempfile, formats with jq, outputs `- HH:MM-HH:MM -- Summary` lines for daily note dashboard.
+- **Auth**: presto-ai manages OAuth; credentials cached at `~/.config/gwmcp-selfisheugenes/` and `~/.config/gwmcp-potapgene/`. Re-auth per account:
+  - selfisheugenes: `rm -f ~/.config/gwmcp-selfisheugenes/gemini-cli-workspace-token.json` then trigger any tool call
+  - potapgene: revoke at https://myaccount.google.com/connections (potapgene account) → `rm -f ~/.config/gwmcp-potapgene/gemini-cli-workspace-token.json` → trigger tool call → **grant ALL scopes** (not just gmail+calendar — partial scope = no refresh_token → token dies after 1hr)
+- **Accounts**: `selfisheugenes@gmail.com` [S] and `potapgene@gmail.com` [P]. Google Tasks sync dropped.
+- **Email digest**: `scripts/email-digest.sh` — `claude -p` fetches via `gmail_search`+`gmail_get` MCP tools + categorizes via `/mail` skill + writes digest. Both accounts tagged `[S]`/`[P]`.
+- **Calendar**: `scripts/calendar-events.sh` — `claude -p` fetches via `calendar_listEvents` MCP (both accounts), writes JSON to tempfile, formats with jq, outputs `- HH:MM-HH:MM -- Summary` lines for daily note dashboard.
 
 ### 2. Reminder Notifications
 - Parse daily notes for:
