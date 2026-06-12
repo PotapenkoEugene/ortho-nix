@@ -11,6 +11,33 @@ When the user asks to apply home-manager changes, follow this safe workflow:
 
 ## Workflow
 
+### Step 0 — nlmbot run-window guard (MANDATORY, run first)
+
+**IMPORTANT: You MUST NOT run `home-manager switch`, `darwin-rebuild switch`, or the
+mac-studio SSH rebuild between 03:00 and 04:59 local time.**  That window belongs to the
+nlmbot daily podcast run.  A rebuild during that window sends SIGTERM to the bot
+mid-pipeline and kills the day's podcasts with no automatic retry until the next day.
+
+Run this check first, before any other step:
+
+```bash
+H=$(date +%H)
+if [ "$H" = "03" ] || [ "$H" = "04" ]; then
+  TARGET="$(date -j -f '%Y-%m-%d %H:%M:%S' "$(date +%Y-%m-%d) 05:00:00" +%s 2>/dev/null \
+    || date -d "$(date +%Y-%m-%d) 05:00:00" +%s)"
+  NOW=$(date +%s)
+  SECS=$(( TARGET - NOW ))
+  echo "BLACKOUT 03:00–04:59 (nlmbot run window). ${SECS}s remaining until 05:00."
+  echo "Waiting until 05:00 before applying changes…"
+  sleep "$SECS"
+fi
+```
+
+If the wait is not acceptable (e.g. urgent fix), **stop and report**:
+> "Currently in nlmbot blackout window (03:00–04:59). Rebuild deferred — retry after 05:00,
+> or confirm explicitly to override."
+Do NOT proceed with the switch unless the user explicitly says to override the blackout.
+
 1. **Format the code**
    ```bash
    alejandra .
