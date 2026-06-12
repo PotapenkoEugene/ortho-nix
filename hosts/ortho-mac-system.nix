@@ -53,6 +53,17 @@
     fi
   '';
 
+  # skhd global hotkeys — cmd+alt-n opens personal daily note.
+  # IMPORTANT: after darwin-rebuild, grant Accessibility permission to skhd in
+  # System Settings > Privacy & Security > Accessibility (cannot be scripted).
+  services.skhd = {
+    enable = true;
+    skhdConfig = ''
+      # Personal daily note: cmd+alt-n → kitty running personal-note-open.sh
+      cmd + alt - n : /Users/ortho/.nix-profile/bin/kitty /Users/ortho/.config/home-manager/scripts/personal-note-open.sh
+    '';
+  };
+
   # Ollama LLM daemon — auto-starts on login, restarts if killed.
   # Listens on all interfaces (OLLAMA_HOST=0.0.0.0) so Tailscale IP is reachable from Linux.
   launchd.user.agents.ollama = {

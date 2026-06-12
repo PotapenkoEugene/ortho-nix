@@ -6,9 +6,13 @@
 #   - HH:MM-HH:MM -- Summary
 #   - All day -- Summary
 
-TODAY=$(date +%Y-%m-%d)
-TOMORROW=$(date -d "$TODAY + 1 day" +%Y-%m-%d)
-TZ_OFFSET=$(date +%:z)
+# Portable GNU date (macOS needs coreutils gdate for -d flag)
+if command -v gdate >/dev/null 2>&1; then _DATE() { gdate "$@"; }
+else _DATE() { date "$@"; }; fi
+
+TODAY=$(_DATE +%Y-%m-%d)
+TOMORROW=$(_DATE -d "$TODAY + 1 day" +%Y-%m-%d)
+TZ_OFFSET=$(_DATE +%:z)
 TMPFILE=$(mktemp /tmp/calendar-events-XXXXXX.json)
 
 CALENDARS=(

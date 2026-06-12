@@ -18,6 +18,7 @@
     ./modules/television.nix
     ./modules/secrets.nix
     ./modules/vault-sync.nix # vault sync — shared; platform triggers are guarded inside
+    ./modules/personal-note.nix # personal daily note generator — overnight launchd on Darwin
   ];
 
   home.stateVersion = "24.11";

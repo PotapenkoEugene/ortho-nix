@@ -35,7 +35,7 @@ import qa_report
 
 PODCAST_ROOT = Path.home() / "NotebookLM_pipelines"
 PROMPTS_DIR = LIB.parent / "prompts"
-EPISODE_LOG = Path.home() / "Orthidian" / "projects" / "podcast-channel.md"
+EPISODE_LOG = Path.home() / "Orthidian" / "projects" / "podcast-channel" / "podcast-channel.md"
 
 
 # ──────────────────────────────────────────────
@@ -176,7 +176,7 @@ def _get_audio_artifact_id(notebook_id: str) -> str | None:
 
 
 def _append_episode_log(slug: str, doi: str, ru_title: str, episode_dir: Path):
-    """Append episode line to ~/Orthidian/projects/podcast-channel.md."""
+    """Append episode line to ~/Orthidian/projects/podcast-channel/podcast-channel.md."""
     EPISODE_LOG.parent.mkdir(parents=True, exist_ok=True)
     today = datetime.now().strftime("%Y-%m-%d")
     ident = f"DOI: {doi}" if doi else "Topic"

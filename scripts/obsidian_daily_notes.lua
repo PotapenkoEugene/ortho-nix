@@ -1,9 +1,20 @@
 --============================================================================
--- Obsidian Daily Note Generator v3 - Dashboard View
+-- Obsidian Daily Note Generator v4 - Dashboard View
 --============================================================================
 --
--- Generates a read-only dashboard of project status.
--- No sync-back: daily notes are views, task state lives in project files.
+-- Two modes:
+--   1. Interactive (default): opens/regenerates today's personal daily note.
+--      Sets vim.g.obsidian_generate_summaries_only = nil (normal mode).
+--   2. Summary-only (headless): vim.g.obsidian_generate_summaries_only = true
+--      Writes _summary.md for every project subdir, no calendar/email fetch.
+--
+-- Personal note sections (owned = regenerated, freeform = preserved):
+--   ## Events   [owned — calendar]
+--   ## Personal [owned — tasks/mail/personal projects]
+--   ## Notes    [freeform — user-written, NEVER overwritten]
+--
+-- Project layout: projects/Name/Name.md + projects/Name/_summary.md
+-- Personal layout: personal/Name/Name.md (Katusha only; tasks/payments/english stay flat)
 --
 -- Dashboard line format:
 --   - [[PROJECT]] N️⃣
@@ -292,33 +303,118 @@ end
 local DailyNote = {} -- forward declaration (methods added later)
 local Dashboard = {}
 
--- Scan folder for projects with at least one undone objective
+-- Scan folder for projects with at least one undone objective.
+-- Supports both layouts:
+--   Subdir (new):  projects/Name/Name.md   (preferred, used after migration)
+--   Flat   (old):  projects/Name.md        (fallback for personal flat files)
 -- Returns list of {name, objectives, first_undone_text, age}
 function Dashboard.scan(folder)
   local dir = Utils.build_path(folder)
-  local files = vim.fn.glob(dir .. "/*.md", false, true)
   local entries = {}
+  local seen = {}
 
+  -- 1. Subdir layout: projects/Name/ → projects/Name/Name.md
+  local items = vim.fn.glob(dir .. "/*", false, true)
+  for _, item in ipairs(items) do
+    if vim.fn.isdirectory(item) == 1 then
+      local name = item:match("([^/]+)$")
+      if name then
+        local fp = item .. "/" .. name .. ".md"
+        local content = Utils.read_file(fp)
+        if content then
+          local objectives, first_undone_text = ProjectFile.all_objectives(content)
+          if first_undone_text then
+            seen[name] = true
+            table.insert(entries, {
+              name = name,
+              objectives = objectives,
+              first_undone_text = first_undone_text,
+              age = 1,
+            })
+            Debug.log("Found (subdir): %s -> %d objectives", name, #objectives)
+          end
+        end
+      end
+    end
+  end
+
+  -- 2. Flat layout fallback: projects/Name.md (for personal flat files, backward compat)
+  local files = vim.fn.glob(dir .. "/*.md", false, true)
   for _, fp in ipairs(files) do
     local name = fp:match("([^/]+)%.md$")
-    if name then
+    if name and not seen[name] then
       local content = Utils.read_file(fp)
       if content then
         local objectives, first_undone_text = ProjectFile.all_objectives(content)
-        if first_undone_text then -- has at least one undone objective
+        if first_undone_text then
           table.insert(entries, {
             name = name,
             objectives = objectives,
             first_undone_text = first_undone_text,
             age = 1,
           })
-          Debug.log("Found: %s -> %d objectives", name, #objectives)
+          Debug.log("Found (flat): %s -> %d objectives", name, #objectives)
         end
       end
     end
   end
 
   return entries
+end
+
+-- Generate _summary.md for all project subdirs under folder.
+-- Called headlessly (nvim.g.obsidian_generate_summaries_only) or via :GenerateSummaries.
+-- Each summary: frontmatter + undone objectives with progress bars.
+local function generate_summaries()
+  local dir = Utils.build_path(Config.projects_folder)
+  local subdirs = vim.fn.glob(dir .. "/*", false, true)
+  local count = 0
+
+  for _, subdir in ipairs(subdirs) do
+    if vim.fn.isdirectory(subdir) == 1 then
+      local name = subdir:match("([^/]+)$")
+      if name then
+        local note_path = subdir .. "/" .. name .. ".md"
+        local content = Utils.read_file(note_path)
+        if content then
+          local objectives, first_undone_text = ProjectFile.all_objectives(content)
+          if first_undone_text then
+            local today = Utils.get_today_date()
+            local lines = {
+              "---",
+              "tags:",
+              "  - summary",
+              "generated: true",
+              'updated: "' .. today .. '"',
+              "---",
+              "",
+              "# " .. name,
+              "",
+            }
+            for _, obj in ipairs(objectives) do
+              if not obj.done then
+                local progress = Utils.progress_bar(obj.children_done, obj.children_total)
+                local bar = ""
+                if obj.marker == "[>]" then
+                  bar = " ⏳"
+                else
+                  bar = progress ~= "" and (" " .. progress) or ""
+                end
+                table.insert(lines, "- [ ] " .. obj.text .. bar)
+              end
+            end
+            table.insert(lines, "")
+            local summary_path = subdir .. "/_summary.md"
+            Utils.write_file(summary_path, table.concat(lines, "\n"))
+            count = count + 1
+            Debug.log("Summary written: %s", summary_path)
+          end
+        end
+      end
+    end
+  end
+
+  return count
 end
 
 -- Parse lines from a dashboard section for age tracking
@@ -686,9 +782,24 @@ end
 
 local Calendar = {}
 
--- Fetch today's events by calling the calendar script
+-- Fetch today's events.
+-- If CALENDAR_DATA_FILE env var is set (used by overnight launchd agent to avoid
+-- double claude -p), reads from that file instead of calling the calendar script.
 -- Returns: events (list of lines)
 function Calendar.fetch()
+  local pre_fetched = os.getenv("CALENDAR_DATA_FILE")
+  if pre_fetched and pre_fetched ~= "" then
+    local content = Utils.read_file(pre_fetched)
+    if content then
+      local events = {}
+      for line in content:gmatch("([^\n]*)\n?") do
+        local trimmed = Utils.trim(line)
+        if trimmed ~= "" then table.insert(events, trimmed) end
+      end
+      return events
+    end
+  end
+
   local output = vim.fn.system(Config.calendar_script)
   if vim.v.shell_error ~= 0 then return {} end
 
@@ -751,49 +862,65 @@ Debug.log("=== Daily Note v3 (Dashboard) ===")
 local today = Utils.get_today_date()
 local today_path = Utils.build_path(Config.daily_folder, today .. ".md")
 
-local function generate(ref_date)
-  -- Load reference daily note for age tracking + carry-forward
+-- Generate today's personal daily note.
+-- ref_date:         previous day's date for age tracking (nil = no reference)
+-- existing_sections: parsed sections of today's file if it already exists
+--                    (nil = new file). Used to preserve ## Notes and sync
+--                    hand-typed tasks back to personal/tasks.md before rewriting.
+--
+-- Owned sections (regenerated every call): ## Events, ## Personal
+-- Freeform section (NEVER touched):        ## Notes
+local function generate(ref_date, existing_sections)
+  -- Determine reference sections for age tracking.
+  -- When file exists (same-day refresh): use existing today's sections as reference.
+  -- When new file: use previous daily note.
   local prev_linked, prev_unlinked = {}, {}
-  local prev_sections = {}
+  local prev_sections = existing_sections or {}
   local days_gap = 1
 
   if ref_date then
-    local ref_path = Utils.build_path(Config.daily_folder, ref_date .. ".md")
-    local content = Utils.read_file(ref_path)
-    if content then
-      prev_linked, prev_unlinked = Dashboard.parse_prev(content)
-      prev_sections = DailyNote.parse_sections(content)
-      days_gap = Utils.days_between(ref_date, today)
-      Debug.log("Ref: %s, Days gap: %d", ref_date, days_gap)
+    if existing_sections then
+      -- Same-day refresh: ref is today's own file; days_gap = 0 (age unchanged)
+      prev_linked, prev_unlinked = Dashboard.parse_prev_lines(existing_sections.personal, {}, {})
+      Dashboard.parse_prev_lines(existing_sections.work, prev_linked, prev_unlinked)
+      days_gap = 0
+    else
+      -- New file: ref is previous day's note
+      local ref_path = Utils.build_path(Config.daily_folder, ref_date .. ".md")
+      local content = Utils.read_file(ref_path)
+      if content then
+        prev_linked, prev_unlinked = Dashboard.parse_prev(content)
+        prev_sections = DailyNote.parse_sections(content)
+        days_gap = Utils.days_between(ref_date, today)
+        Debug.log("Ref: %s, Days gap: %d", ref_date, days_gap)
+      end
     end
   end
 
-  -- Scan project folders for undone objectives
-  local work = Dashboard.scan(Config.projects_folder)
+  -- Scan personal project folder for undone objectives
   local personal = Dashboard.scan(Config.personal_folder)
 
-  -- Calculate ages (same first_undone_text = increment, different = reset to 1)
-  for _, e in ipairs(work) do
-    local prev = prev_linked[e.name]
-    if prev and Dashboard.same_objective(prev.first_undone_text, e.first_undone_text) then
-      e.age = math.min(prev.age + days_gap, 9)
-    end
-  end
-
+  -- Calculate ages for personal projects
   for _, e in ipairs(personal) do
     local prev = prev_linked[e.name]
     if prev and Dashboard.same_objective(prev.first_undone_text, e.first_undone_text) then
-      e.age = math.min(prev.age + days_gap, 9)
+      e.age = math.min(prev.age + (days_gap > 0 and days_gap or 1), 9)
     end
   end
 
   -- Fetch calendar events
   local events_lines = Calendar.fetch()
 
-  -- Sync tasks from previous daily note back to tasks file (done + new manual tasks)
-  Tasks.sync_from_daily(prev_sections.personal, ref_date or today)
+  -- Write-back: sync hand-typed tasks from the existing today's Personal section
+  -- back to personal/tasks.md BEFORE regenerating (preserves user edits across refreshes).
+  if existing_sections then
+    Tasks.sync_from_daily(existing_sections.personal, today)
+  elseif prev_sections.personal then
+    -- New file: sync from previous day (standard carry-forward)
+    Tasks.sync_from_daily(prev_sections.personal, ref_date or today)
+  end
 
-  -- Read undone tasks from file (source of truth)
+  -- Read undone tasks from file (source of truth, now includes synced hand-typed tasks)
   local unlinked = Tasks.get_undone(today)
 
   -- Sort each group by age descending, then name ascending
@@ -806,9 +933,8 @@ local function generate(ref_date)
 
   sort_by_age(unlinked, "text")
   sort_by_age(personal, "name")
-  sort_by_age(work, "name")
 
-  -- Build Personal lines: unlinked tasks -> personal projects
+  -- Build Personal lines: unlinked tasks → personal projects
   local personal_lines = {}
   for _, t in ipairs(unlinked) do
     for _, line in ipairs(Dashboard.make_unlinked_lines(t)) do
@@ -821,14 +947,6 @@ local function generate(ref_date)
     end
   end
 
-  -- Build Work lines: work projects
-  local work_lines = {}
-  for _, e in ipairs(work) do
-    for _, line in ipairs(Dashboard.make_lines(e)) do
-      table.insert(work_lines, line)
-    end
-  end
-
   -- Sync mail tasks from digests into payments.md
   Mail.sync()
   local mail_tasks = Mail.get_undone()
@@ -838,13 +956,17 @@ local function generate(ref_date)
     events_lines = prev_sections.events
   end
 
-  -- Carry forward Notes from previous note if they have content
+  -- Notes: NEVER regenerated — always use existing content if available
   local notes_lines = {}
-  if DailyNote.has_content(prev_sections.notes) then
+  if existing_sections and DailyNote.has_content(existing_sections.notes) then
+    -- Same-day: preserve today's hand-written notes exactly
+    notes_lines = existing_sections.notes
+  elseif DailyNote.has_content(prev_sections.notes) then
+    -- New file: carry forward previous day's notes
     notes_lines = prev_sections.notes
   end
 
-  -- Build final output: Events -> Personal -> Work -> Important -> Notes
+  -- Build final output: Events → Personal → Notes (no ## Work — work lives in project summaries)
   local out = {
     "---",
     "tags:",
@@ -867,24 +989,14 @@ local function generate(ref_date)
   table.insert(out, Config.sections.personal)
   for _, line in ipairs(personal_lines) do table.insert(out, line) end
   if #mail_tasks > 0 then
-    -- Build set of existing unlinked task texts to deduplicate against mail
     local seen = {}
-    for _, t in ipairs(unlinked) do
-      seen[t.text:lower()] = true
-    end
+    for _, t in ipairs(unlinked) do seen[t.text:lower()] = true end
     for _, line in ipairs(mail_tasks) do
       local text = line:match("^%- %[.%]%s*(.*)") or ""
-      if not seen[text:lower()] then
-        table.insert(out, line)
-      end
+      if not seen[text:lower()] then table.insert(out, line) end
     end
   end
   if #personal_lines == 0 and #mail_tasks == 0 then table.insert(out, "") end
-  table.insert(out, "")
-
-  table.insert(out, Config.sections.work)
-  for _, line in ipairs(work_lines) do table.insert(out, line) end
-  if #work_lines == 0 then table.insert(out, "") end
   table.insert(out, "")
 
   table.insert(out, Config.sections.notes)
@@ -904,16 +1016,37 @@ local function generate(ref_date)
   Debug.log("=== Done ===")
 end
 
--- First call: create if missing, otherwise just open
-if Utils.file_exists(today_path) then
-  vim.cmd((vim.bo.modified and "tabedit " or "edit ") .. today_path)
+-- ── Entry point: mode-guarded ────────────────────────────────────────────────
+-- Summary-only mode (headless): nvim --headless + vim.g.obsidian_generate_summaries_only = true
+-- Normal interactive mode: open/generate today's personal note.
+
+if vim.g.obsidian_generate_summaries_only then
+  -- Headless: generate project summaries and quit
+  local n = generate_summaries()
+  Debug.log("Generated %d project summaries", n)
 else
-  generate(Utils.find_last_daily_note(today))
-  vim.notify("Daily note created: " .. today, vim.log.levels.INFO)
+  -- Interactive: open or generate today's personal daily note
+  if Utils.file_exists(today_path) then
+    -- File exists: section-scoped rewrite (regenerate Events+Personal, keep Notes)
+    local existing_content = Utils.read_file(today_path)
+    local existing_sections = existing_content and DailyNote.parse_sections(existing_content) or {}
+    generate(today, existing_sections)
+  else
+    -- New file: create from previous day's note
+    generate(Utils.find_last_daily_note(today))
+    vim.notify("Daily note created: " .. today, vim.log.levels.INFO)
+  end
 end
 
--- Register refresh command (persists in the notes popup nvim session)
+-- Register user commands (persist in the notes popup nvim session)
 vim.api.nvim_create_user_command("DailyRefresh", function()
-  generate(today)
+  local existing_content = Utils.read_file(today_path)
+  local existing_sections = existing_content and DailyNote.parse_sections(existing_content) or {}
+  generate(today, existing_sections)
   vim.notify("Daily note refreshed: " .. today, vim.log.levels.INFO)
-end, { desc = "Refresh today's daily note (re-scan project files)" })
+end, { desc = "Refresh today's personal daily note (regenerate Events+Personal, keep Notes)" })
+
+vim.api.nvim_create_user_command("GenerateSummaries", function()
+  local n = generate_summaries()
+  vim.notify(string.format("Project summaries updated (%d projects)", n), vim.log.levels.INFO)
+end, { desc = "Regenerate _summary.md for all project subdirs" })

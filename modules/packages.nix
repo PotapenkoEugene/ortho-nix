@@ -142,6 +142,7 @@
     ])
     ++ lib.optionals pkgs.stdenv.isDarwin (with pkgs; [
       # claude-code installed via native installer (~/.local/bin/claude) for auto-updates
+      coreutils # gdate, gstat — portable wrappers in calendar-events.sh + email-digest.sh
     ])
     ++ lib.optionals (pkgs.stdenv.isLinux && !config.ortho.headless) (with pkgs; [
       # Linux-only: GUI office / viewers / desktop apps

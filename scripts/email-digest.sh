@@ -7,29 +7,52 @@ MAILS_DIR="$HOME/Orthidian/mails"
 LOG="$MAILS_DIR/mail-log.md"
 LOCK="/tmp/email-digest.lock"
 SKILL="$HOME/.claude/skills/mail/SKILL.md"
-TODAY=$(date +%Y-%m-%d)
+
+# Portable GNU date + stat (macOS needs coreutils gdate/gstat for -d/-c flags)
+if command -v gdate >/dev/null 2>&1; then _DATE() { gdate "$@"; }
+else _DATE() { date "$@"; }; fi
+if command -v gstat >/dev/null 2>&1; then _STAT_MTIME() { gstat -c %Y "$1"; }
+else _STAT_MTIME() { stat -f %m "$1"; }; fi
+
+# Portable notify
+_NOTIFY() {
+  local title="$1" msg="$2"
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send -t 3000 "$title" "$msg"
+  elif command -v osascript >/dev/null 2>&1; then
+    osascript -e "display notification \"$msg\" with title \"$title\""
+  fi
+}
+
+TODAY=$(_DATE +%Y-%m-%d)
 
 # Ensure mails directory exists
 mkdir -p "$MAILS_DIR"
 
 # Staleness guard: skip if today's digest updated <1 hour ago
 if [ -f "$MAILS_DIR/$TODAY.md" ]; then
-    age=$(( $(date +%s) - $(stat -c %Y "$MAILS_DIR/$TODAY.md") ))
+    age=$(( $(_DATE +%s) - $(_STAT_MTIME "$MAILS_DIR/$TODAY.md") ))
     [ "$age" -lt 3600 ] && exit 0
 fi
 
-# Prevent concurrent runs
-exec 9>"$LOCK"
-flock -n 9 || exit 0
+# Prevent concurrent runs (flock is GNU/Linux; on macOS use mkdir lock instead)
+if command -v flock >/dev/null 2>&1; then
+    exec 9>"$LOCK"
+    flock -n 9 || exit 0
+else
+    [ -f "${LOCK}.pid" ] && kill -0 "$(cat "${LOCK}.pid")" 2>/dev/null && exit 0
+    echo $$ > "${LOCK}.pid"
+    trap 'rm -f "${LOCK}.pid"' EXIT
+fi
 
 # Determine start date: day after last log entry, or yesterday
 if [ -f "$LOG" ]; then
     last_date=$(grep '^## ' "$LOG" | tail -1 | awk '{print $2}')
 fi
 if [ -z "$last_date" ]; then
-    start_date=$(date -d "$TODAY - 1 day" +%Y-%m-%d)
+    start_date=$(_DATE -d "$TODAY - 1 day" +%Y-%m-%d)
 else
-    start_date=$(date -d "$last_date + 1 day" +%Y-%m-%d)
+    start_date=$(_DATE -d "$last_date + 1 day" +%Y-%m-%d)
 fi
 
 # Nothing to process if start is in the future
@@ -47,7 +70,7 @@ fi
 unset CLAUDECODE
 current="$start_date"
 while [[ "$current" < "$TODAY" || "$current" == "$TODAY" ]]; do
-    next=$(date -d "$current + 1 day" +%Y-%m-%d)
+    next=$(_DATE -d "$current + 1 day" +%Y-%m-%d)
     after="${current}T00:00:00Z"
     before="${next}T00:00:00Z"
 
@@ -94,4 +117,4 @@ Convert all email timestamps to Israel local time (IDT = UTC+3). Display as DD.M
 done
 
 # Notification when done
-notify-send -t 3000 "Email Digest" "Mail digests updated through $TODAY"
+_NOTIFY "Email Digest" "Mail digests updated through $TODAY"

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Active Obsidian Project
 - Project: Desktop
-- File: ~/Orthidian/projects/Desktop.md
+- File: ~/Orthidian/projects/Desktop/Desktop.md
 
 ## What This Is
 

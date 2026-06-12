@@ -26,10 +26,10 @@ create_project_claude_md() {
 
 ## Active Obsidian Project
 - Project: $proj
-- File: ~/Orthidian/projects/$proj.md
+- File: ~/Orthidian/projects/$proj/$proj.md
 
 ## Links
-- Obsidian: ~/Orthidian/projects/$proj.md
+- Obsidian: ~/Orthidian/projects/$proj/$proj.md
 ${gh_line}- Knowledge: ~/Orthidian/knowledge/$proj/
 EOF
 }
@@ -37,9 +37,9 @@ EOF
 # ── Helper: create Obsidian project note (idempotent) ────────────────────────
 create_obsidian_note() {
 	local proj="$1" note d t
-	note="$HOME/Orthidian/projects/$proj.md"
+	note="$HOME/Orthidian/projects/$proj/$proj.md"
 	[ -f "$note" ] && return 0
-	mkdir -p "$HOME/Orthidian/projects"
+	mkdir -p "$HOME/Orthidian/projects/$proj"
 	d=$(date +%Y-%m-%d)
 	t=$(date +%H:%M)
 	cat >"$note" <<EOF
@@ -134,8 +134,8 @@ if [[ "$machine" == *"Mac"* ]]; then
 	fi
 	# drop .claude/CLAUDE.md active-project pointer on mac
 	ssh mac-studio "mkdir -p ~/Projects/$name/.claude && \
-      printf '## Active Obsidian Project\n- Project: %s\n- File: ~/Orthidian/projects/%s.md\n' \
-      '$display_name' '$display_name' > ~/Projects/$name/.claude/CLAUDE.md"
+      printf '## Active Obsidian Project\n- Project: %s\n- File: ~/Orthidian/projects/%s/%s.md\n' \
+      '$display_name' '$display_name' '$display_name' > ~/Projects/$name/.claude/CLAUDE.md"
 	# create root CLAUDE.md on mac via pipe
 	mac_gh_line=""
 	[ "$GH" = yes ] && mac_gh_line="- GitHub: https://github.com/PotapenkoEugene/$name"$'\n'
@@ -145,10 +145,10 @@ if [[ "$machine" == *"Mac"* ]]; then
 
 ## Active Obsidian Project
 - Project: $display_name
-- File: ~/Orthidian/projects/$display_name.md
+- File: ~/Orthidian/projects/$display_name/$display_name.md
 
 ## Links
-- Obsidian: ~/Orthidian/projects/$display_name.md
+- Obsidian: ~/Orthidian/projects/$display_name/$display_name.md
 ${mac_gh_line}- Knowledge: ~/Orthidian/knowledge/$display_name/
 EOF
 	} | ssh mac-studio "cat > ~/Projects/$name/CLAUDE.md"
@@ -174,8 +174,8 @@ else
 	# drop .claude/CLAUDE.md active-project pointer
 	mkdir -p "$HOME/Documents/Projects/$name/.claude"
 	[ -f "$HOME/Documents/Projects/$name/.claude/CLAUDE.md" ] ||
-		printf '## Active Obsidian Project\n- Project: %s\n- File: ~/Orthidian/projects/%s.md\n' \
-			"$display_name" "$display_name" >"$HOME/Documents/Projects/$name/.claude/CLAUDE.md"
+		printf '## Active Obsidian Project\n- Project: %s\n- File: ~/Orthidian/projects/%s/%s.md\n' \
+			"$display_name" "$display_name" "$display_name" >"$HOME/Documents/Projects/$name/.claude/CLAUDE.md"
 	# create root CLAUDE.md with project info + links
 	create_project_claude_md "$HOME/Documents/Projects/$name" "$display_name" "$GH" "$name"
 	# create Obsidian note

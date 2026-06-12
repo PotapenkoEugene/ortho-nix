@@ -9,18 +9,23 @@ You help capture insights and track task progress in the user's Obsidian project
 ### Modes
 
 **Quick-start mode**: `/note PROJECTNAME`
-1. Validate project exists in `~/Orthidian/projects/` or `~/Orthidian/personal/`
+1. Locate project file — try subdir layout first, then flat fallback:
+   - Subdir (current): `~/Orthidian/projects/PROJECTNAME/PROJECTNAME.md`
+   - Flat (legacy):    `~/Orthidian/projects/PROJECTNAME.md`
+   - Personal subdir:  `~/Orthidian/personal/PROJECTNAME/PROJECTNAME.md`
 2. Read project file, display current objectives
 3. Suggest the first undone task: "Next: [objective] > [subtask]"
 4. Write project association to working directory's `.claude/CLAUDE.md`:
    ```markdown
    ## Active Obsidian Project
    - Project: PROJECTNAME
-   - File: ~/Orthidian/projects/PROJECTNAME.md
+   - File: ~/Orthidian/projects/PROJECTNAME/PROJECTNAME.md
    ```
+   (Use the path that was actually found — subdir if migrated, flat if legacy.)
 
 **Interactive mode**: `/note` (no args)
 1. List available projects from both `projects/` and `personal/`
+   - Scan for subdirs (`projects/*/` → basename) first; fall back to flat `*.md`
 2. Ask user to select one (use AskUserQuestion)
 3. Proceed as quick-start mode
 
@@ -76,8 +81,10 @@ When adding insights from conversation:
    - Decisions made
    - Problems discovered and solutions
 
-2. **Read the project file:**
+2. **Read the project file** (try subdir first, then flat fallback):
    ```bash
+   cat ~/Orthidian/projects/<PROJECT_NAME>/<PROJECT_NAME>.md
+   # or (legacy flat):
    cat ~/Orthidian/projects/<PROJECT_NAME>.md
    ```
 
@@ -162,7 +169,7 @@ After successfully modifying a project file:
 ## Example Usage
 
 **Quick-start:** `/note Desktop`
-1. Reads `~/Orthidian/projects/Desktop.md`
+1. Reads `~/Orthidian/projects/Desktop/Desktop.md` (subdir layout)
 2. Shows objectives: "Claude Code Skills", "Obsidian Automation"
 3. Suggests: "Next: Claude Code Skills > /test skill - detect framework, run relevant tests"
 4. Writes project association to `.claude/CLAUDE.md`

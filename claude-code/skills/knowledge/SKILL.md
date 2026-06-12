@@ -57,7 +57,7 @@ tags:
   - knowledge
   - domain/biology
 projects:
-  - "[[projects/soloLTRs]]"
+  - "[[soloLTRs]]"
 ---
 
 # Topic Title
@@ -73,7 +73,7 @@ Main content here.
 
 ## Related
 - [[knowledge/_biology/other-topic|Other Topic]]
-- [[projects/soloLTRs]]
+- [[soloLTRs]]
 ```
 
 **Seedling notes** (minimal — just capture the question):
@@ -126,7 +126,7 @@ Project knowledge index links back to the project:
 ```markdown
 # PROJECTNAME Knowledge Base
 
-Knowledge collected for [[projects/PROJECTNAME]].
+Knowledge collected for [[PROJECTNAME]].
 
 ## Files
 ...
@@ -220,7 +220,7 @@ Search the knowledge base for QUERY.
 
 ## Cross-linking Rules
 
-- **Knowledge → project**: always include `[[projects/PROJECTNAME]]` in `## Related` and in `projects:` frontmatter
+- **Knowledge → project**: always include `[[PROJECTNAME]]` (basename only — Obsidian resolves unique basenames regardless of subdir) in `## Related` and in `projects:` frontmatter
 - **Project → knowledge**: always add `- Knowledge: [[knowledge/PATH|Title]]` to the project file's `## Notes` section
 - **Knowledge → knowledge**: link related notes across domains via `## Related`; use full paths for cross-directory links: `[[knowledge/_biology/topic]]`; use short links within same directory: `[[topic-slug]]`
 - Never create orphan knowledge notes — every note must be reachable from its `00-index.md`

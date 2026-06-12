@@ -28,8 +28,8 @@
         # lazygit popup
         bind g display-popup -d "#{pane_current_path}" -w 90% -h 85% -E "lazygit"
 
-        # notes popup (persistent nvim session in Orthidian vault)
-        bind n display-popup -w 90% -h 90% -E "~/.config/home-manager/scripts/notes-popup.sh"
+        # project summaries: fuzzy-pick project → open _summary.md (vault-sync pull + headless regen)
+        bind n display-popup -w 90% -h 90% -E "~/.config/home-manager/scripts/project-summary-popup.sh"
 
         # docker browser (tv): images -> drill into containers
         bind D display-popup -w 90% -h 85% -E "tv docker-images"
