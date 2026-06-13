@@ -131,6 +131,7 @@ in {
       # Disable middle-click paste
       "org/gnome/shell/keybindings" = {
         toggle-message-tray = ["<Super>v"];
+        focus-active-notification = [""]; # free <Super>n for custom8 "Personal Daily Note"
       };
       "org/gnome/desktop/interface" = {
         gtk-enable-primary-paste = false;

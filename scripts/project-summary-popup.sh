@@ -15,8 +15,8 @@ GEN_SCRIPT="$HOME/.config/home-manager/scripts/generate-summaries.lua"
 
 unset TMUX
 
-# 1. Pull latest vault (non-blocking failure)
-vault-sync 2>/dev/null || true
+# 1. Pull latest vault in background (don't block / clutter the picker)
+vault-sync >/dev/null 2>&1 &
 
 # 2. Regenerate project summaries headlessly
 # CWD must be VAULT so nvim's getcwd() resolves as the vault root.
