@@ -29,6 +29,9 @@
   # 6 is current as of nix-darwin 25.05; bump only on instructed migrations.
   system.stateVersion = 6;
 
+  # System timezone — declarative so it survives rebuilds and doesn't drift.
+  time.timeZone = "Asia/Jerusalem";
+
   # Register bash in /etc/shells so users.users.ortho.shell takes effect.
   # macOS rejects a login shell not listed in /etc/shells; environment.shells
   # adds the nix bash path there during activation.
