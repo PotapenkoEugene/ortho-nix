@@ -2,14 +2,12 @@
 # project-summary-popup.sh — tmux C-a n: fuzzy-pick a project, view its _summary.md
 #
 # Flow:
-#   1. vault-sync pull (get latest summaries)
+#   1. vault-sync pull in background (non-blocking)
 #   2. Regenerate project summaries headlessly (nvim --headless)
 #   3. tv fuzzy picker → select a project
-#   4. Open projects/<SELECTED>/_summary.md in the persistent -L notes nvim session
+#   4. exec nvim directly in this popup (popup IS the nvim session; :q closes it)
 #      r = jump to raw note; R = regenerate summaries
 
-SESSION="notes"
-SOCK="notes"
 VAULT="$HOME/Orthidian"
 GEN_SCRIPT="$HOME/.config/home-manager/scripts/generate-summaries.lua"
 
@@ -34,7 +32,7 @@ PROJECT=$(
     xargs -0 -I{} dirname {} |
     while read -r d; do basename "$d"; done |
     sort -u |
-    tv --no-preview 2>/dev/null
+    tv --no-preview
 )
 
 [ -z "$PROJECT" ] && exit 0
@@ -44,21 +42,9 @@ RAW_NOTE="$VAULT/projects/$PROJECT/$PROJECT.md"
 
 [ -f "$SUMMARY" ] || { echo "No summary found for $PROJECT"; exit 1; }
 
-# 4. Open summary in persistent -L notes nvim session
-if ! tmux -L "$SOCK" has-session -t "$SESSION" 2>/dev/null; then
-  tmux -L "$SOCK" new-session -d -s "$SESSION" -c "$VAULT" "nvim '$SUMMARY'"
-else
-  # Session exists: switch to the summary file
-  tmux -L "$SOCK" send-keys -t "$SESSION" Escape ""
-  tmux -L "$SOCK" send-keys -t "$SESSION" ":e $SUMMARY" Enter
-fi
-
-# Map buffer-local keys (set via send-keys into the session after file opens)
-# r = open raw note in same window; R = regenerate all summaries
-sleep 0.3
-tmux -L "$SOCK" send-keys -t "$SESSION" \
-  ":nnoremap <buffer> r :e ${RAW_NOTE}<CR>" Enter
-tmux -L "$SOCK" send-keys -t "$SESSION" \
-  ":nnoremap <buffer> R :GenerateSummaries<CR>" Enter
-
-tmux -L "$SOCK" attach-session -t "$SESSION"
+# 4. Open summary directly in this popup.
+# exec replaces the shell — popup closes when nvim exits (:q).
+# -c flags run after file loads so buffer-local maps work correctly.
+exec nvim "$SUMMARY" \
+  -c "nnoremap <buffer> r :e ${RAW_NOTE}<CR>" \
+  -c "nnoremap <buffer> R :GenerateSummaries<CR>"
